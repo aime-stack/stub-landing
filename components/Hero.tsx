@@ -1,7 +1,11 @@
 import Image from 'next/image';
 import styles from './Hero.module.css';
 
-export default function Hero() {
+interface HeroProps {
+  onGetStarted?: () => void;
+}
+
+export default function Hero({ onGetStarted }: HeroProps) {
   return (
     <section className={styles.hero}>
       <div className="container">
@@ -20,7 +24,7 @@ export default function Hero() {
             </p>
             
             <div className={styles.ctaButtons}>
-              <button className={styles.ctaPrimary}>
+              <button className={styles.ctaPrimary} onClick={onGetStarted}>
                 Get Started Free
               </button>
               <button className={styles.ctaSecondary}>

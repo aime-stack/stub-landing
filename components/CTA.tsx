@@ -1,6 +1,10 @@
 import styles from './CTA.module.css';
 
-export default function CTA() {
+interface CTAProps {
+  onGetStarted?: () => void;
+}
+
+export default function CTA({ onGetStarted }: CTAProps) {
   return (
     <section className={styles.cta}>
       <div className="container">
@@ -13,10 +17,10 @@ export default function CTA() {
           </p>
           
           <div className={styles.buttons}>
-            <button className={styles.btnPrimary}>
+            <button className={styles.btnPrimary} onClick={onGetStarted}>
               Get Started Free
             </button>
-            <button className={styles.btnSecondary}>
+            <button className={styles.btnSecondary} onClick={onGetStarted}>
               Download App
             </button>
           </div>
