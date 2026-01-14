@@ -1,0 +1,119 @@
+.howItWorks {
+  padding: var(--spacing-xxl) 0;
+  background: white;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--spacing-xxl);
+}
+
+.sectionBadge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(10, 126, 164, 0.1));
+  border-radius: var(--radius-full);
+  color: var(--success);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-sm);
+}
+
+.title {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-dark);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-xl);
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xxl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .steps {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-lg);
+  }
+}
+
+.step {
+  text-align: center;
+  position: relative;
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: white;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 2;
+}
+
+.step:nth-child(2) .stepNumber {
+  background: var(--gradient-secondary);
+}
+
+.step:nth-child(3) .stepNumber {
+  background: var(--gradient-accent);
+}
+
+.step:nth-child(4) .stepNumber {
+  background: var(--gradient-success);
+}
+
+.icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: var(--spacing-sm);
+}
+
+.stepTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-dark);
+}
+
+.stepDescription {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+/* Connection line between steps (desktop only) */
+@media (min-width: 1024px) {
+  .step:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    top: 35px;
+    right: -30px;
+    font-size: 24px;
+    color: var(--border);
+    z-index: 1;
+  }
+}

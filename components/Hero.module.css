@@ -1,0 +1,224 @@
+.hero {
+  position: relative;
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a7ea4 0%, #EC4899 50%, #F59E0B 100%);
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(236, 72, 153, 0.3) 0%, transparent 50%);
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-xl);
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .container {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xxl);
+  }
+}
+
+.content {
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .content {
+    text-align: left;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-full);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.badge::before {
+  content: '⭐';
+  font-size: 18px;
+}
+
+.title {
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: var(--spacing-md);
+  color: white;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.subtitle {
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-xl);
+  color: rgba(255, 255, 255, 0.95);
+  max-width: 600px;
+}
+
+@media (max-width: 767px) {
+  .subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.ctaButtons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (min-width: 640px) {
+  .ctaButtons {
+    flex-direction: row;
+  }
+}
+
+.ctaPrimary {
+  padding: 18px 40px;
+  font-size: 18px;
+  font-weight: 700;
+  background: white;
+  color: #0a7ea4;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.ctaPrimary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  background: #f8f9fa;
+}
+
+.ctaSecondary {
+  padding: 18px 40px;
+  font-size: 18px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+}
+
+.ctaSecondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-3px);
+}
+
+.socialProof {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: white;
+  font-size: 14px;
+}
+
+@media (max-width: 767px) {
+  .socialProof {
+    justify-content: center;
+  }
+}
+
+.socialProof::before {
+  content: '✓';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.mockupContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mockup {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.3));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.floatingCard {
+  position: absolute;
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  animation: float 3s ease-in-out infinite;
+}
+
+.floatingCard.coins {
+  top: 10%;
+  left: -5%;
+  background: linear-gradient(135deg, #F59E0B, #FBBF24);
+  color: white;
+  animation-delay: 0.5s;
+}
+
+.floatingCard.users {
+  bottom: 20%;
+  right: -5%;
+  animation-delay: 1s;
+}
+
+@media (max-width: 767px) {
+  .floatingCard {
+    display: none;
+  }
+}
