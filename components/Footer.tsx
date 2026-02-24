@@ -66,6 +66,14 @@ export default function Footer() {
               </form>
             </div>
           </div>
+          
+          <div className={styles.column}>
+            <h4>Contact Us</h4>
+            <div className={styles.contactInfo}>
+              <p>Phone: +250788463034</p>
+              <p>Email: <a href="mailto:amahoro1212@gmail.com">amahoro1212@gmail.com</a></p>
+            </div>
+          </div>
         </div>
         
         <div className={styles.bottom}>
