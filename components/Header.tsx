@@ -91,7 +91,10 @@ export default function Header() {
               {link.label}
             </a>
           ))}
-          <button className={styles.mobileCtaButton}>
+          <button 
+            className={styles.mobileCtaButton}
+            onClick={() => setSignupModalOpen(true)}
+          >
             Get Started
           </button>
         </nav>
