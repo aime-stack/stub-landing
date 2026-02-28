@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
@@ -14,6 +14,16 @@ import SignupModal from '@/components/SignupModal';
 
 export default function Home() {
   const [signupModalOpen, setSignupModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get('signup') === 'true') {
+        setSignupModalOpen(true);
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
+  }, []);
 
   const handleGetStarted = () => {
     setSignupModalOpen(true);

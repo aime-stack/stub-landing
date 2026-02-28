@@ -16,10 +16,10 @@ export async function middleware(request: NextRequest) {
 
   // APP SUBDOMAIN LOGIC
   if (isApp) {
-    // If unauthenticated, redirect to login on main marketing domain
+    // If unauthenticated, redirect to signup on main marketing domain
     if (!user) {
       const protocol = isProduction ? 'https' : 'http';
-      return NextResponse.redirect(`${protocol}://${mainDomain}/login`);
+      return NextResponse.redirect(`${protocol}://${mainDomain}/?signup=true`);
     }
 
     // Default root of app subdomain goes to feed

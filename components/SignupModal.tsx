@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from './SignupModal.module.css';
+import { signupAction } from '@/services/auth';
 
 type UserType = 'user' | 'teacher' | 'celebrity' | 'company' | null;
 
@@ -49,6 +50,8 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
     message: '',
     agreeToTerms: false,
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -68,24 +71,27 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Here you would normally send data to your backend API
-    console.log('Signup data:', {
-      userType: selectedType,
-      ...formData,
-    });
+    setLoading(true);
+    setError(null);
 
-    // Show success message
-    alert(
-      selectedType === 'company'
-        ? 'Thank you! Your company registration request has been submitted. Our team will review and contact you via email within 24-48 hours.'
-        : 'Account created successfully! Please check your email to verify your account.'
-    );
+    try {
+      const res = await signupAction({
+        accountType: selectedType,
+        ...formData,
+      });
 
-    // Close modal
-    onClose();
+      if (res?.error) {
+        setError(res.error);
+        setLoading(false);
+      } else {
+        // Will be redirected
+      }
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred. Please try again.');
+      setLoading(false);
+    }
   };
 
   const isFormValid = () => {
@@ -284,16 +290,22 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                   </label>
                 </div>
 
+                {error && (
+                  <div style={{ color: '#ef4444', marginBottom: '16px', fontSize: '14px', padding: '10px', backgroundColor: '#fef2f2', borderRadius: '8px' }}>
+                    {error}
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   className={styles.submitButton}
-                  disabled={!isFormValid()}
+                  disabled={!isFormValid() || loading}
                 >
-                  {selectedType === 'company' ? 'Submit Request' : 'Create Account'}
+                  {loading ? 'Validating...' : selectedType === 'company' ? 'Submit Request' : 'Create Account'}
                 </button>
 
                 <div className={styles.signInLink}>
-                  Already have an account? <a href="#">Sign In</a>
+                  Already have an account? <a href="/login">Sign In</a>
                 </div>
               </div>
             </form>
