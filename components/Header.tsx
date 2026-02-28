@@ -59,10 +59,15 @@ export default function Header() {
           ))}
         </nav>
         
-        <button className={styles.ctaButton} onClick={() => setSignupModalOpen(true)}>
-          Get Started
-        </button>
-        
+        <div className="flex items-center gap-4">
+          <a href="/login" className={styles.navLink} style={{ fontWeight: 'bold' }}>
+            Login
+          </a>
+          <button className={styles.ctaButton} onClick={() => setSignupModalOpen(true)}>
+            Get Started
+          </button>
+        </div>
+
         <button 
           className={`${styles.menuButton} ${mobileMenuOpen ? styles.open : ''}`}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

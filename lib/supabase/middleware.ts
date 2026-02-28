@@ -1,0 +1,45 @@
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
+
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request: { headers: request.headers },
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Force Domain scoping strictly to .stubgram.com in production
+            if (process.env.NODE_ENV === 'production') {
+               options.domain = '.stubgram.com';
+            }
+            // Enhance options with strict security limits
+            request.cookies.set(name, value);
+            supabaseResponse.cookies.set({
+               name,
+               value,
+               ...options,
+               httpOnly: true,
+               sameSite: 'lax',
+               secure: process.env.NODE_ENV === 'production',
+            });
+          });
+        },
+      },
+    }
+  );
+
+  // refreshing the auth token and fetching the user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return { response: supabaseResponse, user };
+}
