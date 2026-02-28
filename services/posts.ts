@@ -20,7 +20,9 @@ export const CreatePostSchema = z.object({
  */
 export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<PaginatedFeed> {
   // Validate input parameters
-  const { cursor, limit } = FeedQuerySchema.parse(params);
+  const { cursor } = params;
+  const limit = params.limit || 20;
+
   const supabase = await createClient();
 
   // Query: Select all posts, inner join profiles (usually 'users' or 'profiles' in Supabase)
@@ -28,8 +30,8 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
     .from('posts')
     .select(`
       *,
-      users:user_id (
-        id, username, full_name, avatar, isVerified, isCelebrity
+      profiles:user_id (
+        id, username, full_name, avatar_url, is_verified, is_celebrity
       )
     `)
     .order('created_at', { ascending: false })
