@@ -24,7 +24,7 @@ export default async function WebAppLayout({ children }: { children: ReactNode }
   }
 
   return (
-    <div className="min-h-screen bg-[#151718] text-white selection:bg-[#0a7ea4]/30">
+    <div className="min-h-screen bg-[#F0F2F5] text-gray-900 selection:bg-[#0a7ea4]/30">
       <svg width="0" height="0" className="absolute">
         <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop stopColor="#0a7ea4" offset="0%" />
@@ -39,7 +39,7 @@ export default async function WebAppLayout({ children }: { children: ReactNode }
         </div>
         
         {/* Main Content Area (Center) */}
-        <main className="flex-1 min-w-0 max-w-[600px] w-full border-x border-gray-800 pb-20 lg:pb-0 mx-auto">
+        <main className="flex-1 min-w-0 max-w-[600px] w-full border-x border-gray-200 pb-20 lg:pb-0 mx-auto bg-white/50">
           {children}
         </main>
 

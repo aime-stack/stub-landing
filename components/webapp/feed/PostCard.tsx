@@ -22,10 +22,10 @@ export function PostCard({ post }: PostCardProps) {
   }
 
   return (
-    <article className="border-b border-gray-800 hover:bg-white/[0.02] transition-colors cursor-pointer pt-4 bg-[#151718]">
+    <article className="border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer pt-4 bg-white text-gray-900">
       <div className="flex px-4 gap-3">
         {/* Avatar */}
-        <div className="w-10 h-10 shrink-0 relative rounded-full overflow-hidden bg-gradient-to-tr from-[#0a7ea4]/20 via-[#8b5cf6]/20 to-[#ec4899]/20 border border-white/5 shadow-inner">
+        <div className="w-10 h-10 shrink-0 relative rounded-full overflow-hidden bg-gradient-to-tr from-[#0a7ea4]/20 via-[#8b5cf6]/20 to-[#ec4899]/20 border border-gray-100 shadow-inner">
           {post.users?.avatar ? (
              <Image 
                src={post.users.avatar} 
@@ -70,7 +70,7 @@ export function PostCard({ post }: PostCardProps) {
 
           {/* Media Rendering */}
           {(hasImage || isVideo) && (
-            <div className="rounded-2xl overflow-hidden mt-3 mb-3 border border-gray-800 relative bg-black flex justify-center max-h-[500px]">
+            <div className="rounded-2xl overflow-hidden mt-3 mb-3 border border-gray-200 relative bg-gray-100 flex justify-center max-h-[500px]">
               {isVideo ? (
                 <video 
                   src={post.video_url || post.media_url} 

@@ -13,7 +13,7 @@ export default async function FeedPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-10 bg-[#151718]/80 backdrop-blur-md border-b border-gray-800 px-4 py-3">
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3 text-gray-900">
          <h1 className="text-xl font-bold">Home</h1>
       </div>
       

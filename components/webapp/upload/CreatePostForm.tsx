@@ -70,7 +70,7 @@ export function CreatePostForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-b border-gray-800 p-4 bg-[#151718]">
+    <form onSubmit={handleSubmit} className="border-b border-gray-200 p-4 bg-white">
       <div className="flex gap-3">
         {/* Placeholder Avatar */}
         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0a7ea4]/20 via-[#8b5cf6]/20 to-[#ec4899]/20 border border-white/5 shrink-0" />
@@ -80,7 +80,7 @@ export function CreatePostForm() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="What's on your mind?"
-            className="w-full bg-transparent resize-none outline-none text-[15px] placeholder-gray-500 min-h-[50px]"
+            className="w-full bg-transparent resize-none outline-none text-[15px] placeholder-gray-400 text-gray-900 min-h-[50px]"
             maxLength={2000}
           />
           
@@ -104,8 +104,8 @@ export function CreatePostForm() {
 
           {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
-          <div className="flex items-center justify-between pt-2 border-t border-gray-800">
-            <div className="flex gap-1 border-gray-800">
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200 mt-2">
+            <div className="flex gap-1 border-gray-200">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
