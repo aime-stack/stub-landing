@@ -25,19 +25,19 @@ export default async function WebAppLayout({ children }: { children: ReactNode }
 
   return (
     <div className="min-h-screen bg-[#151718] text-white selection:bg-[#0a7ea4]/30">
-      <div className="mx-auto max-w-[1280px] flex justify-center relative">
+      <div className="mx-auto max-w-[1280px] flex justify-between relative px-4 sm:px-6">
         {/* Left Sidebar (Hidden on mobile) */}
-        <div className="hidden lg:block w-64 shrink-0 border-r border-gray-800 sticky top-0 h-screen overflow-y-auto no-scrollbar">
+        <div className="hidden lg:block w-[275px] shrink-0 sticky top-0 h-screen overflow-y-auto no-scrollbar">
           <DesktopSidebar user={user} />
         </div>
         
         {/* Main Content Area (Center) */}
-        <main className="flex-1 min-w-0 max-w-2xl w-full border-r border-gray-800 pb-20 lg:pb-0">
+        <main className="flex-1 min-w-0 max-w-[600px] w-full border-x border-gray-800 pb-20 lg:pb-0 mx-auto">
           {children}
         </main>
 
         {/* Right Widget Area */}
-        <div className="hidden xl:block w-80 shrink-0 sticky top-0 h-screen overflow-y-auto no-scrollbar">
+        <div className="hidden xl:block w-[350px] shrink-0 sticky top-0 h-screen overflow-y-auto no-scrollbar pl-8">
           <WidgetArea />
         </div>
       </div>
