@@ -16,11 +16,10 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            // Force Domain scoping strictly to .stubgram.com in production
+            // Force Domain scoping
             if (process.env.NODE_ENV === 'production') {
                options.domain = '.stubgram.com';
             }
-            // Enhance options with strict security limits
             request.cookies.set(name, value);
             supabaseResponse.cookies.set({
                name,

@@ -3,7 +3,7 @@ import { updateSession } from './lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
   // Update Supabase Session & Enforce Auth
-  const { response, user } = await updateSession(request);
+  const { response: supabaseResponse, user } = await updateSession(request);
 
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
@@ -14,38 +14,53 @@ export async function middleware(request: NextRequest) {
 
   const isApp = hostname === appDomain;
 
+  // Helper to copy cookies from supabaseResponse to a new response
+  const copyCookies = (newResponse: NextResponse) => {
+    supabaseResponse.headers.getSetCookie().forEach(cookie => {
+      newResponse.headers.append('Set-Cookie', cookie);
+    });
+    return newResponse;
+  };
+
   // APP SUBDOMAIN LOGIC
   if (isApp) {
     // If unauthenticated, redirect to signup on main marketing domain
     if (!user) {
       const protocol = isProduction ? 'https' : 'http';
-      return NextResponse.redirect(`${protocol}://${mainDomain}/?signup=true`);
+      // If we are redirecting from the app subdomain to the main domain, ensure no loop happens.
+      // Next.js NextResponse.redirect needs an absolute URL object here to prevent relative loopbacks 
+      // on same-origin localhosts.
+      const redirectResponse = NextResponse.redirect(new URL(`/?signup=true`, `${protocol}://${mainDomain}`));
+      return copyCookies(redirectResponse);
     }
 
     // Default root of app subdomain goes to feed
     if (url.pathname === '/') {
-      return NextResponse.rewrite(new URL('/feed', request.url), {
-        headers: response.headers,
+      const rewriteResponse = NextResponse.rewrite(new URL('/feed', request.url), {
+        headers: supabaseResponse.headers,
       });
+      return copyCookies(rewriteResponse);
     }
 
     // Allow requests to pass through to /feed, /profile, /settings, etc.
-    return response;
+    return supabaseResponse;
   }
 
   // MARKETING DOMAIN LOGIC
   // If authenticated and hits login, send to app
   if (url.pathname === '/login' && user) {
     const protocol = isProduction ? 'https' : 'http';
-    return NextResponse.redirect(`${protocol}://${appDomain}/feed`);
+    const redirectResponse = NextResponse.redirect(`${protocol}://${appDomain}/feed`);
+    return copyCookies(redirectResponse);
   }
 
   // Prevent marketing domain from accessing /feed, /profile directly (to ensure strict isolation)
   if (['/feed', '/profile', '/settings'].some(path => url.pathname.startsWith(path))) {
-    return NextResponse.rewrite(new URL('/404', request.url));
+    const rewriteResponse = NextResponse.rewrite(new URL('/404', request.url));
+    return copyCookies(rewriteResponse);
   }
 
-  return response;
+  return supabaseResponse;
 }
 
 export const config = {
