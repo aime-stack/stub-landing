@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from './lib/supabase/middleware';
 
-export async function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   // Update Supabase Session & Enforce Auth
   const { response: supabaseResponse, user } = await updateSession(request);
 
