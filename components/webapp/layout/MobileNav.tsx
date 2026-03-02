@@ -23,11 +23,11 @@ export function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex-1 flex justify-center items-center h-full transition-colors ${
-                isActive ? 'text-[#0a7ea4]' : 'text-gray-400 hover:text-white'
+              className={`flex-1 flex justify-center items-center h-full transition-all group ${
+                isActive ? 'text-transparent bg-clip-text bg-gradient-to-tr from-[#0a7ea4] to-[#ec4899]' : 'text-gray-400 hover:text-white'
               }`}
             >
-              <item.icon className="w-6 h-6" />
+              <item.icon className="w-6 h-6" stroke={isActive ? 'url(#brandGradient)' : 'currentColor'} />
             </Link>
           );
         })}

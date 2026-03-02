@@ -73,7 +73,7 @@ export function CreatePostForm() {
     <form onSubmit={handleSubmit} className="border-b border-gray-800 p-4 bg-[#151718]">
       <div className="flex gap-3">
         {/* Placeholder Avatar */}
-        <div className="w-10 h-10 rounded-full bg-gray-800 shrink-0" />
+        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0a7ea4]/20 via-[#8b5cf6]/20 to-[#ec4899]/20 border border-white/5 shrink-0" />
         
         <div className="flex-1">
           <textarea
@@ -109,18 +109,18 @@ export function CreatePostForm() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2 text-[#0a7ea4] hover:bg-[#0a7ea4]/10 rounded-full transition-colors"
+                className="p-2 text-[#0a7ea4] hover:bg-[#0a7ea4]/10 rounded-full transition-colors flex items-center justify-center group"
                 title="Photo"
               >
-                <ImageIcon className="w-5 h-5" />
+                <ImageIcon className="w-5 h-5 group-hover:text-[#ec4899] transition-colors" />
               </button>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2 text-[#0a7ea4] hover:bg-[#0a7ea4]/10 rounded-full transition-colors"
+                className="p-2 text-[#0a7ea4] hover:bg-[#0a7ea4]/10 rounded-full transition-colors flex items-center justify-center group"
                 title="Video"
               >
-                <Video className="w-5 h-5" />
+                <Video className="w-5 h-5 group-hover:text-[#8b5cf6] transition-colors" />
               </button>
               <input 
                 type="file" 
@@ -134,7 +134,7 @@ export function CreatePostForm() {
             <button
               type="submit"
               disabled={loading || (!content.trim() && !file)}
-              className="bg-[#0a7ea4] text-white px-5 py-1.5 font-bold rounded-full hover:bg-[#0a7ea4]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="bg-gradient-to-r from-[#0a7ea4] to-[#ec4899] text-white px-6 py-1.5 font-bold rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-[0_0_15px_rgba(236,72,153,0.2)]"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Post

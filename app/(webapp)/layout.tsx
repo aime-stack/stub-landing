@@ -25,6 +25,13 @@ export default async function WebAppLayout({ children }: { children: ReactNode }
 
   return (
     <div className="min-h-screen bg-[#151718] text-white selection:bg-[#0a7ea4]/30">
+      <svg width="0" height="0" className="absolute">
+        <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop stopColor="#0a7ea4" offset="0%" />
+          <stop stopColor="#8b5cf6" offset="50%" />
+          <stop stopColor="#ec4899" offset="100%" />
+        </linearGradient>
+      </svg>
       <div className="mx-auto max-w-[1280px] flex justify-between relative px-4 sm:px-6">
         {/* Left Sidebar (Hidden on mobile) */}
         <div className="hidden lg:block w-[275px] shrink-0 sticky top-0 h-screen overflow-y-auto no-scrollbar">

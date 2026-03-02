@@ -25,7 +25,7 @@ export function PostCard({ post }: PostCardProps) {
     <article className="border-b border-gray-800 hover:bg-white/[0.02] transition-colors cursor-pointer pt-4 bg-[#151718]">
       <div className="flex px-4 gap-3">
         {/* Avatar */}
-        <div className="w-10 h-10 shrink-0 relative rounded-full overflow-hidden bg-gray-800">
+        <div className="w-10 h-10 shrink-0 relative rounded-full overflow-hidden bg-gradient-to-tr from-[#0a7ea4]/20 via-[#8b5cf6]/20 to-[#ec4899]/20 border border-white/5 shadow-inner">
           {post.users?.avatar ? (
              <Image 
                src={post.users.avatar} 
@@ -34,7 +34,7 @@ export function PostCard({ post }: PostCardProps) {
                className="object-cover"
              />
           ) : (
-             <div className="w-full h-full flex items-center justify-center text-[#0a7ea4] font-bold">
+             <div className="w-full h-full flex items-center justify-center font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#0a7ea4] to-[#ec4899]">
                {post.users?.username?.[0]?.toUpperCase() || 'U'}
              </div>
           )}

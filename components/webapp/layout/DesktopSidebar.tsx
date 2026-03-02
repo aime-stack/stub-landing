@@ -19,37 +19,45 @@ export function DesktopSidebar({ user }: { user: any }) {
   return (
     <div className="flex flex-col h-full py-6 px-4">
       <Link href="/feed" className="flex items-center gap-3 px-3 mb-8">
-        <div className="w-8 h-8 rounded-lg bg-[#0a7ea4] flex items-center justify-center">
-          <ImageIcon className="w-5 h-5 text-white" />
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0a7ea4] via-[#8b5cf6] to-[#ec4899] p-[1.5px] shadow-lg shadow-purple-500/20">
+          <div className="w-full h-full rounded-xl bg-[#151718] flex items-center justify-center">
+            <ImageIcon className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-tr from-[#0a7ea4] to-[#ec4899]" />
+          </div>
         </div>
-        <span className="text-xl font-bold tracking-tight">Stubgram</span>
+        <span className="text-2xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+          Stubgram
+        </span>
       </Link>
 
-      <nav className="flex-1 space-y-2">
+      <nav className="flex-1 space-y-2 mt-2">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-4 px-3 py-3 rounded-xl transition-colors ${
+              className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 group ${
                 isActive 
-                  ? 'font-bold bg-gray-800 text-white' 
-                  : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                  ? 'bg-gradient-to-r from-[#8b5cf6]/10 to-[#ec4899]/10 text-white font-bold border border-[#8b5cf6]/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]' 
+                  : 'text-gray-400 hover:bg-white/[0.03] hover:text-white border border-transparent'
               }`}
             >
-              <item.icon className={`w-6 h-6 ${isActive ? 'text-[#0a7ea4]' : ''}`} />
-              <span className="text-lg">{item.name}</span>
+              <item.icon 
+                className={`w-[26px] h-[26px] transition-transform duration-200 group-hover:scale-110 ${
+                  isActive ? 'text-[#ec4899]' : 'group-hover:text-[#8b5cf6]'
+                }`} 
+              />
+              <span className="text-[17px] tracking-wide">{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto">
+      <div className="mt-auto pt-6">
         <form action={logoutAction}>
           <button 
             type="submit"
-            className="w-full flex justify-center py-3 bg-gray-800 hover:bg-red-500/10 hover:text-red-500 text-gray-300 rounded-xl transition-colors font-medium"
+            className="w-full flex justify-center py-3.5 bg-white/[0.03] hover:bg-red-500/10 hover:text-red-400 text-gray-400 border border-white/[0.05] hover:border-red-500/30 rounded-2xl transition-all duration-200 font-semibold tracking-wide"
           >
             Log Out
           </button>
