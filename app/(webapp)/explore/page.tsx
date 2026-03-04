@@ -6,8 +6,8 @@ import Image from 'next/image';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
-/* ── Category tabs ─────────────────────────────────────────────────────────── */
 type Tab = 'foryou' | 'trending' | 'news' | 'sports' | 'entertainment';
+
 const TABS: { id: Tab; label: string }[] = [
   { id: 'foryou',        label: 'For You'       },
   { id: 'trending',      label: 'Trending'       },
@@ -16,15 +16,54 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'entertainment', label: 'Entertainment'  },
 ];
 
-/* ── Trend data per tab ────────────────────────────────────────────────────── */
-const TRENDS: Record<Tab, { id: string; tag: string; posts: string; category: string; img?: string }[]> = {
+/* ── Per-tab hero banners ──────────────────────────────────────────────────── */
+const HERO_BANNERS: Record<Tab, { img: string; title: string; sub: string; btn: string; overlay: string }> = {
+  foryou: {
+    img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80',
+    title: 'Global Trending',
+    sub: 'The most popular posts on Stubgram',
+    btn: 'Explore',
+    overlay: 'linear-gradient(90deg,rgba(0,0,0,0.74) 40%,transparent 100%)',
+  },
+  trending: {
+    img: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80',
+    title: "What's Trending",
+    sub: 'Real-time conversations happening now',
+    btn: 'See All',
+    overlay: 'linear-gradient(90deg,rgba(10,30,60,0.80) 40%,transparent 100%)',
+  },
+  news: {
+    img: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&q=80',
+    title: 'Latest News',
+    sub: 'Stay informed with breaking stories',
+    btn: 'Read More',
+    overlay: 'linear-gradient(90deg,rgba(15,15,15,0.80) 40%,transparent 100%)',
+  },
+  sports: {
+    img: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=800&q=80',
+    title: 'Sports Highlights',
+    sub: 'Scores, results and live updates',
+    btn: 'Live Now',
+    overlay: 'linear-gradient(90deg,rgba(0,40,10,0.80) 40%,transparent 100%)',
+  },
+  entertainment: {
+    img: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80',
+    title: 'Entertainment Hub',
+    sub: 'Music, film, celebrities and more',
+    btn: 'Discover',
+    overlay: 'linear-gradient(90deg,rgba(70,0,50,0.80) 40%,transparent 100%)',
+  },
+};
+
+/* ── Trends per tab ────────────────────────────────────────────────────────── */
+const TRENDS: Record<Tab, { id: string; tag: string; posts: string; category: string; img: string }[]> = {
   foryou: [
-    { id: 't1', tag: '#StubgramRewards',  posts: '10.5K', category: 'Technology',     img: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=120&q=70' },
-    { id: 't2', tag: '#ContentCreators', posts: '15.2K', category: 'Social Media',    img: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=120&q=70' },
-    { id: 't3', tag: '#NextGeneration',  posts: '20K',   category: 'Trending',        img: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=120&q=70' },
-    { id: 't4', tag: '#StubgramLive',    posts: '8.1K',  category: 'Entertainment',   img: 'https://images.unsplash.com/photo-1603190287605-e6ade32fa852?w=120&q=70' },
-    { id: 't5', tag: '#SnapCoins',       posts: '5.3K',  category: 'Finance',         img: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?w=120&q=70' },
-    { id: 't6', tag: '#AfricanTech',     posts: '12K',   category: 'Technology',      img: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=120&q=70' },
+    { id: 't1', tag: '#StubgramRewards',  posts: '10.5K', category: 'Technology',    img: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=120&q=70' },
+    { id: 't2', tag: '#ContentCreators', posts: '15.2K', category: 'Social Media',   img: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=120&q=70' },
+    { id: 't3', tag: '#NextGeneration',  posts: '20K',   category: 'Trending',       img: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=120&q=70' },
+    { id: 't4', tag: '#StubgramLive',    posts: '8.1K',  category: 'Entertainment',  img: 'https://images.unsplash.com/photo-1603190287605-e6ade32fa852?w=120&q=70' },
+    { id: 't5', tag: '#SnapCoins',       posts: '5.3K',  category: 'Finance',        img: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?w=120&q=70' },
+    { id: 't6', tag: '#AfricanTech',     posts: '12K',   category: 'Technology',     img: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=120&q=70' },
   ],
   trending: [
     { id: 'tr1', tag: '#Stubgram2026',   posts: '88K',   category: 'Trending Worldwide', img: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=120&q=70' },
@@ -35,17 +74,17 @@ const TRENDS: Record<Tab, { id: string; tag: string; posts: string; category: st
   news: [
     { id: 'n1', tag: 'Rwanda Innovation Summit', posts: '6.2K', category: 'East Africa', img: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?w=120&q=70' },
     { id: 'n2', tag: 'Global Creator Economy',   posts: '9.8K', category: 'Business',    img: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=120&q=70' },
-    { id: 'n3', tag: 'AI & Social Media',        posts: '14K',  category: 'Tech News',    img: 'https://images.unsplash.com/photo-1677442135968-6db3b0025e95?w=120&q=70' },
+    { id: 'n3', tag: 'AI & Social Media',        posts: '14K',  category: 'Tech News',   img: 'https://images.unsplash.com/photo-1677442135968-6db3b0025e95?w=120&q=70' },
   ],
   sports: [
-    { id: 's1', tag: '#AFCON2026',       posts: '120K', category: 'Football',    img: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=120&q=70' },
-    { id: 's2', tag: '#NBA Playoffs',    posts: '87K',  category: 'Basketball',  img: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=120&q=70' },
-    { id: 's3', tag: '#AfricaRunning',   posts: '22K',  category: 'Athletics',   img: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=120&q=70' },
+    { id: 's1', tag: '#AFCON2026',       posts: '120K', category: 'Football',   img: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=120&q=70' },
+    { id: 's2', tag: '#NBA Playoffs',    posts: '87K',  category: 'Basketball', img: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=120&q=70' },
+    { id: 's3', tag: '#AfricaRunning',   posts: '22K',  category: 'Athletics',  img: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=120&q=70' },
   ],
   entertainment: [
-    { id: 'e1', tag: '#AfrobeatsFest',   posts: '41K',  category: 'Music',   img: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=120&q=70' },
-    { id: 'e2', tag: '#NollywoodBuzz',   posts: '18K',  category: 'Film',    img: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=120&q=70' },
-    { id: 'e3', tag: '#StubgramReels',   posts: '33K',  category: 'Video',   img: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=120&q=70' },
+    { id: 'e1', tag: '#AfrobeatsFest',   posts: '41K',  category: 'Music',  img: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=120&q=70' },
+    { id: 'e2', tag: '#NollywoodBuzz',   posts: '18K',  category: 'Film',   img: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=120&q=70' },
+    { id: 'e3', tag: '#StubgramReels',   posts: '33K',  category: 'Video',  img: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=120&q=70' },
   ],
 };
 
@@ -56,6 +95,8 @@ const MOCK_SUGGESTED = [
   { id: 'u4', name: 'Nadia Wright',    handle: 'nadia.eats',    avatar: '23', followers: '54.1K',  verified: false, celebrity: false },
   { id: 'u5', name: 'Jake Thornton',   handle: 'jakethephoto',  avatar: '8',  followers: '320.4K', verified: true,  celebrity: false },
 ];
+
+type User = typeof MOCK_SUGGESTED[0];
 
 function VerifiedBadge({ id }: { id: string }) {
   return (
@@ -97,12 +138,70 @@ export default function ExplorePage() {
   const toggleFollow = (id: string) =>
     setFollowed(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
+  const hero   = HERO_BANNERS[tab];
   const trends = TRENDS[tab];
+
+  /* ── Reusable user row ───────────────────────────────────────────────────── */
+  const UserRow = ({ u, compact = false }: { u: User; compact?: boolean }) => {
+    const isFollowing = followed.has(u.id);
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: compact ? '10px 16px' : '13px 20px',
+        borderTop: '1px solid #F3F4F6',
+        cursor: 'pointer', transition: 'background 0.12s',
+      }}
+        onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+      >
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`https://i.pravatar.cc/${compact ? 38 : 48}?img=${u.avatar}`} alt={u.name}
+            style={{ width: compact ? 38 : 48, height: compact ? 38 : 48, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+          {u.celebrity && (
+            <div style={{
+              position: 'absolute', bottom: -2, right: -2,
+              width: 16, height: 16, borderRadius: '50%',
+              background: '#FF69B4', border: '2px solid white',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8,
+            }}>⭐</div>
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontFamily: FONT, fontSize: compact ? 13 : 14, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</span>
+            {u.verified && <VerifiedBadge id={`urow-${u.id}`} />}
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 12, color: '#9CA3AF', marginTop: 1 }}>@{u.handle} · {u.followers} followers</div>
+        </div>
+        <button onClick={e => { e.stopPropagation(); toggleFollow(u.id); }} style={{
+          flexShrink: 0, height: 34, minWidth: compact ? 80 : 90,
+          paddingLeft: 16, paddingRight: 16, borderRadius: 999,
+          border: isFollowing ? '1.5px solid #E5E7EB' : 'none',
+          cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 700,
+          background: isFollowing ? 'white' : '#1A1A1A',
+          color:      isFollowing ? '#1A1A1A' : 'white',
+          transition: 'all 0.15s',
+        }}
+          onMouseEnter={e => {
+            if (isFollowing) { (e.currentTarget.style.background = '#FEF2F2'); (e.currentTarget.style.color = '#EF4444'); (e.currentTarget.style.borderColor = '#EF4444'); }
+            else (e.currentTarget.style.background = '#374151');
+          }}
+          onMouseLeave={e => {
+            if (isFollowing) { (e.currentTarget.style.background = 'white'); (e.currentTarget.style.color = '#1A1A1A'); (e.currentTarget.style.borderColor = '#E5E7EB'); }
+            else (e.currentTarget.style.background = '#1A1A1A');
+          }}
+        >
+          {isFollowing ? 'Following' : 'Follow'}
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT }}>
 
-      {/* ── Sticky header: search + category tabs ──────────────────────────── */}
+      {/* ── Sticky header ────────────────────────────────────────────────────── */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 30,
         background: 'rgba(255,255,255,0.97)',
@@ -118,10 +217,7 @@ export default function ExplorePage() {
               width: 16, height: 16, pointerEvents: 'none',
               color: focused ? '#0a7ea4' : '#9CA3AF', transition: 'color 0.2s',
             }} />
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={e => setQuery(e.target.value)}
+            <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)}
               onFocus={() => setFocused(true)}
               placeholder="Search people, topics..."
               style={{
@@ -146,7 +242,8 @@ export default function ExplorePage() {
                 <X style={{ width: 12, height: 12, color: 'white' }} />
               </button>
             )}
-            {/* Floating search results */}
+
+            {/* Floating dropdown */}
             {focused && query && (
               <div style={{
                 position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0,
@@ -158,43 +255,20 @@ export default function ExplorePage() {
               }}>
                 {filteredUsers.length === 0 ? (
                   <div style={{ padding: '20px', textAlign: 'center', color: '#9CA3AF', fontSize: 14 }}>No results for &ldquo;{query}&rdquo;</div>
-                ) : filteredUsers.map(u => (
-                  <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderTop: '1px solid #F3F4F6', cursor: 'pointer', transition: 'background 0.12s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`https://i.pravatar.cc/40?img=${u.avatar}`} alt={u.name} style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</span>
-                        {u.verified && <VerifiedBadge id={`s-${u.id}`} />}
-                      </div>
-                      <div style={{ fontSize: 12, color: '#9CA3AF' }}>@{u.handle}</div>
-                    </div>
-                    <button onClick={e => { e.stopPropagation(); toggleFollow(u.id); }} style={{
-                      flexShrink: 0, height: 32, paddingLeft: 14, paddingRight: 14,
-                      borderRadius: 999, border: followed.has(u.id) ? '1.5px solid #E5E7EB' : 'none',
-                      cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 700,
-                      background: followed.has(u.id) ? 'white' : '#1A1A1A',
-                      color: followed.has(u.id) ? '#1A1A1A' : 'white',
-                    }}>
-                      {followed.has(u.id) ? 'Following' : 'Follow'}
-                    </button>
-                  </div>
-                ))}
+                ) : filteredUsers.map(u => <UserRow key={u.id} u={u} compact />)}
               </div>
             )}
           </div>
         </div>
 
-        {/* Category tabs — scrollable on small screens */}
+        {/* Category tabs */}
         <div style={{ display: 'flex', overflowX: 'auto', borderTop: '1px solid #F3F4F6' }} className="no-scrollbar">
           {TABS.map(({ id, label }) => {
             const active = tab === id;
             return (
               <button key={id} onClick={() => setTab(id)} style={{
                 flexShrink: 0,
-                paddingTop: 14, paddingBottom: 14, paddingLeft: 20, paddingRight: 20,
+                paddingTop: 13, paddingBottom: 13, paddingLeft: 20, paddingRight: 20,
                 background: 'none', border: 'none', cursor: 'pointer',
                 fontFamily: FONT, fontSize: 15, fontWeight: active ? 700 : 500,
                 color: active ? '#1A1A1A' : '#6B7280',
@@ -213,86 +287,60 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      {/* ── Page body ──────────────────────────────────────────────────────── */}
+      {/* ── Page body ────────────────────────────────────────────────────────── */}
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {/* ── Hero banner ─────────────────────────────────────────────────── */}
+        {/* ── Hero banner — unique per tab ─────────────────────────────────── */}
         <div style={{
-          position: 'relative', borderRadius: 20, overflow: 'hidden',
-          height: 150,
-          background: 'linear-gradient(135deg,#0a0a1a,#0a7ea4)',
+          position: 'relative', borderRadius: 20, overflow: 'hidden', height: 150,
+          background: '#0a0a1a',
         }}>
-          <Image
-            src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80"
-            alt="Global Trending"
-            fill
-            style={{ objectFit: 'cover', objectPosition: 'center' }}
-            unoptimized
-          />
-          {/* Gradient overlay so text is readable */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(90deg, rgba(0,0,0,0.72) 40%, transparent 100%)',
-          }} />
-          {/* Text */}
-          <div style={{ position: 'relative', zIndex: 1, padding: '24px 24px' }}>
-            <div style={{ fontFamily: FONT, fontSize: 19, fontWeight: 800, color: 'white', marginBottom: 4 }}>
-              Global Trending
-            </div>
-            <div style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,0.75)', marginBottom: 16 }}>
-              The most popular posts on Stubgram
-            </div>
+          <Image src={hero.img} alt={hero.title} fill style={{ objectFit: 'cover', objectPosition: 'center' }} unoptimized />
+          <div style={{ position: 'absolute', inset: 0, background: hero.overlay }} />
+          <div style={{ position: 'relative', zIndex: 1, padding: '22px 24px' }}>
+            <div style={{ fontFamily: FONT, fontSize: 19, fontWeight: 800, color: 'white', marginBottom: 4 }}>{hero.title}</div>
+            <div style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,0.75)', marginBottom: 16 }}>{hero.sub}</div>
             <button style={{
-              height: 36, paddingLeft: 18, paddingRight: 18,
+              height: 34, paddingLeft: 18, paddingRight: 18,
               borderRadius: 999, background: 'white', border: 'none',
-              cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 700,
-              color: '#1A1A1A', transition: 'opacity 0.15s',
+              cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 700, color: '#1A1A1A',
             }}
               onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
               onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
             >
-              Explore
+              {hero.btn}
             </button>
           </div>
         </div>
 
-        {/* ── Trending topics with images ─────────────────────────────────── */}
+        {/* ── Trends list with images ──────────────────────────────────────── */}
         <div style={{ background: 'white', borderRadius: 20, border: '1px solid #E5E7EB', overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px 10px', borderBottom: '1px solid #F3F4F6' }}>
             <h2 style={{ margin: 0, fontFamily: FONT, fontSize: 17, fontWeight: 700, color: '#1A1A1A' }}>
               {TABS.find(t => t.id === tab)?.label} Trends
             </h2>
           </div>
-
           {trends.map(({ id, tag, posts, category, img }, i) => (
-            <div key={id}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                gap: 14, padding: '13px 20px',
-                borderTop: i > 0 ? '1px solid #F3F4F6' : 'none',
-                cursor: 'pointer', transition: 'background 0.12s',
-              }}
+            <div key={id} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 14, padding: '13px 20px',
+              borderTop: i > 0 ? '1px solid #F3F4F6' : 'none',
+              cursor: 'pointer', transition: 'background 0.12s',
+            }}
               onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
-              {/* Rank + text */}
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flex: 1, minWidth: 0 }}>
-                <span style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#D1D5DB', minWidth: 20, flexShrink: 0, lineHeight: 1.2 }}>
-                  {i + 1}
-                </span>
+                <span style={{ fontFamily: FONT, fontSize: 15, fontWeight: 700, color: '#D1D5DB', minWidth: 20, flexShrink: 0 }}>{i + 1}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF', marginBottom: 2 }}>{category} · Trending</div>
-                  <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 700, color: '#1A1A1A', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tag}</div>
-                  <div style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF' }}>{posts} posts</div>
+                  <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tag}</div>
+                  <div style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>{posts} posts</div>
                 </div>
               </div>
-
-              {/* Thumbnail */}
-              {img && (
-                <div style={{ width: 72, height: 56, borderRadius: 10, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
-                  <Image src={img} alt={tag} fill style={{ objectFit: 'cover' }} unoptimized />
-                </div>
-              )}
+              <div style={{ width: 72, height: 56, borderRadius: 10, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                <Image src={img} alt={tag} fill style={{ objectFit: 'cover' }} unoptimized />
+              </div>
             </div>
           ))}
         </div>
@@ -303,70 +351,7 @@ export default function ExplorePage() {
             <Users style={{ width: 18, height: 18, color: '#0a7ea4', flexShrink: 0 }} />
             <h2 style={{ margin: 0, fontFamily: FONT, fontSize: 17, fontWeight: 700, color: '#1A1A1A' }}>Recommended for you</h2>
           </div>
-          {MOCK_SUGGESTED.map((u, i) => {
-            const isFollowing = followed.has(u.id);
-            return (
-              <div key={u.id} style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '13px 20px',
-                borderTop: i > 0 ? '1px solid #F3F4F6' : '1px solid #F3F4F6',
-                cursor: 'pointer', transition: 'background 0.12s',
-              }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-              >
-                {/* Avatar */}
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`https://i.pravatar.cc/48?img=${u.avatar}`} alt={u.name}
-                    style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
-                  {u.celebrity && (
-                    <div style={{
-                      position: 'absolute', bottom: -2, right: -2,
-                      width: 18, height: 18, borderRadius: '50%',
-                      background: '#FF69B4', border: '2px solid white',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9,
-                    }}>⭐</div>
-                  )}
-                </div>
-
-                {/* Name */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</span>
-                    {u.verified && <VerifiedBadge id={u.id} />}
-                  </div>
-                  <div style={{ fontFamily: FONT, fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>
-                    @{u.handle} · {u.followers} followers
-                  </div>
-                </div>
-
-                {/* Follow button — always fully visible */}
-                <button
-                  onClick={e => { e.stopPropagation(); toggleFollow(u.id); }}
-                  style={{
-                    flexShrink: 0, height: 36, minWidth: 92,
-                    paddingLeft: 18, paddingRight: 18, borderRadius: 999,
-                    border: isFollowing ? '1.5px solid #E5E7EB' : 'none',
-                    cursor: 'pointer', fontFamily: FONT, fontSize: 14, fontWeight: 700,
-                    background: isFollowing ? 'white' : '#1A1A1A',
-                    color:      isFollowing ? '#1A1A1A' : 'white',
-                    transition: 'all 0.15s',
-                  }}
-                  onMouseEnter={e => {
-                    if (isFollowing) { (e.currentTarget.style.background = '#FEF2F2'); (e.currentTarget.style.color = '#EF4444'); (e.currentTarget.style.borderColor = '#EF4444'); }
-                    else (e.currentTarget.style.background = '#374151');
-                  }}
-                  onMouseLeave={e => {
-                    if (isFollowing) { (e.currentTarget.style.background = 'white'); (e.currentTarget.style.color = '#1A1A1A'); (e.currentTarget.style.borderColor = '#E5E7EB'); }
-                    else (e.currentTarget.style.background = '#1A1A1A');
-                  }}
-                >
-                  {isFollowing ? 'Following' : 'Follow'}
-                </button>
-              </div>
-            );
-          })}
+          {MOCK_SUGGESTED.map(u => <UserRow key={u.id} u={u} />)}
         </div>
 
       </div>
