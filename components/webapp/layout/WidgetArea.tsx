@@ -1,6 +1,7 @@
 'use client';
 
-import { Search, TrendingUp, Users, ChevronRight, ArrowDownLeft, ArrowUpRight, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { Search, TrendingUp, Users, ChevronRight, ArrowDownLeft, ArrowUpRight, Settings, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
@@ -67,7 +68,18 @@ function WalletBtn({ icon, label, solid }: { icon: React.ReactNode; label: strin
 }
 
 export function WidgetArea() {
-  const coinBalance = 450;
+  const COIN_BALANCE   = 450;
+  const RWF_RATE       = 25;          // 1 Stub Coin = RWF 25
+  const rwfBalance     = COIN_BALANCE * RWF_RATE;  // 11,250
+
+  const [hidden,      setHidden]      = useState(false);
+  const [refreshing,  setRefreshing]  = useState(false);
+
+  const handleRefresh = () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1500);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 32 }}>
@@ -142,40 +154,87 @@ export function WidgetArea() {
         </Link>
       </div>
 
-      {/* ── Snap Coins Widget ───────────────────────────────────────────────── */}
-      <div
-        style={{
-          borderRadius: 20,
-          background: 'linear-gradient(135deg, #F59E0B 0%, #EC4899 60%, #E91E63 100%)',
-          padding: '20px 20px 20px',
-          position: 'relative',
-          overflow: 'hidden',
-          boxShadow: '0 6px 20px rgba(245,158,11,0.3)',
-        }}
-      >
+      {/* ── Stub Coins Widget ────────────────────────────────────────────────── */}
+      <div style={{
+        borderRadius: 20,
+        background: 'linear-gradient(135deg,#F59E0B 0%,#EC4899 60%,#E91E63 100%)',
+        padding: '20px',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 6px 20px rgba(245,158,11,0.3)',
+      }}>
         {/* Decorative blobs */}
         <div style={{ position: 'absolute', top: -28, right: -28, width: 96, height: 96, borderRadius: '50%', background: 'rgba(255,255,255,0.13)' }} />
         <div style={{ position: 'absolute', bottom: -20, left: -12, width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,255,255,0.09)' }} />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          {/* Label */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 20 }}>🪙</span>
-            <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.09em', textTransform: 'uppercase' }}>
-              Snap Coins
-            </span>
+
+          {/* Header row: label + icon buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <span style={{ fontSize: 18 }}>🪙</span>
+              <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.09em', textTransform: 'uppercase' as const }}>
+                Stub Coins
+              </span>
+            </div>
+
+            {/* Refresh + Eye buttons */}
+            <div style={{ display: 'flex', gap: 4 }}>
+              {/* Refresh */}
+              <button
+                onClick={handleRefresh}
+                title="Refresh balance"
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.18)', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: refreshing ? 'not-allowed' : 'pointer',
+                  color: 'white', transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => !refreshing && (e.currentTarget.style.background = 'rgba(255,255,255,0.28)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.18)')}
+              >
+                <RefreshCw style={{
+                  width: 14, height: 14,
+                  animation: refreshing ? 'spin 1s linear infinite' : 'none',
+                }} />
+              </button>
+
+              {/* Eye toggle */}
+              <button
+                onClick={() => setHidden(h => !h)}
+                title={hidden ? 'Show balance' : 'Hide balance'}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.18)', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: 'white', transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.28)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.18)')}
+              >
+                {hidden
+                  ? <EyeOff style={{ width: 14, height: 14 }} />
+                  : <Eye    style={{ width: 14, height: 14 }} />}
+              </button>
+            </div>
           </div>
 
-          {/* Balance */}
-          <div style={{ fontFamily: FONT, fontSize: 44, fontWeight: 800, color: 'white', lineHeight: 1, marginBottom: 4 }}>
-            {coinBalance.toLocaleString()}
+          {/* Primary balance — RWF */}
+          <div style={{ fontFamily: FONT, fontSize: 38, fontWeight: 800, color: 'white', lineHeight: 1, marginBottom: 4, letterSpacing: '-0.01em' }}>
+            {hidden ? '••••••' : `RWF ${rwfBalance.toLocaleString()}`}
           </div>
-          <div style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 18 }}>
-            ≈ RWF {(coinBalance * 25).toLocaleString()}
-          </div>
+
+          {/* Secondary — Stub Coins equivalent */}
+          {!hidden && (
+            <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,0.72)', marginBottom: 16 }}>
+              ≈ {COIN_BALANCE.toLocaleString()} Stub Coins
+            </div>
+          )}
+          {hidden && <div style={{ marginBottom: 16 }} />}
 
           {/* Action buttons */}
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' as const }}>
             <WalletBtn solid icon={<ArrowDownLeft style={{ width: 14, height: 14 }} />} label="Deposit" />
             <WalletBtn       icon={<ArrowUpRight  style={{ width: 14, height: 14 }} />} label="Withdraw" />
           </div>
