@@ -22,33 +22,35 @@ export function StoriesBar({ stories }: StoriesBarProps) {
 
   return (
     <>
-      <div className="bg-white border-b border-gray-200 px-3 py-3">
-        <div className="flex gap-4 overflow-x-auto no-scrollbar">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 mb-4">
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+
           {/* Add your story */}
           <button
-            className="flex flex-col items-center gap-1.5 shrink-0 group"
+            className="flex flex-col items-center gap-2 shrink-0 w-16 group"
             aria-label="Add your story"
           >
-            <div className="relative w-[66px] h-[66px]">
-              <div className="w-full h-full rounded-full overflow-hidden border-2 border-dashed border-gray-300 group-hover:border-[#0a7ea4] transition-colors bg-gray-50">
+            <div className="relative w-16 h-16">
+              {/* Dashed ring */}
+              <div className="w-16 h-16 rounded-full p-[2px] border-2 border-dashed border-gray-300 group-hover:border-[#0a7ea4] transition-colors overflow-hidden bg-gray-50">
                 {MOCK_CURRENT_USER.avatar_url ? (
                   <Image
                     src={MOCK_CURRENT_USER.avatar_url}
                     alt="Your story"
-                    width={66}
-                    height={66}
-                    className="object-cover w-full h-full opacity-60 group-hover:opacity-80 transition-opacity"
+                    width={60}
+                    height={60}
+                    className="object-cover w-full h-full rounded-full opacity-60 group-hover:opacity-80 transition-opacity"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gray-100" />
+                  <div className="w-full h-full rounded-full bg-gray-100" />
                 )}
               </div>
-              {/* + icon */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-[#0a7ea4] flex items-center justify-center border-2 border-white shadow-sm">
-                <Plus size={13} className="text-white" strokeWidth={3} />
+              {/* + badge */}
+              <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#0a7ea4] flex items-center justify-center border-2 border-white shadow">
+                <Plus size={11} className="text-white" strokeWidth={3} />
               </div>
             </div>
-            <span className="text-[11px] text-gray-500 font-medium w-16 text-center truncate group-hover:text-gray-700 transition-colors">
+            <span className="text-[11px] text-gray-500 font-medium w-16 text-center truncate group-hover:text-gray-700 transition-colors leading-tight">
               Your story
             </span>
           </button>
@@ -60,35 +62,36 @@ export function StoriesBar({ stories }: StoriesBarProps) {
               <button
                 key={story.id}
                 onClick={() => openStory(index)}
-                className="flex flex-col items-center gap-1.5 shrink-0 group"
+                className="flex flex-col items-center gap-2 shrink-0 w-16 group"
                 aria-label={`View ${story.user.username}'s story`}
               >
+                {/* Gradient ring */}
                 <div
-                  className={`w-[66px] h-[66px] rounded-full p-[2.5px] ${
+                  className={`w-16 h-16 rounded-full p-[2.5px] transition-transform duration-200 group-hover:scale-105 ${
                     isViewed
                       ? 'bg-gray-300'
                       : 'bg-gradient-to-tr from-[#0a7ea4] via-[#8b5cf6] to-[#ec4899]'
                   }`}
                 >
-                  <div className="w-full h-full rounded-full overflow-hidden bg-white p-[2px]">
+                  <div className="w-full h-full rounded-full bg-white p-[2px]">
                     <div className="w-full h-full rounded-full overflow-hidden">
                       {story.user.avatar_url ? (
                         <Image
                           src={story.user.avatar_url}
                           alt={story.user.username}
-                          width={60}
-                          height={60}
+                          width={56}
+                          height={56}
                           className="object-cover w-full h-full"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-tr from-[#0a7ea4] to-[#ec4899] flex items-center justify-center text-white font-bold text-xl">
+                        <div className="w-full h-full bg-gradient-to-tr from-[#0a7ea4] to-[#ec4899] flex items-center justify-center text-white font-bold text-lg">
                           {story.user.username[0]?.toUpperCase()}
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-                <span className="text-[11px] text-gray-700 font-medium w-16 text-center truncate">
+                <span className="text-[11px] text-gray-700 font-medium w-16 text-center truncate leading-tight">
                   {story.user.username}
                 </span>
               </button>

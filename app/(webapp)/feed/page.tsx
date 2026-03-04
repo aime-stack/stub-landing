@@ -10,18 +10,22 @@ export default function FeedPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 py-3 text-gray-900">
-        <h1 className="text-xl font-bold">Home</h1>
+      {/* Page header */}
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 py-3">
+        <h1 className="text-xl font-semibold text-gray-900">Home</h1>
       </div>
 
-      {/* Stories */}
-      <StoriesBar stories={MOCK_STORIES} />
+      {/* Feed content */}
+      <div className="p-4 space-y-4">
+        {/* Stories */}
+        <StoriesBar stories={MOCK_STORIES} />
 
-      {/* Create post */}
-      <CreatePostForm />
+        {/* Create post */}
+        <CreatePostForm />
 
-      {/* Feed */}
-      <InfiniteScrollFeed initialPosts={initialPosts} />
+        {/* Feed */}
+        <InfiniteScrollFeed initialPosts={initialPosts} />
+      </div>
     </>
   );
 }
