@@ -1,194 +1,301 @@
 'use client';
 
-import { Search, Coins, TrendingUp, Users, ChevronRight } from 'lucide-react';
+import { Search, TrendingUp, Users, ChevronRight, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+
+const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+
+const TRENDS = [
+  { category: 'Technology · Trending',   tag: '#StubgramRewards', posts: '10.5K posts' },
+  { category: 'Social Media · Trending', tag: '#ContentCreators', posts: '15.2K posts' },
+  { category: 'Trending',                tag: '#NextGeneration',  posts: '20K posts'   },
+  { category: 'Entertainment · Trending',tag: '#StubgramLive',    posts: '8.1K posts'  },
+  { category: 'Finance · Trending',      tag: '#SnapCoins',       posts: '5.3K posts'  },
+];
+
+const SUGGESTIONS = [
+  { name: 'Selena Martinez', handle: 'selena_creates', avatar: '47', verified: true,  celebrity: true  },
+  { name: 'Kevin Osei',      handle: 'codewithkev',   avatar: '12', verified: true,  celebrity: false },
+  { name: 'Marcus Reid',     handle: 'marcus.fit',    avatar: '11', verified: true,  celebrity: false },
+];
+
+/* ─ Shared card wrapper ───────────────────────────────────────────────────── */
+function Card({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        background: 'white',
+        borderRadius: 20,
+        border: '1px solid #E5E7EB',
+        overflow: 'hidden',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ─ Wallet action button (inside gradient card) ──────────────────────────── */
+function WalletBtn({ icon, label, solid }: { icon: React.ReactNode; label: string; solid?: boolean }) {
+  return (
+    <button
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: 6,
+        height: 40,
+        paddingLeft: 18, paddingRight: 18,
+        borderRadius: 999,
+        border: 'none',
+        cursor: 'pointer',
+        fontFamily: FONT,
+        fontSize: 13,
+        fontWeight: 700,
+        whiteSpace: 'nowrap',
+        background: solid ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.18)',
+        color:      solid ? '#0a7ea4'                 : 'white',
+        boxShadow:  solid ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+        backdropFilter: 'blur(8px)',
+        transition: 'opacity 0.15s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+      onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
 
 export function WidgetArea() {
   const coinBalance = 450;
 
-  const trends = [
-    { category: 'Technology · Trending', tag: '#StubgramRewards', posts: '10.5K posts' },
-    { category: 'Social Media · Trending', tag: '#ContentCreators', posts: '15.2K posts' },
-    { category: 'Trending', tag: '#NextGeneration', posts: '20K posts' },
-    { category: 'Entertainment · Trending', tag: '#StubgramLive', posts: '8.1K posts' },
-    { category: 'Finance · Trending', tag: '#SnapCoins', posts: '5.3K posts' },
-  ];
-
-  const suggestions = [
-    { name: 'Selena Martinez',  handle: 'selena_creates', avatar: '47', verified: true, celebrity: true },
-    { name: 'Kevin Osei',       handle: 'codewithkev',    avatar: '12', verified: true, celebrity: false },
-    { name: 'Marcus Reid',      handle: 'marcus.fit',     avatar: '11', verified: true, celebrity: false },
-  ];
-
   return (
-    <div className="flex flex-col gap-4 pb-8">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 32 }}>
 
-      {/* Search */}
-      <div className="relative mt-1">
+      {/* ── Search ──────────────────────────────────────────────────────────── */}
+      <div style={{ position: 'relative', marginTop: 4 }}>
         <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
-          style={{ color: 'var(--text-secondary)' }}
+          style={{
+            position: 'absolute', left: 16, top: '50%',
+            transform: 'translateY(-50%)',
+            width: 16, height: 16, color: '#9CA3AF',
+          }}
         />
         <input
           type="text"
           placeholder="Search Stubgram"
-          className="w-full h-11 rounded-full pl-11 pr-4 text-[15px] transition-all duration-200 outline-none"
           style={{
-            background: 'var(--divider)',
+            width: '100%',
+            height: 44,
+            paddingLeft: 44,
+            paddingRight: 16,
+            borderRadius: 999,
             border: '1.5px solid transparent',
-            color: 'var(--text)',
+            background: '#F3F4F6',
+            fontFamily: FONT,
+            fontSize: 14,
+            color: '#1A1A1A',
+            outline: 'none',
+            boxSizing: 'border-box',
+            transition: 'all 0.2s',
           }}
           onFocus={e => {
             e.currentTarget.style.background = 'white';
-            e.currentTarget.style.border = '1.5px solid var(--primary)';
+            e.currentTarget.style.border = '1.5px solid #0a7ea4';
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,126,164,0.08)';
           }}
           onBlur={e => {
-            e.currentTarget.style.background = 'var(--divider)';
+            e.currentTarget.style.background = '#F3F4F6';
             e.currentTarget.style.border = '1.5px solid transparent';
+            e.currentTarget.style.boxShadow = 'none';
           }}
         />
       </div>
 
-      {/* Snap Coins Balance Widget */}
+      {/* ── Snap Coins Widget ───────────────────────────────────────────────── */}
       <div
-        className="rounded-2xl p-4 relative overflow-hidden"
-        style={{ background: 'var(--gradient-gold)', boxShadow: 'var(--shadow-md)' }}
+        style={{
+          borderRadius: 20,
+          background: 'linear-gradient(135deg, #F59E0B 0%, #EC4899 60%, #E91E63 100%)',
+          padding: '20px 20px 20px',
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 6px 20px rgba(245,158,11,0.3)',
+        }}
       >
-        {/* Decorative circles */}
-        <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
-        <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full" style={{ background: 'rgba(255,255,255,0.10)' }} />
+        {/* Decorative blobs */}
+        <div style={{ position: 'absolute', top: -28, right: -28, width: 96, height: 96, borderRadius: '50%', background: 'rgba(255,255,255,0.13)' }} />
+        <div style={{ position: 'absolute', bottom: -20, left: -12, width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,255,255,0.09)' }} />
 
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-2xl">🪙</span>
-            <span className="text-white/80 text-[13px] font-semibold uppercase tracking-wider">Snap Coins</span>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          {/* Label */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 20 }}>🪙</span>
+            <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.09em', textTransform: 'uppercase' }}>
+              Snap Coins
+            </span>
           </div>
-          <div className="text-white text-4xl font-bold mb-3 animate-pulse-coin">{coinBalance.toLocaleString()}</div>
-          <div className="flex gap-2">
-            <a
-              href="/wallet"
-              className="flex items-center gap-1 px-4 py-1.5 rounded-full text-[13px] font-bold transition-all duration-200 hover:brightness-110"
-              style={{ background: 'rgba(255,255,255,0.3)', color: 'white', backdropFilter: 'blur(8px)' }}
-            >
-              Deposit
-            </a>
-            <a
-              href="/wallet"
-              className="flex items-center gap-1 px-4 py-1.5 rounded-full text-[13px] font-bold transition-all duration-200 hover:brightness-110"
-              style={{ background: 'rgba(0,0,0,0.25)', color: 'white' }}
-            >
-              Withdraw
-            </a>
+
+          {/* Balance */}
+          <div style={{ fontFamily: FONT, fontSize: 44, fontWeight: 800, color: 'white', lineHeight: 1, marginBottom: 4 }}>
+            {coinBalance.toLocaleString()}
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 18 }}>
+            ≈ RWF {(coinBalance * 25).toLocaleString()}
+          </div>
+
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <WalletBtn solid icon={<ArrowDownLeft style={{ width: 14, height: 14 }} />} label="Deposit" />
+            <WalletBtn       icon={<ArrowUpRight  style={{ width: 14, height: 14 }} />} label="Withdraw" />
           </div>
         </div>
       </div>
 
-      {/* Trending */}
-      <div
-        className="rounded-2xl overflow-hidden"
-        style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
-      >
-        <div className="px-4 pt-4 pb-2 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" style={{ color: 'var(--primary)' }} />
-          <h2 className="text-[17px] font-bold" style={{ color: 'var(--text)' }}>Trends for you</h2>
+      {/* ── Trends for you ──────────────────────────────────────────────────── */}
+      <Card>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '16px 20px 12px' }}>
+          <TrendingUp style={{ width: 18, height: 18, color: '#0a7ea4', flexShrink: 0 }} />
+          <span style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>Trends for you</span>
         </div>
-        {trends.map(({ category, tag, posts }) => (
+
+        {TRENDS.map(({ category, tag, posts }) => (
           <div
             key={tag}
-            className="px-4 py-3 cursor-pointer transition-colors duration-150"
-            style={{ borderTop: '1px solid var(--divider)' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--divider)'}
-            onMouseLeave={e => e.currentTarget.style.background = ''}
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              padding: '12px 20px',
+              borderTop: '1px solid #F3F4F6',
+              cursor: 'pointer',
+              transition: 'background 0.12s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
-            <div className="flex items-start justify-between">
-              <div className="space-y-0.5">
-                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{category}</p>
-                <p className="text-[15px] font-bold" style={{ color: 'var(--text)' }}>{tag}</p>
-                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{posts}</p>
-              </div>
-              <button className="p-1 transition-colors" style={{ color: 'var(--text-secondary)' }}>···</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF' }}>{category}</span>
+              <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{tag}</span>
+              <span style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF' }}>{posts}</span>
             </div>
+            <button
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', fontSize: 18, paddingTop: 2 }}
+            >
+              ···
+            </button>
           </div>
         ))}
-        <div className="px-4 py-3" style={{ borderTop: '1px solid var(--divider)' }}>
-          <button className="text-sm hover:underline font-medium" style={{ color: 'var(--primary)' }}>Show more</button>
-        </div>
-      </div>
 
-      {/* Who to follow */}
-      <div
-        className="rounded-2xl overflow-hidden"
-        style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
-      >
-        <div className="px-4 pt-4 pb-2 flex items-center gap-2">
-          <Users className="w-5 h-5" style={{ color: 'var(--secondary)' }} />
-          <h2 className="text-[17px] font-bold" style={{ color: 'var(--text)' }}>Who to follow</h2>
+        <div style={{ padding: '12px 20px', borderTop: '1px solid #F3F4F6' }}>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 600, color: '#0a7ea4', display: 'flex', alignItems: 'center', gap: 4 }}>
+            Show more <ChevronRight style={{ width: 14, height: 14 }} />
+          </button>
         </div>
-        {suggestions.map(({ name, handle, avatar, verified, celebrity }) => (
+      </Card>
+
+      {/* ── Who to follow ───────────────────────────────────────────────────── */}
+      <Card>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '16px 20px 12px' }}>
+          <Users style={{ width: 18, height: 18, color: '#EC4899', flexShrink: 0 }} />
+          <span style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>Who to follow</span>
+        </div>
+
+        {SUGGESTIONS.map(({ name, handle, avatar, verified, celebrity }) => (
           <div
             key={handle}
-            className="px-4 py-3 flex items-center gap-3 cursor-pointer transition-colors duration-150"
-            style={{ borderTop: '1px solid var(--divider)' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--divider)'}
-            onMouseLeave={e => e.currentTarget.style.background = ''}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '12px 20px',
+              borderTop: '1px solid #F3F4F6',
+              cursor: 'pointer',
+              transition: 'background 0.12s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 relative">
+            <div style={{ position: 'relative', flexShrink: 0 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`https://i.pravatar.cc/40?img=${avatar}`}
                 alt={name}
-                className="w-full h-full object-cover"
+                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
               />
               {celebrity && (
-                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: 'var(--celebrity-pink)', fontSize: 8 }}>
+                <div style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, borderRadius: '50%', background: '#FF69B4', border: '1.5px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8 }}>
                   ⭐
                 </div>
               )}
             </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1">
-                <p className="text-[14px] font-bold truncate leading-tight" style={{ color: 'var(--text)' }}>{name}</p>
+            {/* Name + handle */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {name}
+                </span>
                 {verified && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
                     <defs>
-                      <linearGradient id={`vg-${handle}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                      <linearGradient id={`wf-${handle}`} x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop stopColor="#0a7ea4" offset="0%" />
                         <stop stopColor="#EC4899" offset="100%" />
                       </linearGradient>
                     </defs>
-                    <circle cx="12" cy="12" r="10" fill={`url(#vg-${handle})`} />
+                    <circle cx="12" cy="12" r="10" fill={`url(#wf-${handle})`} />
                     <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
               </div>
-              <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>@{handle}</p>
+              <div style={{ fontFamily: FONT, fontSize: 12, color: '#9CA3AF', marginTop: 1 }}>@{handle}</div>
             </div>
 
+            {/* Follow button — always fully visible */}
             <button
-              className="shrink-0 h-8 px-4 rounded-full text-[12px] font-bold transition-all duration-200 hover:opacity-90 active:scale-[0.97]"
-              style={{ background: 'var(--text)', color: 'white' }}
+              style={{
+                flexShrink: 0,
+                height: 34,
+                paddingLeft: 16,
+                paddingRight: 16,
+                borderRadius: 999,
+                border: 'none',
+                cursor: 'pointer',
+                background: '#1A1A1A',
+                color: 'white',
+                fontFamily: FONT,
+                fontSize: 13,
+                fontWeight: 700,
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.8')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
             >
               Follow
             </button>
           </div>
         ))}
-        <div className="px-4 py-3" style={{ borderTop: '1px solid var(--divider)' }}>
-          <button className="flex items-center gap-1 text-sm hover:underline font-medium" style={{ color: 'var(--primary)' }}>
-            Show more <ChevronRight className="w-3.5 h-3.5" />
+
+        <div style={{ padding: '12px 20px', borderTop: '1px solid #F3F4F6' }}>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 600, color: '#0a7ea4', display: 'flex', alignItems: 'center', gap: 4 }}>
+            Show more <ChevronRight style={{ width: 14, height: 14 }} />
           </button>
         </div>
-      </div>
+      </Card>
 
-      {/* Footer */}
-      <footer className="px-4 text-[11px] leading-loose flex flex-wrap gap-x-3 gap-y-1" style={{ color: 'var(--text-secondary)' }}>
-        <a href="/terms" className="hover:underline">Terms</a>
-        <a href="/privacy" className="hover:underline">Privacy</a>
-        <a href="/cookies" className="hover:underline">Cookies</a>
-        <a href="/support" className="hover:underline">Support</a>
-        <a href="/advertising" className="hover:underline">Ads info</a>
-        <span className="w-full">© 2026 Stubgram Inc.</span>
-      </footer>
+      {/* ── Footer ──────────────────────────────────────────────────────────── */}
+      <div style={{ padding: '0 4px', display: 'flex', flexWrap: 'wrap', gap: '4px 12px' }}>
+        {['Terms', 'Privacy', 'Cookies', 'Support', 'Ads info'].map(l => (
+          <a key={l} href="#" style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF', textDecoration: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+            onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+          >{l}</a>
+        ))}
+        <span style={{ width: '100%', fontFamily: FONT, fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>© 2026 Stubgram Inc.</span>
+      </div>
     </div>
   );
 }
