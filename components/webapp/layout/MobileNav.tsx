@@ -2,32 +2,46 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Bell, User, MessageCircle } from 'lucide-react';
+import { Home, Search, Bell, User, MessageCircle, Wallet } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/feed', icon: Home },
-  { href: '/messages', icon: MessageCircle },
+  { href: '/feed',          icon: Home },
+  { href: '/explore',       icon: Search },
   { href: '/notifications', icon: Bell },
-  { href: '/profile', icon: User },
+  { href: '/messages',      icon: MessageCircle },
+  { href: '/wallet',         icon: Wallet },
+  { href: '/profile',       icon: User },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-200 z-50 pt-2 pb-safe">
+    <div
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 pt-2 pb-safe"
+      style={{
+        background: 'rgba(255,255,255,0.92)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderTop: '1px solid var(--border)',
+      }}
+    >
       <div className="flex justify-around items-center h-14">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+        {NAV_ITEMS.map(({ href, icon: Icon }) => {
+          const isActive = pathname === href || (href !== '/feed' && pathname.startsWith(href + '/'));
           return (
             <Link
-              key={item.href}
-              href={item.href}
-              className={`flex-1 flex justify-center items-center h-full transition-all group ${
-                isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'
-              }`}
+              key={href}
+              href={href}
+              className="flex-1 flex justify-center items-center h-full transition-all"
+              style={{ color: isActive ? 'var(--primary)' : 'var(--text-secondary)' }}
             >
-              <item.icon className={`w-6 h-6 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-900'}`} stroke="currentColor" />
+              <div
+                className="p-2 rounded-full transition-all duration-200"
+                style={isActive ? { background: 'rgba(10,126,164,0.10)' } : {}}
+              >
+                <Icon className="w-[22px] h-[22px]" style={{ strokeWidth: isActive ? 2.5 : 1.8 }} />
+              </div>
             </Link>
           );
         })}

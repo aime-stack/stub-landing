@@ -91,7 +91,7 @@ export function LoginForm() {
           type="button"
           onClick={() => setTab('password')}
           className={`flex-1 py-2.5 text-sm font-medium rounded-full transition-all duration-200 focus:outline-none ${
-            tab === 'password' ? 'bg-white shadow text-cyan-600 font-semibold' : 'text-gray-500 hover:text-gray-700'
+            tab === 'password' ? 'bg-white shadow font-semibold' : 'text-gray-500 hover:text-gray-700'
           }`}
         >
           Email &amp; Password
@@ -100,7 +100,7 @@ export function LoginForm() {
           type="button"
           onClick={() => setTab('otp')}
           className={`flex-1 py-2.5 text-sm font-medium rounded-full transition-all duration-200 focus:outline-none ${
-            tab === 'otp' ? 'bg-white shadow text-cyan-600 font-semibold' : 'text-gray-500 hover:text-gray-700'
+            tab === 'otp' ? 'bg-white shadow font-semibold' : 'text-gray-500 hover:text-gray-700'
           }`}
         >
           Phone / OTP
@@ -125,7 +125,7 @@ export function LoginForm() {
             autoComplete="email"
             required
             placeholder="Email address"
-            className="w-full h-14 rounded-2xl border border-gray-300 bg-gray-50 px-5 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200"
+            className="w-full h-14 rounded-2xl border border-gray-300 bg-gray-50 px-5 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200" style={{ '--tw-ring-color': '#0a7ea4' } as any}
           />
 
           {/* Gap between fields */}
@@ -140,14 +140,16 @@ export function LoginForm() {
               autoComplete="current-password"
               required
               placeholder="Password"
-              className="w-full h-14 rounded-2xl border border-gray-300 bg-gray-50 px-5 pr-12 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200"
+              className="w-full h-14 rounded-2xl border border-gray-300 bg-gray-50 px-5 pr-12 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
-              className="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-cyan-500 transition-colors"
+              className="absolute inset-y-0 right-4 flex items-center text-gray-400 transition-colors" style={{ color: 'var(--text-secondary)' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -160,7 +162,7 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-14 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-[15px] font-semibold tracking-wide shadow-md hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-cyan-400/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+            className="w-full h-14 rounded-2xl text-white text-[15px] font-semibold tracking-wide shadow-md hover:brightness-110 active:scale-[0.98] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2" style={{ background: 'var(--gradient-primary)' }}
           >
             {loading && <Loader2 className="animate-spin" size={18} />}
             {loading ? 'Logging in…' : 'Log in'}
@@ -168,7 +170,7 @@ export function LoginForm() {
 
           {/* Forgot password — gap below button */}
           <div className="mt-5 text-center">
-            <button type="button" className="text-sm font-semibold text-gray-600 hover:text-cyan-600 transition-colors focus:outline-none">
+            <button type="button" className="text-sm font-semibold transition-colors focus:outline-none" style={{ color: 'var(--text-secondary)' }} onMouseEnter={e => e.currentTarget.style.color='var(--primary)'} onMouseLeave={e => e.currentTarget.style.color='var(--text-secondary)'}>
               Forgot password?
             </button>
           </div>
@@ -197,7 +199,7 @@ export function LoginForm() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Mobile number with country code"
-                  className="w-full h-14 rounded-2xl border border-gray-300 bg-gray-50 pl-11 pr-5 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200"
+                  className="w-full h-14 rounded-2xl border border-gray-300 bg-gray-50 pl-11 pr-5 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
                 />
               </div>
               <p className="mt-2 text-xs text-gray-400 pl-1">Include country code, e.g. +1 for US.</p>
@@ -206,7 +208,7 @@ export function LoginForm() {
                 type="button"
                 onClick={handleSendOtp}
                 disabled={otpLoading || !phone.trim()}
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-[15px] font-semibold tracking-wide shadow-md hover:brightness-110 active:scale-[0.98] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                className="w-full h-14 rounded-2xl text-white text-[15px] font-semibold tracking-wide shadow-md hover:brightness-110 active:scale-[0.98] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2" style={{ background: 'var(--gradient-primary)' }}
               >
                 {otpLoading ? <Loader2 className="animate-spin" size={18} /> : <ChevronRight size={18} />}
                 {otpLoading ? 'Sending…' : 'Send Code'}
@@ -219,7 +221,7 @@ export function LoginForm() {
                 <button
                   type="button"
                   onClick={() => { setOtpStep('phone'); setOtpCode(''); }}
-                  className="text-cyan-600 hover:underline font-semibold focus:outline-none"
+                  className="hover:underline font-semibold focus:outline-none" style={{ color: 'var(--primary)' }}
                 >
                   Change
                 </button>
