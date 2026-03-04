@@ -3,206 +3,328 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Home, Search, Bell, User, Settings, MessageCircle, Bookmark,
-  PenLine, Wallet, Crown, Star, Video, Users, Megaphone,
-  GraduationCap, ShoppingBag, Headphones, LogOut,
+  Home, Search, Bell, MessageCircle, Bookmark, Wallet,
+  User, Users, ShoppingBag, GraduationCap, Clapperboard,
+  Video, Megaphone, Crown, Star, Settings, HelpCircle, LogOut, PenLine,
 } from 'lucide-react';
 import { logoutAction } from '@/services/auth';
 
-const PRIMARY_NAV = [
+// ── Type ───────────────────────────────────────────────────────────────────────
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  iconColor?: string;  // tinted icon for grouped items
+}
+
+// ── nav groups (UX-ordered) ───────────────────────────────────────────────────
+const CORE_NAV: NavItem[] = [
   { name: 'Home',          href: '/feed',          icon: Home },
   { name: 'Explore',       href: '/explore',       icon: Search },
   { name: 'Notifications', href: '/notifications', icon: Bell },
   { name: 'Messages',      href: '/messages',      icon: MessageCircle },
   { name: 'Bookmarks',     href: '/bookmarks',     icon: Bookmark },
-  { name: 'Wallet',        href: '/wallet',         icon: Wallet },
+  { name: 'Wallet',        href: '/wallet',        icon: Wallet },
   { name: 'Profile',       href: '/profile',       icon: User },
 ];
 
-const DRAWER_NAV = [
-  { name: 'Premium Plans',  href: '/premium',       icon: Crown,         color: '#F59E0B' },
-  { name: 'Celebrity Chat', href: '/celebrity',     icon: Star,          color: '#FF69B4' },
-  { name: 'Meetings',       href: '/meetings',      icon: Video,         color: '#4CAF50' },
-  { name: 'Communities',    href: '/communities',   icon: Users,         color: '#2196F3' },
-  { name: 'Advertising',    href: '/advertising',   icon: Megaphone,     color: '#FF6B35' },
-  { name: 'Courses',        href: '/courses',       icon: GraduationCap, color: '#0a7ea4' },
-  { name: 'Marketplace',    href: '/marketplace',   icon: ShoppingBag,   color: '#E91E63' },
-  { name: 'Settings',       href: '/settings',      icon: Settings,      color: '#6B7280' },
-  { name: 'Support',        href: '/support',       icon: Headphones,    color: '#10B981' },
+const DISCOVER_NAV: NavItem[] = [
+  { name: 'Communities',   href: '/communities',  icon: Users,         iconColor: '#2196F3' },
+  { name: 'Marketplace',   href: '/marketplace',  icon: ShoppingBag,   iconColor: '#E91E63' },
+  { name: 'Courses',       href: '/courses',      icon: GraduationCap, iconColor: '#0a7ea4' },
+  { name: 'Meetings',      href: '/meetings',     icon: Video,         iconColor: '#4CAF50' },
+  { name: 'Advertising',   href: '/advertising',  icon: Megaphone,     iconColor: '#FF6B35' },
 ];
 
+const PREMIUM_NAV: NavItem[] = [
+  { name: 'Premium Plans',  href: '/premium',     icon: Crown, iconColor: '#F59E0B' },
+  { name: 'Celebrity Chat', href: '/celebrity',   icon: Star,  iconColor: '#FF69B4' },
+];
+
+const SETTINGS_NAV: NavItem[] = [
+  { name: 'Settings', href: '/settings', icon: Settings,    iconColor: '#6B7280' },
+  { name: 'Support',  href: '/support',  icon: HelpCircle,  iconColor: '#10B981' },
+];
+
+// ────────────────────────────────────────────────────────────────────────────────
+// Shared style constants — keeps every nav item 100% visually identical
+// ────────────────────────────────────────────────────────────────────────────────
+const FONT_FAMILY = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+const FONT_SIZE   = 17;          // px — same for ALL items
+const ICON_SIZE   = 22;          // px — same for ALL items
+const ITEM_PY     = 11;          // px top & bottom padding per item
+const ITEM_PX     = 14;          // px left & right padding per item
+const ITEM_RADIUS = 9999;        // fully rounded pill
+
+const DIVIDER = (
+  <div
+    className="hidden xl:block my-2 mx-[14px]"
+    style={{ borderTop: '1px solid #E5E7EB' }}
+    aria-hidden
+  />
+);
+
+// ────────────────────────────────────────────────────────────────────────────────
 export function DesktopSidebar({ user }: { user: any }) {
   const pathname = usePathname();
-  const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'You';
-  const initial  = username[0]?.toUpperCase() || 'U';
+
+  const username    = user?.user_metadata?.username ?? user?.email?.split('@')[0] ?? 'You';
+  const initial     = (username[0] ?? 'U').toUpperCase();
+
+  /** Returns true when this href is the current page */
+  const isActive = (href: string) =>
+    pathname === href || (href !== '/feed' && pathname.startsWith(href + '/'));
+
+  // ── Single nav-item renderer ────────────────────────────────────────────────
+  const NavLink = ({ item, tintIcon }: { item: NavItem; tintIcon?: boolean }) => {
+    const active      = isActive(item.href);
+    const iconColor   = active ? '#0a7ea4' : (tintIcon && item.iconColor ? item.iconColor : '#374151');
+    const labelColor  = active ? '#0a7ea4' : '#1A1A1A';
+    const labelWeight = active ? 700 : 500;     // 500 = medium, 700 = bold
+    const bg          = active ? 'rgba(10,126,164,0.09)' : 'transparent';
+
+    return (
+      <Link
+        href={item.href}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          paddingTop: ITEM_PY,
+          paddingBottom: ITEM_PY,
+          paddingLeft: ITEM_PX,
+          paddingRight: ITEM_PX,
+          borderRadius: ITEM_RADIUS,
+          background: bg,
+          color: labelColor,
+          textDecoration: 'none',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F3F4F6'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = bg; }}
+      >
+        {/* Icon */}
+        <item.icon
+          style={{
+            width: ICON_SIZE,
+            height: ICON_SIZE,
+            flexShrink: 0,
+            color: iconColor,
+            strokeWidth: active ? 2.3 : 1.8,
+          }}
+        />
+
+        {/* Label — hidden when sidebar is collapsed (< xl), visible on xl */}
+        <span
+          className="hidden xl:block truncate"
+          style={{
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE,
+            fontWeight: labelWeight,
+            color: labelColor,
+            lineHeight: 1,
+          }}
+        >
+          {item.name}
+        </span>
+      </Link>
+    );
+  };
 
   return (
-    <div
-      className="flex flex-col h-full py-3 pr-4 overflow-y-auto no-scrollbar"
-      style={{ background: '#FFFFFF' }}
+    <nav
+      className="flex flex-col h-full overflow-y-auto no-scrollbar"
+      style={{
+        background: '#FFFFFF',
+        paddingTop: 12,
+        paddingBottom: 16,
+        paddingRight: 12,
+      }}
     >
       {/* ── Logo ─────────────────────────────────────────────────────────────── */}
       <Link
         href="/feed"
-        className="flex items-center gap-3 px-3 mb-5 w-fit"
-        style={{ color: '#1A1A1A', textDecoration: 'none' }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          paddingLeft: ITEM_PX,
+          paddingRight: ITEM_PX,
+          paddingTop: 8,
+          paddingBottom: 16,
+          textDecoration: 'none',
+          color: '#1A1A1A',
+        }}
       >
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform hover:scale-110"
-          style={{ background: 'linear-gradient(135deg, #0a7ea4, #EC4899)', flexShrink: 0 }}
+          style={{
+            width: 40, height: 40, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #0a7ea4, #EC4899)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}
         >
-          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none">
-            <circle cx="12" cy="12" r="10" fill="white" fillOpacity="0.25" />
-            <text x="6.5" y="16.5" fontSize="10" fontWeight="bold" fill="white">S</text>
+          <svg viewBox="0 0 24 24" width={22} height={22} fill="none">
+            <text x="5.5" y="17" fontSize="12" fontWeight="900" fill="white">S</text>
           </svg>
         </div>
-        <span className="hidden xl:block font-bold" style={{ fontSize: 22, color: '#1A1A1A', letterSpacing: '-0.5px' }}>
+        <span
+          className="hidden xl:block"
+          style={{
+            fontFamily: FONT_FAMILY,
+            fontSize: 22,
+            fontWeight: 800,
+            color: '#1A1A1A',
+            letterSpacing: '-0.5px',
+          }}
+        >
           Stubgram
         </span>
       </Link>
 
-      {/* ── Primary Nav ─────────────────────────────────────────────────────── */}
-      <nav className="flex flex-col gap-0.5">
-        {PRIMARY_NAV.map(({ name, href, icon: Icon }) => {
-          const isActive = pathname === href || (href !== '/feed' && pathname.startsWith(href + '/'));
-          return (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-4 px-3 py-[10px] rounded-full transition-all duration-150 w-fit xl:w-full"
-              style={{
-                color: isActive ? '#0a7ea4' : '#1A1A1A',
-                background: isActive ? 'rgba(10,126,164,0.08)' : 'transparent',
-                textDecoration: 'none',
-                fontWeight: isActive ? 700 : 400,
-                fontSize: 18,
-              }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F3F4F6'; }}
-              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
-            >
-              <Icon
-                className="shrink-0"
-                style={{
-                  width: 24,
-                  height: 24,
-                  strokeWidth: isActive ? 2.4 : 1.8,
-                  color: isActive ? '#0a7ea4' : '#1A1A1A',
-                  flexShrink: 0,
-                }}
-              />
-              <span className="hidden xl:block" style={{ fontSize: 18, lineHeight: 1 }}>
-                {name}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
+      {/* ── Core navigation ──────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-[3px]">
+        {CORE_NAV.map(item => <NavLink key={item.href} item={item} tintIcon={false} />)}
+      </div>
 
-      {/* ── Divider ─────────────────────────────────────────────────────────── */}
-      <div className="hidden xl:block my-3" style={{ borderTop: '1px solid #F3F4F6' }} />
+      {DIVIDER}
 
-      {/* ── Drawer Nav (secondary) ───────────────────────────────────────────── */}
-      <nav className="hidden xl:flex flex-col gap-0.5">
-        {DRAWER_NAV.map(({ name, href, icon: Icon, color }) => {
-          const isActive = pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-3 px-3 py-2 rounded-full w-full transition-all duration-150"
-              style={{
-                color: isActive ? '#0a7ea4' : '#6B7280',
-                background: isActive ? 'rgba(10,126,164,0.06)' : 'transparent',
-                textDecoration: 'none',
-                fontSize: 15,
-                fontWeight: isActive ? 600 : 400,
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = '#F3F4F6';
-                e.currentTarget.style.color = '#1A1A1A';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = isActive ? 'rgba(10,126,164,0.06)' : 'transparent';
-                e.currentTarget.style.color = isActive ? '#0a7ea4' : '#6B7280';
-              }}
-            >
-              <Icon
-                className="shrink-0"
-                style={{ width: 17, height: 17, color, strokeWidth: 2, flexShrink: 0 }}
-              />
-              <span style={{ fontSize: 15, lineHeight: 1 }}>{name}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      {/* ── Discover ─────────────────────────────────────────────────────────── */}
+      <div className="hidden xl:block px-[14px] mb-1.5">
+        <span
+          style={{
+            fontFamily: FONT_FAMILY,
+            fontSize: 11,
+            fontWeight: 600,
+            color: '#9CA3AF',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Discover
+        </span>
+      </div>
+      <div className="flex flex-col gap-[3px]">
+        {DISCOVER_NAV.map(item => <NavLink key={item.href} item={item} tintIcon />)}
+      </div>
 
-      {/* ── Post Button ─────────────────────────────────────────────────────── */}
-      <div className="mt-5 px-0">
+      {DIVIDER}
+
+      {/* ── Premium & VIP ────────────────────────────────────────────────────── */}
+      <div className="hidden xl:block px-[14px] mb-1.5">
+        <span
+          style={{
+            fontFamily: FONT_FAMILY,
+            fontSize: 11,
+            fontWeight: 600,
+            color: '#9CA3AF',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Premium
+        </span>
+      </div>
+      <div className="flex flex-col gap-[3px]">
+        {PREMIUM_NAV.map(item => <NavLink key={item.href} item={item} tintIcon />)}
+      </div>
+
+      {DIVIDER}
+
+      {/* ── Settings & Support ───────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-[3px]">
+        {SETTINGS_NAV.map(item => <NavLink key={item.href} item={item} tintIcon />)}
+      </div>
+
+      {/* ── Post Button ──────────────────────────────────────────────────────── */}
+      <div className="mt-5 px-[14px]">
         <Link
           href="/post/new"
-          className="w-12 xl:w-full flex items-center justify-center xl:justify-start gap-2.5 rounded-full transition-all duration-200 active:scale-[0.98] hover:brightness-110 xl:px-7"
+          className="w-12 xl:w-full flex items-center justify-center xl:justify-start gap-2.5 rounded-full transition-all hover:brightness-110 active:scale-[0.98]"
           style={{
+            height: 48,
             background: 'linear-gradient(135deg, #0a7ea4, #EC4899)',
             color: 'white',
             textDecoration: 'none',
-            fontWeight: 700,
+            fontFamily: FONT_FAMILY,
             fontSize: 16,
-            height: 48,
-            boxShadow: '0 2px 8px rgba(10,126,164,0.35)',
+            fontWeight: 700,
+            paddingLeft: 20,
+            paddingRight: 20,
+            boxShadow: '0 2px 12px rgba(10,126,164,0.3)',
           }}
         >
-          {/* collapsed: just icon */}
-          <PenLine
-            className="xl:hidden shrink-0"
-            style={{ width: 20, height: 20, color: 'white', strokeWidth: 2.5 }}
-          />
-
-          {/* expanded (xl): icon + label */}
-          <span
-            className="hidden xl:flex items-center justify-center gap-2 w-full"
-            style={{ color: 'white', fontSize: 16, fontWeight: 700 }}
-          >
-            <PenLine style={{ width: 18, height: 18, color: 'white', strokeWidth: 2.5, flexShrink: 0 }} />
+          <PenLine style={{ width: 19, height: 19, color: 'white', strokeWidth: 2.5, flexShrink: 0 }} />
+          <span className="hidden xl:block" style={{ color: 'white', fontSize: 16, fontWeight: 700 }}>
             Post
           </span>
         </Link>
       </div>
 
-      {/* ── User card ───────────────────────────────────────────────────────── */}
-      <div className="mt-auto pt-4" style={{ borderTop: '1px solid #F3F4F6' }}>
+      {/* ── User card ────────────────────────────────────────────────────────── */}
+      <div
+        className="mt-auto pt-3 mx-1"
+        style={{ borderTop: '1px solid #E5E7EB' }}
+      >
         <div
-          className="flex items-center gap-3 px-3 py-2.5 rounded-full cursor-pointer transition-colors"
+          className="flex items-center gap-3 rounded-full cursor-pointer transition-colors"
+          style={{ padding: '10px 12px' }}
           onMouseEnter={e => e.currentTarget.style.background = '#F3F4F6'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
+          {/* Avatar */}
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
-            style={{ background: 'linear-gradient(135deg, #0a7ea4, #EC4899)', color: 'white', flexShrink: 0 }}
+            style={{
+              width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg, #0a7ea4, #EC4899)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: FONT_FAMILY, fontSize: 15, fontWeight: 700, color: 'white',
+            }}
           >
             {initial}
           </div>
-          <div className="hidden xl:flex flex-col min-w-0 flex-1">
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }} className="truncate">
+
+          {/* Name + handle */}
+          <div className="hidden xl:flex flex-col min-w-0 flex-1" style={{ gap: 1 }}>
+            <span
+              style={{ fontFamily: FONT_FAMILY, fontSize: 14, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }}
+              className="truncate"
+            >
               {username}
             </span>
-            <span style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.3 }} className="truncate">
+            <span
+              style={{ fontFamily: FONT_FAMILY, fontSize: 12, fontWeight: 400, color: '#6B7280', lineHeight: 1.3 }}
+              className="truncate"
+            >
               @{username}
             </span>
           </div>
+
+          {/* Logout */}
           <form action={logoutAction} className="hidden xl:block ml-auto shrink-0">
             <button
               type="submit"
               title="Log out"
-              className="flex items-center justify-center w-7 h-7 rounded-full transition-colors"
-              style={{ color: '#6B7280' }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.color = '#EF4444'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B7280'; }}
+              style={{
+                width: 30, height: 30, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                color: '#9CA3AF', transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.background = '#FEE2E2';
+                (e.currentTarget as HTMLElement).style.color = '#EF4444';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.background = 'transparent';
+                (e.currentTarget as HTMLElement).style.color = '#9CA3AF';
+              }}
             >
               <LogOut style={{ width: 14, height: 14 }} />
             </button>
           </form>
         </div>
       </div>
-    </div>
+    </nav>
   );
 }
