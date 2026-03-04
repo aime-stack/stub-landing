@@ -59,7 +59,7 @@ const SETTINGS_SECTIONS = [
       'Content you see',
       'Mute and block',
       'Direct messages',
-      'Spaces',
+      'Meetings',
       'Discoverability and contacts',
     ],
   },
