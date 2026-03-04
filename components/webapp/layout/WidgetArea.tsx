@@ -1,6 +1,7 @@
 'use client';
 
-import { Search, TrendingUp, Users, ChevronRight, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Search, TrendingUp, Users, ChevronRight, ArrowDownLeft, ArrowUpRight, Settings } from 'lucide-react';
+import Link from 'next/link';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
@@ -71,44 +72,74 @@ export function WidgetArea() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 32 }}>
 
-      {/* ── Search ──────────────────────────────────────────────────────────── */}
-      <div style={{ position: 'relative', marginTop: 4 }}>
-        <Search
+      {/* ── Search + Settings ──────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+        {/* Search input */}
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Search
+            style={{
+              position: 'absolute', left: 14, top: '50%',
+              transform: 'translateY(-50%)',
+              width: 15, height: 15, color: '#9CA3AF', pointerEvents: 'none',
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Search Stubgram"
+            style={{
+              width: '100%',
+              height: 44,
+              paddingLeft: 40,
+              paddingRight: 14,
+              borderRadius: 999,
+              border: '1.5px solid transparent',
+              background: '#F3F4F6',
+              fontFamily: FONT,
+              fontSize: 14,
+              color: '#1A1A1A',
+              outline: 'none',
+              boxSizing: 'border-box',
+              transition: 'all 0.2s',
+            }}
+            onFocus={e => {
+              e.currentTarget.style.background = 'white';
+              e.currentTarget.style.border = '1.5px solid #0a7ea4';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,126,164,0.08)';
+            }}
+            onBlur={e => {
+              e.currentTarget.style.background = '#F3F4F6';
+              e.currentTarget.style.border = '1.5px solid transparent';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          />
+        </div>
+
+        {/* Settings icon button */}
+        <Link
+          href="/settings"
+          title="Settings"
           style={{
-            position: 'absolute', left: 16, top: '50%',
-            transform: 'translateY(-50%)',
-            width: 16, height: 16, color: '#9CA3AF',
-          }}
-        />
-        <input
-          type="text"
-          placeholder="Search Stubgram"
-          style={{
-            width: '100%',
-            height: 44,
-            paddingLeft: 44,
-            paddingRight: 16,
-            borderRadius: 999,
-            border: '1.5px solid transparent',
+            flexShrink: 0,
+            width: 44, height: 44,
+            borderRadius: '50%',
             background: '#F3F4F6',
-            fontFamily: FONT,
-            fontSize: 14,
-            color: '#1A1A1A',
-            outline: 'none',
-            boxSizing: 'border-box',
-            transition: 'all 0.2s',
+            border: 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#6B7280',
+            textDecoration: 'none',
+            transition: 'all 0.15s',
           }}
-          onFocus={e => {
-            e.currentTarget.style.background = 'white';
-            e.currentTarget.style.border = '1.5px solid #0a7ea4';
-            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,126,164,0.08)';
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(10,126,164,0.1)';
+            e.currentTarget.style.color = '#0a7ea4';
           }}
-          onBlur={e => {
+          onMouseLeave={e => {
             e.currentTarget.style.background = '#F3F4F6';
-            e.currentTarget.style.border = '1.5px solid transparent';
-            e.currentTarget.style.boxShadow = 'none';
+            e.currentTarget.style.color = '#6B7280';
           }}
-        />
+        >
+          <Settings style={{ width: 18, height: 18 }} />
+        </Link>
       </div>
 
       {/* ── Snap Coins Widget ───────────────────────────────────────────────── */}
