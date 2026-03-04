@@ -22,37 +22,31 @@ export function StoriesBar({ stories }: StoriesBarProps) {
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 mb-4">
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+      {/* Stories row — Twitter-style: flat, border-b, horizontal scroll */}
+      <div className="px-4 py-3 border-b border-gray-200">
+        <div className="flex gap-5 overflow-x-auto no-scrollbar">
 
-          {/* Add your story */}
-          <button
-            className="flex flex-col items-center gap-2 shrink-0 w-16 group"
-            aria-label="Add your story"
-          >
-            <div className="relative w-16 h-16">
-              {/* Dashed ring */}
-              <div className="w-16 h-16 rounded-full p-[2px] border-2 border-dashed border-gray-300 group-hover:border-[#0a7ea4] transition-colors overflow-hidden bg-gray-50">
+          {/* Your story */}
+          <button className="flex flex-col items-center gap-1.5 shrink-0 group" aria-label="Add your story">
+            <div className="relative w-14 h-14">
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-dashed border-gray-300 group-hover:border-[#0a7ea4] transition-colors bg-gray-50">
                 {MOCK_CURRENT_USER.avatar_url ? (
                   <Image
                     src={MOCK_CURRENT_USER.avatar_url}
                     alt="Your story"
-                    width={60}
-                    height={60}
-                    className="object-cover w-full h-full rounded-full opacity-60 group-hover:opacity-80 transition-opacity"
+                    width={56}
+                    height={56}
+                    className="object-cover w-full h-full opacity-60"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-full bg-gray-100" />
+                  <div className="w-full h-full bg-gray-100" />
                 )}
               </div>
-              {/* + badge */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#0a7ea4] flex items-center justify-center border-2 border-white shadow">
-                <Plus size={11} className="text-white" strokeWidth={3} />
+              <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#0a7ea4] flex items-center justify-center border-2 border-white">
+                <Plus size={10} className="text-white" strokeWidth={3} />
               </div>
             </div>
-            <span className="text-[11px] text-gray-500 font-medium w-16 text-center truncate group-hover:text-gray-700 transition-colors leading-tight">
-              Your story
-            </span>
+            <span className="text-[11px] text-gray-500 w-14 text-center truncate">Your story</span>
           </button>
 
           {/* Story bubbles */}
@@ -62,25 +56,22 @@ export function StoriesBar({ stories }: StoriesBarProps) {
               <button
                 key={story.id}
                 onClick={() => openStory(index)}
-                className="flex flex-col items-center gap-2 shrink-0 w-16 group"
-                aria-label={`View ${story.user.username}'s story`}
+                className="flex flex-col items-center gap-1.5 shrink-0 group"
+                aria-label={`${story.user.username}'s story`}
               >
-                {/* Gradient ring */}
-                <div
-                  className={`w-16 h-16 rounded-full p-[2.5px] transition-transform duration-200 group-hover:scale-105 ${
-                    isViewed
-                      ? 'bg-gray-300'
-                      : 'bg-gradient-to-tr from-[#0a7ea4] via-[#8b5cf6] to-[#ec4899]'
-                  }`}
-                >
+                <div className={`w-14 h-14 rounded-full p-[2px] transition-transform duration-200 group-hover:scale-105 ${
+                  isViewed
+                    ? 'bg-gray-300'
+                    : 'bg-gradient-to-tr from-[#0a7ea4] via-[#8b5cf6] to-[#ec4899]'
+                }`}>
                   <div className="w-full h-full rounded-full bg-white p-[2px]">
                     <div className="w-full h-full rounded-full overflow-hidden">
                       {story.user.avatar_url ? (
                         <Image
                           src={story.user.avatar_url}
                           alt={story.user.username}
-                          width={56}
-                          height={56}
+                          width={52}
+                          height={52}
                           className="object-cover w-full h-full"
                         />
                       ) : (
@@ -91,9 +82,7 @@ export function StoriesBar({ stories }: StoriesBarProps) {
                     </div>
                   </div>
                 </div>
-                <span className="text-[11px] text-gray-700 font-medium w-16 text-center truncate leading-tight">
-                  {story.user.username}
-                </span>
+                <span className="text-[11px] text-gray-700 w-14 text-center truncate">{story.user.username}</span>
               </button>
             );
           })}

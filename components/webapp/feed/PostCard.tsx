@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Post } from '@/types';
-import { MessageCircle, Heart, Share2, MoreHorizontal, BadgeCheck, Bookmark } from 'lucide-react';
+import { MessageCircle, Heart, Share2, MoreHorizontal, BadgeCheck, Bookmark, Repeat2 } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
 
 interface PostCardProps {
@@ -46,132 +46,126 @@ export function PostCard({ post }: PostCardProps) {
   const isVerified = user?.isVerified;
 
   return (
-    <article className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
-      <div className="p-5 space-y-4">
+    <article className="flex px-4 pt-4 pb-2 border-b border-gray-200 hover:bg-gray-50/60 transition-colors duration-150 cursor-pointer">
 
-        {/* Post Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3 min-w-0">
-            {/* Avatar */}
-            <Link href={`/profile/${username}`} className="shrink-0">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-[#0a7ea4]/20 via-[#8b5cf6]/20 to-[#ec4899]/20 border border-gray-100 relative">
-                {avatarSrc ? (
-                  <Image src={avatarSrc} alt={`${username} avatar`} fill className="object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center font-bold text-[#0a7ea4] bg-[#0a7ea4]/10 text-sm">
-                    {username[0]?.toUpperCase() || 'U'}
-                  </div>
-                )}
-              </div>
-            </Link>
-
-            {/* Name / handle / time */}
-            <div className="min-w-0">
-              <Link href={`/profile/${username}`} className="flex items-center gap-1">
-                <span className="font-semibold text-[15px] text-gray-900 hover:underline truncate">{displayName}</span>
-                {isVerified && (
-                  <BadgeCheck
-                    size={15}
-                    className="shrink-0 text-transparent"
-                    style={{ fill: 'url(#brandGradient)' }}
-                  />
-                )}
-              </Link>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-sm text-gray-500 truncate hidden sm:block">@{username}</span>
-                <span className="text-gray-300 text-xs">·</span>
-                <span className="text-sm text-gray-400 whitespace-nowrap">{dateText}</span>
-              </div>
+      {/* Avatar column */}
+      <Link href={`/profile/${username}`} className="shrink-0 mr-3">
+        <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-[#0a7ea4]/20 via-[#8b5cf6]/20 to-[#ec4899]/20 relative">
+          {avatarSrc ? (
+            <Image src={avatarSrc} alt={`${username}`} fill className="object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center font-bold text-[#0a7ea4] text-sm">
+              {username[0]?.toUpperCase() || 'U'}
             </div>
-          </div>
+          )}
+        </div>
+      </Link>
 
-          <button className="text-gray-400 hover:text-[#0a7ea4] p-1.5 rounded-full hover:bg-[#0a7ea4]/10 transition-all duration-200 shrink-0">
-            <MoreHorizontal size={18} />
+      {/* Content column */}
+      <div className="flex-1 min-w-0">
+
+        {/* Header: name · handle · time · more */}
+        <div className="flex items-start justify-between gap-1 mb-0.5">
+          <div className="flex items-center gap-1 flex-wrap min-w-0">
+            <Link href={`/profile/${username}`} className="flex items-center gap-0.5 min-w-0">
+              <span className="font-bold text-[15px] text-gray-900 hover:underline truncate">{displayName}</span>
+              {isVerified && (
+                <BadgeCheck
+                  size={16}
+                  className="shrink-0 text-transparent"
+                  style={{ fill: 'url(#brandGradient)' }}
+                />
+              )}
+            </Link>
+            <span className="text-[15px] text-gray-500 truncate hidden sm:block">@{username}</span>
+            <span className="text-gray-400 text-[13px]">·</span>
+            <span className="text-[14px] text-gray-500 whitespace-nowrap hover:underline cursor-pointer">{dateText}</span>
+          </div>
+          <button className="shrink-0 p-1.5 rounded-full text-gray-500 hover:text-[#0a7ea4] hover:bg-[#0a7ea4]/10 transition-all duration-200 ml-1">
+            <MoreHorizontal size={17} />
           </button>
         </div>
 
-        {/* Text Content */}
+        {/* Text */}
         {post.content && (
-          <p className="text-[15px] text-gray-800 leading-relaxed whitespace-pre-wrap break-words">
+          <p className="text-[15px] text-gray-900 leading-normal whitespace-pre-wrap break-words mb-3">
             {post.content}
           </p>
         )}
 
         {/* Media */}
         {(hasImage || isVideo) && (
-          <div className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex justify-center max-h-[520px]">
+          <div className="rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 mb-3 max-h-[512px] flex justify-center">
             {isVideo ? (
               <video
                 src={post.video_url || post.media_url}
                 controls
                 playsInline
                 preload="metadata"
-                className="max-w-full max-h-[520px] object-contain"
+                className="max-w-full max-h-[512px] object-contain"
               />
             ) : post.media_url ? (
               <Image
                 src={post.media_url}
                 alt="Post media"
                 width={600}
-                height={520}
-                className="w-full h-auto object-cover max-h-[520px]"
+                height={512}
+                className="w-full h-auto object-cover max-h-[512px]"
               />
             ) : null}
           </div>
         )}
 
-        {/* Action Bar */}
-        <div className="flex items-center justify-between text-gray-400 pt-1 border-t border-gray-100">
+        {/* Action Bar — Twitter style */}
+        <div className="flex items-center justify-between max-w-[360px] -ml-2">
           {/* Comment */}
-          <button className="flex items-center gap-1.5 group">
+          <button className="flex items-center gap-1 group text-gray-500">
             <div className="p-2 rounded-full group-hover:bg-[#0a7ea4]/10 group-hover:text-[#0a7ea4] transition-all duration-200">
-              <MessageCircle className="w-[18px] h-[18px]" />
+              <MessageCircle size={18} />
             </div>
-            <span className="text-[13px] group-hover:text-[#0a7ea4] transition-colors tabular-nums">
+            <span className="text-sm group-hover:text-[#0a7ea4] transition-colors tabular-nums">
               {formatCount(post.comments_count || 0)}
             </span>
           </button>
 
-          {/* Like */}
-          <button onClick={handleLike} className="flex items-center gap-1.5 group">
-            <div
-              className={`p-2 rounded-full transition-all duration-200 ${
-                liked
-                  ? 'text-pink-500 bg-pink-50 scale-110'
-                  : 'group-hover:bg-pink-500/10 group-hover:text-pink-500'
-              }`}
-            >
-              <Heart className={`w-[18px] h-[18px] transition-all ${liked ? 'fill-current' : ''}`} />
-            </div>
-            <span className={`text-[13px] transition-colors tabular-nums ${liked ? 'text-pink-500 font-semibold' : 'group-hover:text-pink-500'}`}>
-              {formatCount(likesCount)}
-            </span>
-          </button>
-
-          {/* Share */}
-          <button className="flex items-center gap-1.5 group">
+          {/* Repost */}
+          <button className="flex items-center gap-1 group text-gray-500">
             <div className="p-2 rounded-full group-hover:bg-green-500/10 group-hover:text-green-500 transition-all duration-200">
-              <Share2 className="w-[18px] h-[18px]" />
+              <Repeat2 size={18} />
             </div>
-            <span className="text-[13px] group-hover:text-green-500 transition-colors tabular-nums">
+            <span className="text-sm group-hover:text-green-500 transition-colors tabular-nums">
               {formatCount(post.shares_count || 0)}
             </span>
           </button>
 
-          {/* Save */}
-          <button onClick={() => setSaved((s) => !s)} className="group">
-            <div
-              className={`p-2 rounded-full transition-all duration-200 ${
-                saved
-                  ? 'text-[#0a7ea4]'
-                  : 'group-hover:bg-[#0a7ea4]/10 group-hover:text-[#0a7ea4]'
-              }`}
-            >
-              <Bookmark className={`w-[18px] h-[18px] ${saved ? 'fill-current' : ''}`} />
+          {/* Like */}
+          <button onClick={handleLike} className="flex items-center gap-1 group text-gray-500">
+            <div className={`p-2 rounded-full transition-all duration-200 ${
+              liked ? 'text-pink-500 bg-pink-50' : 'group-hover:bg-pink-500/10 group-hover:text-pink-500'
+            }`}>
+              <Heart size={18} className={liked ? 'fill-current' : ''} />
+            </div>
+            <span className={`text-sm transition-colors tabular-nums ${liked ? 'text-pink-500' : 'group-hover:text-pink-500'}`}>
+              {formatCount(likesCount)}
+            </span>
+          </button>
+
+          {/* Bookmark */}
+          <button onClick={() => setSaved((s) => !s)} className="group text-gray-500">
+            <div className={`p-2 rounded-full transition-all duration-200 ${
+              saved ? 'text-[#0a7ea4]' : 'group-hover:bg-[#0a7ea4]/10 group-hover:text-[#0a7ea4]'
+            }`}>
+              <Bookmark size={18} className={saved ? 'fill-current' : ''} />
+            </div>
+          </button>
+
+          {/* Share */}
+          <button className="group text-gray-500">
+            <div className="p-2 rounded-full group-hover:bg-[#0a7ea4]/10 group-hover:text-[#0a7ea4] transition-all duration-200">
+              <Share2 size={18} />
             </div>
           </button>
         </div>
-
       </div>
     </article>
   );
