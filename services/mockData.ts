@@ -1,12 +1,12 @@
 import { Post, Story, Profile } from '@/types';
 
-// ─── Current Authenticated User ─────────────────────────────────────────────
+// ─── Current Authenticated User ──────────────────────────────────────────────
 export const MOCK_CURRENT_USER: Profile = {
   id: 'user-me-001',
   username: 'me',
   full_name: 'You',
   bio: 'Living the Stubgram life 🔥 | Content creator & explorer.',
-  avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=me',
+  avatar_url: 'https://i.pravatar.cc/150?img=32',
   cover_url: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=1200&q=80',
   is_verified: false,
   is_celebrity: false,
@@ -19,14 +19,14 @@ export const MOCK_CURRENT_USER: Profile = {
   created_at: '2024-06-15T10:00:00Z',
 };
 
-// ─── Mock Users ──────────────────────────────────────────────────────────────
+// ─── Mock Users (with real portrait photos from pravatar.cc) ─────────────────
 export const MOCK_USERS: Profile[] = [
   {
     id: 'user-001',
     username: 'selena_creates',
     full_name: 'Selena Martinez',
     bio: 'Lifestyle creator | Travel junkie 🌍 | Brand deals: dm@selena.com',
-    avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=selena',
+    avatar_url: 'https://i.pravatar.cc/150?img=47',
     cover_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
     is_verified: true,
     is_celebrity: true,
@@ -42,7 +42,7 @@ export const MOCK_USERS: Profile[] = [
     username: 'codewithkev',
     full_name: 'Kevin Osei',
     bio: 'Full-stack dev | Building cool stuff with Next.js & AI ⚡',
-    avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=kevin',
+    avatar_url: 'https://i.pravatar.cc/150?img=12',
     cover_url: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80',
     is_verified: true,
     is_celebrity: false,
@@ -58,7 +58,7 @@ export const MOCK_USERS: Profile[] = [
     username: 'amara.glow',
     full_name: 'Amara Diallo',
     bio: 'Beauty & wellness 💄 | Natural hair advocate | IG: @amaraglow',
-    avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=amara',
+    avatar_url: 'https://i.pravatar.cc/150?img=45',
     cover_url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80',
     is_verified: false,
     is_celebrity: false,
@@ -74,7 +74,7 @@ export const MOCK_USERS: Profile[] = [
     username: 'jakethephoto',
     full_name: 'Jake Thornton',
     bio: 'Documentary photographer 📷 | Moments that matter',
-    avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=jake',
+    avatar_url: 'https://i.pravatar.cc/150?img=8',
     cover_url: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1200&q=80',
     is_verified: true,
     is_celebrity: false,
@@ -90,7 +90,7 @@ export const MOCK_USERS: Profile[] = [
     username: 'nadia.eats',
     full_name: 'Nadia Wright',
     bio: 'Food blogger | Michelin star dreams 🍽️ | Recipe drops every Friday',
-    avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=nadia',
+    avatar_url: 'https://i.pravatar.cc/150?img=23',
     cover_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80',
     is_verified: false,
     is_celebrity: false,
@@ -101,9 +101,25 @@ export const MOCK_USERS: Profile[] = [
     premium_plan: 'basic',
     created_at: '2023-06-20T16:00:00Z',
   },
+  {
+    id: 'user-006',
+    username: 'marcus.fit',
+    full_name: 'Marcus Reid',
+    bio: 'Fitness coach | @nike athlete | Transform your body in 90 days 💪',
+    avatar_url: 'https://i.pravatar.cc/150?img=11',
+    cover_url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1200&q=80',
+    is_verified: true,
+    is_celebrity: false,
+    account_type: 'industry',
+    followers_count: 1_240_000,
+    following_count: 204,
+    posts_count: 532,
+    premium_plan: 'premium_plus',
+    created_at: '2021-05-14T13:00:00Z',
+  },
 ];
 
-// ─── Mock Posts ──────────────────────────────────────────────────────────────
+// ─── Mock Posts ───────────────────────────────────────────────────────────────
 const now = new Date();
 const hoursAgo = (h: number) => new Date(now.getTime() - h * 3600 * 1000).toISOString();
 
@@ -115,7 +131,7 @@ export const MOCK_POSTS: Post[] = [
       id: 'user-001',
       username: 'selena_creates',
       full_name: 'Selena Martinez',
-      avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=selena',
+      avatar: 'https://i.pravatar.cc/150?img=47',
       isVerified: true,
       isCelebrity: true,
       followersCount: 2_450_000,
@@ -141,7 +157,7 @@ export const MOCK_POSTS: Post[] = [
       id: 'user-002',
       username: 'codewithkev',
       full_name: 'Kevin Osei',
-      avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=kevin',
+      avatar: 'https://i.pravatar.cc/150?img=12',
       isVerified: true,
       isCelebrity: false,
       followersCount: 84_200,
@@ -166,7 +182,7 @@ export const MOCK_POSTS: Post[] = [
       id: 'user-003',
       username: 'amara.glow',
       full_name: 'Amara Diallo',
-      avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=amara',
+      avatar: 'https://i.pravatar.cc/150?img=45',
       isVerified: false,
       isCelebrity: false,
       followersCount: 9_870,
@@ -192,7 +208,7 @@ export const MOCK_POSTS: Post[] = [
       id: 'user-004',
       username: 'jakethephoto',
       full_name: 'Jake Thornton',
-      avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=jake',
+      avatar: 'https://i.pravatar.cc/150?img=8',
       isVerified: true,
       isCelebrity: false,
       followersCount: 320_400,
@@ -218,7 +234,7 @@ export const MOCK_POSTS: Post[] = [
       id: 'user-005',
       username: 'nadia.eats',
       full_name: 'Nadia Wright',
-      avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=nadia',
+      avatar: 'https://i.pravatar.cc/150?img=23',
       isVerified: false,
       isCelebrity: false,
       followersCount: 54_100,
@@ -244,7 +260,7 @@ export const MOCK_POSTS: Post[] = [
       id: 'user-001',
       username: 'selena_creates',
       full_name: 'Selena Martinez',
-      avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=selena',
+      avatar: 'https://i.pravatar.cc/150?img=47',
       isVerified: true,
       isCelebrity: true,
       followersCount: 2_450_000,
@@ -264,12 +280,38 @@ export const MOCK_POSTS: Post[] = [
   },
   {
     id: 'post-007',
+    user_id: 'user-006',
+    users: {
+      id: 'user-006',
+      username: 'marcus.fit',
+      full_name: 'Marcus Reid',
+      avatar: 'https://i.pravatar.cc/150?img=11',
+      isVerified: true,
+      isCelebrity: false,
+      followersCount: 1_240_000,
+      followingCount: 204,
+      postsCount: 532,
+      createdAt: '',
+      email: '',
+    },
+    type: 'image',
+    content: '6am workout hits different 🔥 No excuses. The gym is your best therapist, your best mentor, and your best investment. Day 47 of 90. Who\'s with me? 💪 #FitnessJourney #NoDaysOff',
+    media_url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80',
+    likes_count: 54_312,
+    comments_count: 3_201,
+    shares_count: 7_840,
+    is_liked: false,
+    created_at: hoursAgo(20),
+    updated_at: hoursAgo(20),
+  },
+  {
+    id: 'post-008',
     user_id: 'user-002',
     users: {
       id: 'user-002',
       username: 'codewithkev',
       full_name: 'Kevin Osei',
-      avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=kevin',
+      avatar: 'https://i.pravatar.cc/150?img=12',
       isVerified: true,
       isCelebrity: false,
       followersCount: 84_200,
@@ -289,13 +331,13 @@ export const MOCK_POSTS: Post[] = [
     updated_at: hoursAgo(24),
   },
   {
-    id: 'post-008',
+    id: 'post-009',
     user_id: 'user-004',
     users: {
       id: 'user-004',
       username: 'jakethephoto',
       full_name: 'Jake Thornton',
-      avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=jake',
+      avatar: 'https://i.pravatar.cc/150?img=8',
       isVerified: true,
       isCelebrity: false,
       followersCount: 320_400,
@@ -314,9 +356,35 @@ export const MOCK_POSTS: Post[] = [
     created_at: hoursAgo(36),
     updated_at: hoursAgo(36),
   },
+  {
+    id: 'post-010',
+    user_id: 'user-003',
+    users: {
+      id: 'user-003',
+      username: 'amara.glow',
+      full_name: 'Amara Diallo',
+      avatar: 'https://i.pravatar.cc/150?img=45',
+      isVerified: false,
+      isCelebrity: false,
+      followersCount: 9_870,
+      followingCount: 1_204,
+      postsCount: 412,
+      createdAt: '',
+      email: '',
+    },
+    type: 'image',
+    content: 'Cleaned out my wardrobe and donated 60% of it. Capsule wardrobe incoming ✨ Less is genuinely more.',
+    media_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+    likes_count: 3_891,
+    comments_count: 247,
+    shares_count: 309,
+    is_liked: false,
+    created_at: hoursAgo(48),
+    updated_at: hoursAgo(48),
+  },
 ];
 
-// ─── Mock Stories ─────────────────────────────────────────────────────────────
+// ─── Mock Stories (with real face avatars) ────────────────────────────────────
 const storyCreated = (h: number) => new Date(now.getTime() - h * 3600 * 1000).toISOString();
 const storyExpires = (h: number) => new Date(now.getTime() + (24 - h) * 3600 * 1000).toISOString();
 
@@ -324,7 +392,7 @@ export const MOCK_STORIES: Story[] = [
   {
     id: 'story-001',
     user_id: 'user-001',
-    user: { id: 'user-001', username: 'selena_creates', full_name: 'Selena Martinez', avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=selena', is_verified: true },
+    user: { id: 'user-001', username: 'selena_creates', full_name: 'Selena Martinez', avatar_url: 'https://i.pravatar.cc/150?img=47', is_verified: true },
     media_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80',
     type: 'image',
     caption: 'Morning coffee in Positano ☕',
@@ -335,7 +403,7 @@ export const MOCK_STORIES: Story[] = [
   {
     id: 'story-002',
     user_id: 'user-002',
-    user: { id: 'user-002', username: 'codewithkev', full_name: 'Kevin Osei', avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=kevin', is_verified: true },
+    user: { id: 'user-002', username: 'codewithkev', full_name: 'Kevin Osei', avatar_url: 'https://i.pravatar.cc/150?img=12', is_verified: true },
     media_url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80',
     type: 'image',
     caption: 'Late night coding sessions hit different 💻',
@@ -346,7 +414,7 @@ export const MOCK_STORIES: Story[] = [
   {
     id: 'story-003',
     user_id: 'user-003',
-    user: { id: 'user-003', username: 'amara.glow', full_name: 'Amara Diallo', avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=amara', is_verified: false },
+    user: { id: 'user-003', username: 'amara.glow', full_name: 'Amara Diallo', avatar_url: 'https://i.pravatar.cc/150?img=45', is_verified: false },
     media_url: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&q=80',
     type: 'image',
     caption: 'Self care Sunday 🌿',
@@ -357,7 +425,7 @@ export const MOCK_STORIES: Story[] = [
   {
     id: 'story-004',
     user_id: 'user-004',
-    user: { id: 'user-004', username: 'jakethephoto', full_name: 'Jake Thornton', avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=jake', is_verified: true },
+    user: { id: 'user-004', username: 'jakethephoto', full_name: 'Jake Thornton', avatar_url: 'https://i.pravatar.cc/150?img=8', is_verified: true },
     media_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
     type: 'image',
     caption: 'Somewhere in the Alps 🏔️',
@@ -368,13 +436,24 @@ export const MOCK_STORIES: Story[] = [
   {
     id: 'story-005',
     user_id: 'user-005',
-    user: { id: 'user-005', username: 'nadia.eats', full_name: 'Nadia Wright', avatar_url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=nadia', is_verified: false },
+    user: { id: 'user-005', username: 'nadia.eats', full_name: 'Nadia Wright', avatar_url: 'https://i.pravatar.cc/150?img=23', is_verified: false },
     media_url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80',
     type: 'image',
     caption: 'The best burger in the city 🍔',
     created_at: storyCreated(10),
     expires_at: storyExpires(10),
     viewed: true,
+  },
+  {
+    id: 'story-006',
+    user_id: 'user-006',
+    user: { id: 'user-006', username: 'marcus.fit', full_name: 'Marcus Reid', avatar_url: 'https://i.pravatar.cc/150?img=11', is_verified: true },
+    media_url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=80',
+    type: 'image',
+    caption: 'Morning gains 💪',
+    created_at: storyCreated(12),
+    expires_at: storyExpires(12),
+    viewed: false,
   },
 ];
 
@@ -387,7 +466,7 @@ export function getMockFeed(cursor?: string | null, limit = 5) {
   return { data: slice, hasMore, nextCursor };
 }
 
-// ─── User Profile Lookup ──────────────────────────────────────────────────────
+// ─── Profile Helpers ──────────────────────────────────────────────────────────
 export function getMockProfile(username: string): Profile | null {
   const special = username === 'me' ? MOCK_CURRENT_USER : null;
   return special ?? MOCK_USERS.find((u) => u.username === username) ?? null;
