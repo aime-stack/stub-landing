@@ -13,6 +13,7 @@ const SignupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   fullName: z.string().min(2),
+  username: z.string().min(3).max(30).regex(/^[a-z0-9_.]+$/, 'Username may only contain lowercase letters, numbers, underscores, and dots').optional(),
   accountType: z.string().optional(),
   phone: z.string().optional(),
   companyName: z.string().optional(),
@@ -69,6 +70,7 @@ export async function signupAction(rawInput: any) {
     options: {
       data: {
         full_name: payload.fullName,
+        username: payload.username || null,
         account_type: payload.accountType || 'regular',
         phone: payload.phone || null,
         company_name: payload.companyName || null,

@@ -63,3 +63,41 @@ export interface PaginatedFeed {
   nextCursor: string | null;
   hasMore: boolean;
 }
+
+export interface Story {
+  id: string;
+  user_id: string;
+  user: {
+    id: string;
+    username: string;
+    full_name: string;
+    avatar_url?: string;
+    is_verified?: boolean;
+  };
+  media_url: string;
+  type: 'image' | 'video';
+  caption?: string;
+  created_at: string;
+  expires_at: string; // created_at + 24h
+  viewed?: boolean;
+}
+
+export interface Profile {
+  id: string;
+  username: string;
+  full_name: string;
+  bio?: string;
+  avatar_url?: string;
+  cover_url?: string;
+  website?: string;
+  is_verified: boolean;
+  is_celebrity: boolean;
+  account_type: 'regular' | 'vip' | 'industry';
+  followers_count: number;
+  following_count: number;
+  posts_count: number;
+  is_following?: boolean;
+  coins?: number;
+  premium_plan?: PremiumPlanId;
+  created_at: string;
+}

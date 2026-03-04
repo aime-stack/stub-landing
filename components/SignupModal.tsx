@@ -42,6 +42,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
   const [selectedType, setSelectedType] = useState<UserType>(null);
   const [formData, setFormData] = useState({
     fullName: '',
+    username: '',
     email: '',
     phone: '',
     password: '',
@@ -96,13 +97,14 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
 
   const isFormValid = () => {
     if (!selectedType || !formData.agreeToTerms) return false;
-    
+
     if (selectedType === 'company') {
-      return formData.fullName && formData.email && formData.companyName && formData.message;
+      return !!(formData.fullName && formData.email && formData.companyName && formData.message);
     }
-    
-    return (
+
+    return !!(
       formData.fullName &&
+      formData.username.trim().length >= 3 &&
       formData.email &&
       formData.password &&
       formData.password === formData.confirmPassword
@@ -174,6 +176,35 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                       required
                     />
                   </div>
+
+                  {selectedType !== 'company' && (
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        Username <span className={styles.required}>*</span>
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: '15px', pointerEvents: 'none' }}>@</span>
+                        <input
+                          type="text"
+                          name="username"
+                          className={styles.input}
+                          style={{ paddingLeft: '28px' }}
+                          placeholder="yourhandle"
+                          value={formData.username}
+                          onChange={(e) => {
+                            const val = e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, '');
+                            setFormData(prev => ({ ...prev, username: val }));
+                          }}
+                          required
+                          minLength={3}
+                          maxLength={30}
+                        />
+                      </div>
+                      {formData.username.length > 0 && formData.username.length < 3 && (
+                        <p style={{ fontSize: '12px', color: '#f59e0b', marginTop: '4px' }}>At least 3 characters</p>
+                      )}
+                    </div>
+                  )}
 
                   {selectedType === 'company' && (
                     <div className={styles.formGroup}>

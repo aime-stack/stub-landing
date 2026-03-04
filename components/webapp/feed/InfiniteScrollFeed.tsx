@@ -2,51 +2,50 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { PostCard } from './PostCard';
-import { PaginatedFeed, Post } from '@/types';
-import { getFeed } from '@/services/posts';
+import { Post } from '@/types';
+import { getMockFeed } from '@/services/mockData';
 
 interface InfiniteScrollFeedProps {
-  initialFeed: PaginatedFeed;
+  initialPosts: Post[];
 }
 
-export function InfiniteScrollFeed({ initialFeed }: InfiniteScrollFeedProps) {
-  const [posts, setPosts] = useState<Post[]>(initialFeed.data);
-  const [nextCursor, setNextCursor] = useState(initialFeed.nextCursor);
-  const [hasMore, setHasMore] = useState(initialFeed.hasMore);
+export function InfiniteScrollFeed({ initialPosts }: InfiniteScrollFeedProps) {
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [nextCursor, setNextCursor] = useState<string | null>(
+    initialPosts.length > 0 ? initialPosts[initialPosts.length - 1].id : null,
+  );
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  
+
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  const loadMore = useCallback(async () => {
+  const loadMore = useCallback(() => {
     if (loading || !hasMore || !nextCursor) return;
-    
+
     setLoading(true);
-    try {
-      const result = await getFeed({ cursor: nextCursor, limit: 20 });
-      setPosts((prev) => [...prev, ...result.data]);
+    // Simulate async fetch delay with mock data
+    setTimeout(() => {
+      const result = getMockFeed(nextCursor, 3);
+      setPosts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const newPosts = result.data.filter((p) => !existingIds.has(p.id));
+        return [...prev, ...newPosts];
+      });
       setNextCursor(result.nextCursor);
       setHasMore(result.hasMore);
-    } catch (error) {
-      console.error('Failed to load more posts', error);
-    } finally {
       setLoading(false);
-    }
+    }, 600);
   }, [loading, hasMore, nextCursor]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
-        }
+        if (entries[0].isIntersecting) loadMore();
       },
-      { threshold: 1.0 }
+      { threshold: 0.5 },
     );
 
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
+    if (observerTarget.current) observer.observe(observerTarget.current);
     return () => observer.disconnect();
   }, [loadMore]);
 
@@ -55,20 +54,25 @@ export function InfiniteScrollFeed({ initialFeed }: InfiniteScrollFeedProps) {
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}
-      
-      {/* Intersection Observer Target */}
-      <div 
-        ref={observerTarget} 
-        className="py-10 flex justify-center w-full"
-      >
+
+      {/* Scroll sentinel */}
+      <div ref={observerTarget} className="py-10 flex justify-center w-full">
         {loading && (
-          <div className="w-8 h-8 rounded-full border-2 border-[#0a7ea4] border-t-transparent animate-spin" />
+          <div className="flex gap-1.5 items-center">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-2 h-2 rounded-full bg-[#0a7ea4] animate-bounce"
+                style={{ animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+          </div>
         )}
         {!hasMore && posts.length > 0 && (
-          <p className="text-gray-500 text-sm">You&apos;ve caught up!</p>
+          <p className="text-gray-400 text-sm font-medium">You&apos;re all caught up! 🎉</p>
         )}
         {!hasMore && posts.length === 0 && (
-          <p className="text-gray-500 text-sm">No posts yet. Be the first to share!</p>
+          <p className="text-gray-400 text-sm">No posts yet. Be the first to share!</p>
         )}
       </div>
     </div>

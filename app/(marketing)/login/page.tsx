@@ -10,15 +10,15 @@ export default function LoginPage() {
   return (
     <div className="flex h-screen w-full bg-black text-white px-0 m-0">
       {/* Left side: Form */}
-      <section className="flex flex-1 justify-center items-center flex-col py-10 px-5 relative h-full bg-gradient-to-br from-cyan-400 via-purple-500 to-fuchsia-500 overflow-hidden">
+      <section className="flex flex-1 justify-center items-center py-10 px-5 relative h-full bg-gradient-to-br from-cyan-400 via-purple-500 to-fuchsia-500 overflow-hidden">
         {/* Decorative background vectors from image */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
           <div className="absolute -top-20 -left-20 w-96 h-96 bg-white/10 rotate-45 transform origin-center" />
           <div className="absolute top-[40%] text-transparent -right-40 w-[600px] h-[600px] bg-white/10 rotate-45 transform origin-center" />
         </div>
 
-        <div className="relative z-10 flex w-full flex-col justify-center items-center max-w-[440px] bg-white rounded-3xl p-10 shadow-2xl">
-          <h2 className="text-[32px] font-bold tracking-tight text-gray-900 mb-10 mt-2">
+        <div className="relative z-10 w-full max-w-[440px] bg-white rounded-3xl px-10 py-10 shadow-2xl">
+          <h2 className="text-[32px] font-bold tracking-tight text-gray-900 mb-6 text-center">
             Login
           </h2>
 

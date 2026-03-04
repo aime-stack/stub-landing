@@ -1,28 +1,27 @@
-import { getFeed } from '@/services/posts';
 import { InfiniteScrollFeed } from '@/components/webapp/feed/InfiniteScrollFeed';
+import { StoriesBar } from '@/components/webapp/stories/StoriesBar';
 import { CreatePostForm } from '@/components/webapp/upload/CreatePostForm';
-import { Suspense } from 'react';
+import { getMockFeed, MOCK_STORIES } from '@/services/mockData';
 
-// Require dynamic rendering (SSR at each request) to prevent stale feeds in production
-// Without this, Next.js tries to statically generate it which breaks dynamic user content
 export const dynamic = 'force-dynamic';
 
-export default async function FeedPage() {
-  // Pass explicit params to prevent N+1 query directly on the server RSC layer.
-  const initialFeed = await getFeed({ limit: 20 });
+export default function FeedPage() {
+  const { data: initialPosts } = getMockFeed(null, 5);
 
   return (
     <>
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3 text-gray-900">
-         <h1 className="text-xl font-bold">Home</h1>
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 py-3 text-gray-900">
+        <h1 className="text-xl font-bold">Home</h1>
       </div>
-      
+
+      {/* Stories */}
+      <StoriesBar stories={MOCK_STORIES} />
+
+      {/* Create post */}
       <CreatePostForm />
-      
-      {/* Container for posts */}
-      <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading feed...</div>}>
-         <InfiniteScrollFeed initialFeed={initialFeed} />
-      </Suspense>
+
+      {/* Feed */}
+      <InfiniteScrollFeed initialPosts={initialPosts} />
     </>
   );
 }
