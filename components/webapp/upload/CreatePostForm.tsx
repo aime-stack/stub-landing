@@ -3,33 +3,52 @@
 import { useState, useRef } from 'react';
 import { uploadMedia, ALLOWED_MIME_TYPES } from '@/services/upload';
 import { createPost } from '@/services/posts';
-import { Image as ImageIcon, Video, Loader2, Smile, MapPin, ChartBar } from 'lucide-react';
+import { Image as ImageIcon, Video, Loader2, Smile, MapPin, BarChart2, Type, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { MOCK_CURRENT_USER } from '@/services/mockData';
+
+const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+
+const TEXT_BG_OPTIONS = [
+  { id: 'none',      label: 'None',  style: { background: 'transparent' } },
+  { id: 'primary',   label: 'Blue',  style: { background: 'linear-gradient(135deg,#0a7ea4,#10B981)' } },
+  { id: 'secondary', label: 'Pink',  style: { background: 'linear-gradient(135deg,#EC4899,#F59E0B)' } },
+  { id: 'warm',      label: 'Warm',  style: { background: 'linear-gradient(135deg,#F59E0B,#EC4899)' } },
+  { id: 'dark',      label: 'Dark',  style: { background: 'linear-gradient(135deg,#1A1A1A,#374151)' } },
+  { id: 'green',     label: 'Green', style: { background: 'linear-gradient(135deg,#10B981,#0a7ea4)' } },
+];
 
 export function CreatePostForm() {
-  const [content, setContent] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [content,    setContent]    = useState('');
+  const [file,       setFile]       = useState<File | null>(null);
+  const [loading,    setLoading]    = useState(false);
+  const [error,      setError]      = useState<string | null>(null);
+  const [textBg,     setTextBg]     = useState('none');
+  const [showBgPick, setShowBgPick] = useState(false);
+  const router     = useRouter();
+  const fileRef    = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return;
-    if (!ALLOWED_MIME_TYPES.includes(selected.type)) { setError(`Invalid file type.`); return; }
-    if (selected.size > 10 * 1024 * 1024) { setError('File exceeds 10MB limit.'); return; }
-    setFile(selected);
+  const charsLeft = 280 - content.length;
+  const isEmpty   = !content.trim() && !file;
+  const activeBg  = TEXT_BG_OPTIONS.find(o => o.id === textBg);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!ALLOWED_MIME_TYPES.includes(f.type)) { setError('Invalid file type.'); return; }
+    if (f.size > 10 * 1024 * 1024)           { setError('File exceeds 10 MB.'); return; }
+    setFile(f);
     setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() && !file) return;
+    if (isEmpty) return;
     setLoading(true);
     setError(null);
     try {
-      let mediaUrl = undefined;
+      let mediaUrl: string | undefined;
       let type: 'text' | 'image' | 'video' = 'text';
       if (file) {
         mediaUrl = await uploadMedia(file, 'posts');
@@ -38,90 +57,220 @@ export function CreatePostForm() {
       await createPost({ content: content.trim() || undefined, type, mediaUrl });
       setContent('');
       setFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      setTextBg('none');
+      if (fileRef.current) fileRef.current.value = '';
       router.refresh();
     } catch (err: any) {
-      setError(err.message || 'Failed to post');
+      setError(err.message ?? 'Failed to post');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="px-4 py-3 border-b border-gray-200">
-      <div className="flex gap-3">
-        {/* Avatar */}
-        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0a7ea4]/30 via-[#8b5cf6]/30 to-[#ec4899]/30 border border-gray-100 shrink-0 mt-1" />
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        padding: '16px 20px',
+        borderBottom: '1px solid #E5E7EB',
+        background: 'white',
+      }}
+    >
+      <div style={{ display: 'flex', gap: 12 }}>
 
-        <div className="flex-1 min-w-0">
-          {/* Textarea */}
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="What's happening?"
-            className="w-full bg-transparent resize-none outline-none text-[19px] placeholder-gray-400 text-gray-900 min-h-[56px] leading-normal pt-1"
-            maxLength={280}
-          />
+        {/* Current user avatar */}
+        <div style={{ flexShrink: 0 }}>
+          <div
+            style={{
+              width: 42, height: 42, borderRadius: '50%', overflow: 'hidden',
+              background: 'linear-gradient(135deg,#0a7ea4,#EC4899)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginTop: 2,
+            }}
+          >
+            {MOCK_CURRENT_USER.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={MOCK_CURRENT_USER.avatar_url} alt="you" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span style={{ color: 'white', fontWeight: 700, fontSize: 16 }}>
+                {MOCK_CURRENT_USER.username[0]?.toUpperCase()}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+
+          {/* Textarea — shows gradient bg preview when a bg is chosen */}
+          <div
+            style={{
+              borderRadius: textBg !== 'none' ? 16 : 0,
+              padding: textBg !== 'none' ? '20px 16px' : 0,
+              marginBottom: textBg !== 'none' ? 12 : 0,
+              ...(textBg !== 'none' ? activeBg?.style : {}),
+              transition: 'all 0.3s ease',
+            }}
+          >
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              placeholder="What's happening?"
+              maxLength={280}
+              rows={3}
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                resize: 'none',
+                fontFamily: FONT,
+                fontSize: textBg !== 'none' ? 18 : 17,
+                fontWeight: textBg !== 'none' ? 600 : 400,
+                color: textBg !== 'none' ? 'white' : '#1A1A1A',
+                lineHeight: 1.5,
+                paddingTop: 4,
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          {/* Text-bg colour picker */}
+          {showBgPick && (
+            <div
+              style={{
+                display: 'flex', gap: 8, flexWrap: 'wrap',
+                padding: '10px 0', marginBottom: 8,
+              }}
+            >
+              {TEXT_BG_OPTIONS.map(opt => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setTextBg(opt.id)}
+                  title={opt.label}
+                  style={{
+                    width: 32, height: 32, borderRadius: '50%',
+                    border: textBg === opt.id ? '3px solid #0a7ea4' : '2px solid #E5E7EB',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    ...(opt.id === 'none' ? { background: '#F3F4F6' } : opt.style),
+                    boxSizing: 'border-box',
+                    transition: 'border 0.15s',
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Media preview */}
           {file && (
-            <div className="relative mb-3 inline-block mt-2">
+            <div style={{ position: 'relative', display: 'inline-block', marginBottom: 10 }}>
               {file.type.startsWith('image/') ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={URL.createObjectURL(file)} alt="Preview" className="max-h-40 rounded-2xl border border-gray-200" />
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="preview"
+                  style={{ maxHeight: 160, borderRadius: 12, border: '1px solid #E5E7EB', display: 'block' }}
+                />
               ) : (
-                <video src={URL.createObjectURL(file)} className="max-h-40 rounded-2xl border border-gray-200" />
+                <video
+                  src={URL.createObjectURL(file)}
+                  style={{ maxHeight: 160, borderRadius: 12, border: '1px solid #E5E7EB', display: 'block' }}
+                />
               )}
               <button
                 type="button"
                 onClick={() => setFile(null)}
-                className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 rounded-full w-6 h-6 flex items-center justify-center text-white text-xs transition-colors"
-              >✕</button>
+                style={{
+                  position: 'absolute', top: 6, right: 6,
+                  width: 24, height: 24, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.6)', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: 'white',
+                }}
+              >
+                <X style={{ width: 13, height: 13 }} />
+              </button>
             </div>
           )}
 
-          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+          {error && (
+            <p style={{ fontFamily: FONT, fontSize: 13, color: '#EF4444', margin: '0 0 8px' }}>{error}</p>
+          )}
 
           {/* Bottom bar */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-1">
-            <div className="flex gap-0 -ml-1">
-              <button type="button" onClick={() => fileInputRef.current?.click()}
-                className="p-2 text-[#0a7ea4] hover:bg-[#0a7ea4]/10 rounded-full transition-all duration-200" title="Photo">
-                <ImageIcon className="w-5 h-5" />
-              </button>
-              <button type="button" onClick={() => fileInputRef.current?.click()}
-                className="p-2 text-[#0a7ea4] hover:bg-[#0a7ea4]/10 rounded-full transition-all duration-200" title="Video">
-                <Video className="w-5 h-5" />
-              </button>
-              <button type="button"
-                className="p-2 text-[#0a7ea4] hover:bg-[#0a7ea4]/10 rounded-full transition-all duration-200" title="Poll">
-                <ChartBar className="w-5 h-5" />
-              </button>
-              <button type="button"
-                className="p-2 text-[#0a7ea4] hover:bg-[#0a7ea4]/10 rounded-full transition-all duration-200" title="Emoji">
-                <Smile className="w-5 h-5" />
-              </button>
-              <button type="button"
-                className="p-2 text-[#0a7ea4] hover:bg-[#0a7ea4]/10 rounded-full transition-all duration-200" title="Location">
-                <MapPin className="w-5 h-5" />
-              </button>
-              <input type="file" ref={fileInputRef} onChange={handleFileChange}
-                accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" className="hidden" />
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              paddingTop: 10, borderTop: '1px solid #F3F4F6',
+            }}
+          >
+            {/* Toolbar icons */}
+            <div style={{ display: 'flex', gap: 2 }}>
+              {[
+                { icon: <ImageIcon  style={{ width: 19, height: 19 }} />, title: 'Photo',      onClick: () => fileRef.current?.click() },
+                { icon: <Video      style={{ width: 19, height: 19 }} />, title: 'Video',      onClick: () => fileRef.current?.click() },
+                { icon: <Type       style={{ width: 19, height: 19 }} />, title: 'Text Style', onClick: () => setShowBgPick(p => !p) },
+                { icon: <BarChart2  style={{ width: 19, height: 19 }} />, title: 'Poll',        onClick: () => {} },
+                { icon: <Smile      style={{ width: 19, height: 19 }} />, title: 'Emoji',      onClick: () => {} },
+                { icon: <MapPin     style={{ width: 19, height: 19 }} />, title: 'Location',   onClick: () => {} },
+              ].map(({ icon, title, onClick }) => (
+                <button
+                  key={title}
+                  type="button"
+                  title={title}
+                  onClick={onClick}
+                  style={{
+                    width: 36, height: 36, borderRadius: '50%',
+                    border: 'none', background: 'transparent', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: title === 'Text Style' && showBgPick ? '#0a7ea4' : '#0a7ea4',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(10,126,164,0.08)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  {icon}
+                </button>
+              ))}
+              <input ref={fileRef} type="file" onChange={handleFile}
+                accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" style={{ display: 'none' }} />
             </div>
 
-            <div className="flex items-center gap-3">
-              {/* Character count */}
+            {/* Char count + submit */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               {content.length > 0 && (
-                <span className={`text-sm tabular-nums ${content.length > 260 ? 'text-red-500' : 'text-gray-400'}`}>
-                  {280 - content.length}
+                <span style={{
+                  fontFamily: FONT, fontSize: 13,
+                  color: charsLeft < 20 ? '#EF4444' : '#9CA3AF',
+                  tabularNums: true,
+                } as React.CSSProperties}>
+                  {charsLeft}
                 </span>
               )}
               <button
                 type="submit"
-                disabled={loading || (!content.trim() && !file)}
-                className="px-5 h-9 rounded-full bg-gradient-to-r from-[#0a7ea4] to-[#8b5cf6] text-white text-[15px] font-bold hover:brightness-110 active:scale-[0.98] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200"
+                disabled={loading || isEmpty}
+                style={{
+                  height: 40,
+                  paddingLeft: 22, paddingRight: 22,
+                  borderRadius: 999,
+                  border: 'none',
+                  cursor: loading || isEmpty ? 'not-allowed' : 'pointer',
+                  background: loading || isEmpty
+                    ? '#E5E7EB'
+                    : 'linear-gradient(135deg,#0a7ea4,#EC4899)',
+                  color: loading || isEmpty ? '#9CA3AF' : 'white',
+                  fontFamily: FONT,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  transition: 'all 0.15s',
+                  boxShadow: loading || isEmpty ? 'none' : '0 2px 8px rgba(10,126,164,0.3)',
+                }}
               >
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {loading && <Loader2 style={{ width: 15, height: 15, animation: 'spin 1s linear infinite' }} />}
                 Post
               </button>
             </div>
