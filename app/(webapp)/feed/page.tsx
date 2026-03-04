@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { InfiniteScrollFeed } from '@/components/webapp/feed/InfiniteScrollFeed';
 import { StoriesBar } from '@/components/webapp/stories/StoriesBar';
 import { CreatePostForm } from '@/components/webapp/upload/CreatePostForm';
@@ -22,6 +23,7 @@ const TRENDING = [
 const FOLLOWING_POSTS_COUNT = 3;
 
 export default function FeedPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
   const { data: allPosts }       = getMockFeed(null, 5);
   /* Following tab: only first N posts (from "followed" people) */
@@ -194,7 +196,7 @@ export default function FeedPage() {
 
               {/* CTA button */}
               <button
-                onClick={() => {}}
+                onClick={() => router.push('/follow')}
                 style={{
                   height: 44,
                   paddingLeft: 28,
