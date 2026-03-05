@@ -21,6 +21,7 @@ interface NavItem {
 const CORE_NAV: NavItem[] = [
   { name: 'Home',          href: '/feed',          icon: Home },
   { name: 'Explore',       href: '/explore',       icon: Search },
+  { name: 'Reels',         href: '/reels',         icon: Clapperboard },
   { name: 'Notifications', href: '/notifications', icon: Bell },
   { name: 'Messages',      href: '/messages',      icon: MessageCircle },
   { name: 'Bookmarks',     href: '/bookmarks',     icon: Bookmark },
