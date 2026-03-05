@@ -38,7 +38,7 @@ export default async function WebAppLayout({ children }: { children: ReactNode }
         A symmetric px-4 wrapper adds equal breathing room on both
         sides so the left edge matches the right widget gutter.
       */}
-      <div className="mx-auto max-w-[1400px] px-4 flex">
+      <div className="mx-auto max-w-[1268px] px-4 flex">
 
         {/* Left Sidebar — sticky, full-height */}
         <div className="hidden lg:flex w-[72px] xl:w-[280px] shrink-0 sticky top-0 h-screen">
