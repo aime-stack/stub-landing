@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Post } from '@/types';
 import {
   MessageCircle, Heart, Share2, MoreHorizontal,
-  Bookmark, Repeat2, BarChart2, Crown, Star,
+  Bookmark, Repeat2, BarChart2, Star,
+  Trash2, Zap, Flag, UserMinus,
 } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
 
@@ -34,6 +35,21 @@ export function PostCard({ post }: PostCardProps) {
   const [repostCnt,  setRepostCnt]  = useState(post.shares_count || 0);
   const [saved,      setSaved]      = useState(false);
   const [heartAnim,  setHeartAnim]  = useState(false);
+  const [showMenu,   setShowMenu]   = useState(false);
+  const [deleted,    setDeleted]    = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click or Escape
+  useEffect(() => {
+    if (!showMenu) return;
+    const down = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowMenu(false); };
+    const click = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false); };
+    document.addEventListener('keydown', down);
+    document.addEventListener('mousedown', click);
+    return () => { document.removeEventListener('keydown', down); document.removeEventListener('mousedown', click); };
+  }, [showMenu]);
+
+  if (deleted) return null;
 
   const isVideo   = post.video_url || post.type === 'video' || post.type === 'reel';
   const hasImage  = post.media_url || post.thumbnail_url;
@@ -131,14 +147,112 @@ export function PostCard({ post }: PostCardProps) {
             </span>
           </div>
 
-          <button
-            className="shrink-0 p-1.5 rounded-full transition-all duration-200 ml-1"
-            style={{ color: 'var(--text-secondary)' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,126,164,0.1)'; e.currentTarget.style.color = 'var(--primary)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = 'var(--text-secondary)'; }}
-          >
-            <MoreHorizontal size={17} />
-          </button>
+          {/* 3-dots menu */}
+          <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              onClick={e => { e.stopPropagation(); setShowMenu(m => !m); }}
+              className="shrink-0 p-1.5 rounded-full transition-all duration-200 ml-1"
+              style={{ color: showMenu ? 'var(--primary)' : 'var(--text-secondary)', background: showMenu ? 'rgba(10,126,164,0.1)' : '' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,126,164,0.1)'; e.currentTarget.style.color = 'var(--primary)'; }}
+              onMouseLeave={e => { if (!showMenu) { e.currentTarget.style.background = ''; e.currentTarget.style.color = 'var(--text-secondary)'; } }}
+            >
+              <MoreHorizontal size={17} />
+            </button>
+
+            {/* Dropdown */}
+            {showMenu && (
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                  position: 'absolute', top: 34, right: 0, zIndex: 100,
+                  background: 'white', borderRadius: 16,
+                  border: '1px solid #E5E7EB',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.13)',
+                  minWidth: 200, overflow: 'hidden',
+                  animation: 'fadeIn 0.12s ease',
+                }}
+              >
+                {/* Boost */}
+                <Link
+                  href="/advertising"
+                  onClick={() => setShowMenu(false)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 16px', textDecoration: 'none',
+                    color: '#111827', transition: 'background 0.12s',
+                    fontFamily: `'Inter',-apple-system,sans-serif`,
+                    fontSize: 14, fontWeight: 600,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Zap size={15} color="white" fill="white" />
+                  </span>
+                  Boost Post
+                  <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: '#0a7ea4', background: 'rgba(10,126,164,0.10)', padding: '2px 8px', borderRadius: 999 }}>Ad</span>
+                </Link>
+
+                <div style={{ height: 1, background: '#F3F4F6', margin: '0 12px' }} />
+
+                {/* Unfollow */}
+                <button
+                  onClick={() => { setShowMenu(false); }}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
+                    fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827',
+                    transition: 'background 0.12s', textAlign: 'left',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <UserMinus size={15} color="#6B7280" />
+                  </span>
+                  Unfollow
+                </button>
+
+                {/* Report */}
+                <button
+                  onClick={() => { setShowMenu(false); }}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
+                    fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827',
+                    transition: 'background 0.12s', textAlign: 'left',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Flag size={15} color="#6B7280" />
+                  </span>
+                  Report Post
+                </button>
+
+                <div style={{ height: 1, background: '#F3F4F6', margin: '0 12px' }} />
+
+                {/* Delete */}
+                <button
+                  onClick={() => { setShowMenu(false); setDeleted(true); }}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
+                    fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 700, color: '#EF4444',
+                    transition: 'background 0.12s', textAlign: 'left',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#FEF2F2')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(239,68,68,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Trash2 size={15} color="#EF4444" />
+                  </span>
+                  Delete Post
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Text content */}

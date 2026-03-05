@@ -15,9 +15,13 @@ const TRENDS = [
 ];
 
 const SUGGESTIONS = [
-  { name: 'Selena Martinez', handle: 'selena_creates', avatar: '47', verified: true,  celebrity: true  },
-  { name: 'Kevin Osei',      handle: 'codewithkev',   avatar: '12', verified: true,  celebrity: false },
-  { name: 'Marcus Reid',     handle: 'marcus.fit',    avatar: '11', verified: true,  celebrity: false },
+  { name: 'Selena Martinez', handle: 'selena_creates', avatar: '47', verified: true,  celebrity: true,  following: false },
+  { name: 'Kevin Osei',      handle: 'codewithkev',   avatar: '12', verified: true,  celebrity: false, following: false },
+  { name: 'Marcus Reid',     handle: 'marcus.fit',    avatar: '11', verified: true,  celebrity: false, following: false },
+  { name: 'Amara Diallo',    handle: 'amara.beauty',  avatar: '45', verified: true,  celebrity: false, following: false },
+  { name: 'Nadia Wright',    handle: 'nadiafood',     avatar: '23', verified: false, celebrity: false, following: false },
+  { name: 'Jake Thornton',   handle: 'jakephoto',     avatar: '8',  verified: false, celebrity: false, following: false },
+  { name: 'Zara Okonkwo',    handle: 'zaraokonkwo',   avatar: '31', verified: true,  celebrity: true,  following: false },
 ];
 
 /* ─ Shared card wrapper ───────────────────────────────────────────────────── */
@@ -67,10 +71,83 @@ function WalletBtn({ icon, label, solid }: { icon: React.ReactNode; label: strin
   );
 }
 
+/* ─ Suggestion Row (interactive follow toggle) ────────────────────────────── */
+type Suggestion = typeof SUGGESTIONS[number];
+function SuggestionRow({ person }: { person: Suggestion }) {
+  const [followed, setFollowed] = useState(false);
+  const { name, handle, avatar, verified, celebrity } = person;
+
+  return (
+    <div
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '12px 20px', borderTop: '1px solid #F3F4F6',
+        transition: 'background 0.12s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+    >
+      {/* Avatar */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`https://i.pravatar.cc/40?img=${avatar}`}
+          alt={name}
+          style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+        />
+        {celebrity && (
+          <div style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, borderRadius: '50%', background: '#FF69B4', border: '1.5px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8 }}>
+            ⭐
+          </div>
+        )}
+      </div>
+
+      {/* Name + handle */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {name}
+          </span>
+          {verified && (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+              <defs>
+                <linearGradient id={`wf-${handle}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop stopColor="#0a7ea4" offset="0%" />
+                  <stop stopColor="#EC4899" offset="100%" />
+                </linearGradient>
+              </defs>
+              <circle cx="12" cy="12" r="10" fill={`url(#wf-${handle})`} />
+              <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+        <div style={{ fontFamily: FONT, fontSize: 12, color: '#9CA3AF', marginTop: 1 }}>@{handle}</div>
+      </div>
+
+      {/* Follow / Following toggle button */}
+      <button
+        onClick={e => { e.stopPropagation(); setFollowed(f => !f); }}
+        style={{
+          flexShrink: 0, height: 34, paddingLeft: 16, paddingRight: 16,
+          borderRadius: 999, cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 700,
+          transition: 'all 0.15s',
+          background: followed ? 'transparent' : '#1A1A1A',
+          color: followed ? '#374151' : 'white',
+          border: followed ? '1.5px solid #D1D5DB' : 'none',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.opacity = followed ? '1' : '0.8'; if (followed) { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.border = '1.5px solid #FECACA'; } }}
+        onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = followed ? 'transparent' : '#1A1A1A'; e.currentTarget.style.color = followed ? '#374151' : 'white'; e.currentTarget.style.border = followed ? '1.5px solid #D1D5DB' : 'none'; }}
+      >
+        {followed ? 'Following' : 'Follow'}
+      </button>
+    </div>
+  );
+}
+
 export function WidgetArea() {
   const COIN_BALANCE   = 450;
-  const RWF_RATE       = 25;          // 1 Stub Coin = RWF 25
-  const rwfBalance     = COIN_BALANCE * RWF_RATE;  // 11,250
+  const RWF_RATE       = 25;
+  const rwfBalance     = COIN_BALANCE * RWF_RATE;
 
   const [hidden,      setHidden]      = useState(false);
   const [refreshing,  setRefreshing]  = useState(false);
@@ -292,81 +369,8 @@ export function WidgetArea() {
           <span style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>Who to follow</span>
         </div>
 
-        {SUGGESTIONS.map(({ name, handle, avatar, verified, celebrity }) => (
-          <div
-            key={handle}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              padding: '12px 20px',
-              borderTop: '1px solid #F3F4F6',
-              cursor: 'pointer',
-              transition: 'background 0.12s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-          >
-            {/* Avatar */}
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`https://i.pravatar.cc/40?img=${avatar}`}
-                alt={name}
-                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
-              />
-              {celebrity && (
-                <div style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, borderRadius: '50%', background: '#FF69B4', border: '1.5px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8 }}>
-                  ⭐
-                </div>
-              )}
-            </div>
-
-            {/* Name + handle */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {name}
-                </span>
-                {verified && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                    <defs>
-                      <linearGradient id={`wf-${handle}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop stopColor="#0a7ea4" offset="0%" />
-                        <stop stopColor="#EC4899" offset="100%" />
-                      </linearGradient>
-                    </defs>
-                    <circle cx="12" cy="12" r="10" fill={`url(#wf-${handle})`} />
-                    <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
-              <div style={{ fontFamily: FONT, fontSize: 12, color: '#9CA3AF', marginTop: 1 }}>@{handle}</div>
-            </div>
-
-            {/* Follow button — always fully visible */}
-            <button
-              style={{
-                flexShrink: 0,
-                height: 34,
-                paddingLeft: 16,
-                paddingRight: 16,
-                borderRadius: 999,
-                border: 'none',
-                cursor: 'pointer',
-                background: '#1A1A1A',
-                color: 'white',
-                fontFamily: FONT,
-                fontSize: 13,
-                fontWeight: 700,
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.8')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              Follow
-            </button>
-          </div>
+        {SUGGESTIONS.map((s) => (
+          <SuggestionRow key={s.handle} person={s} />
         ))}
 
         <div style={{ padding: '12px 20px', borderTop: '1px solid #F3F4F6' }}>
