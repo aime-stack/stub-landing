@@ -245,7 +245,7 @@ export default function FeedPage() {
                     />
                   </div>
                   <span style={{ fontFamily: FONT, fontSize: 11, color: '#374151', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 56 }}>
-                    {u.full_name.split(' ')[0]}
+                    {(u.full_name || u.username).split(' ')[0]}
                   </span>
                 </div>
               ))}
