@@ -66,6 +66,8 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
           className="absolute inset-0 w-full h-full object-cover cursor-pointer"
           loop
           playsInline
+          muted
+          autoPlay={isActive}
           onClick={togglePlay}
         />
       )}
@@ -88,7 +90,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
 
       {/* Bottom Overlay (User info & Caption) */}
       <div className="absolute bottom-0 left-0 right-16 p-4 pt-12 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none">
-        <div className="flex items-center gap-2 mb-3 pointer-events-auto">
+        <div className="flex items-center gap-3 mb-3 pointer-events-auto">
           <Link href={`/profile/${username}`}>
             <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 relative">
               {avatarSrc ? (
@@ -105,7 +107,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
               {displayName}
             </Link>
           </div>
-          <button className="ml-2 px-3 py-1 bg-transparent border border-white text-white rounded-md text-[13px] font-semibold hover:bg-white/10 transition">
+          <button className="px-3 py-1 bg-transparent border border-white text-white rounded-md text-[13px] font-semibold hover:bg-white/10 transition ml-1">
             Follow
           </button>
         </div>
