@@ -10,6 +10,7 @@ import {
   Trash2, Zap, Flag, UserMinus,
 } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
+import { ImageGallery } from '@/components/webapp/ui/ImageGallery';
 
 interface PostCardProps { post: Post; }
 
@@ -42,15 +43,18 @@ function RichText({ text, style }: { text: string; style?: React.CSSProperties }
 }
 
 // ─── Multi-image grid ─────────────────────────────────────────────────────────
-function MultiImageGrid({ urls }: { urls: string[] }) {
+function MultiImageGrid({ urls, onImageClick }: { urls: string[], onImageClick: (index: number) => void }) {
   const display = urls.slice(0, 4);
   const extra   = urls.length - 4;
 
   if (display.length === 1) {
     return (
-      <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12 }}>
+      <div
+        onClick={(e) => { e.stopPropagation(); onImageClick(0); }}
+        style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12, cursor: 'zoom-in' }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={display[0]} alt="" style={{ width: '100%', maxHeight: 400, objectFit: 'cover', display: 'block' }} />
+        <img src={display[0]} alt="" style={{ width: '100%', maxHeight: 400, objectFit: 'cover', display: 'block', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />
       </div>
     );
   }
@@ -60,7 +64,12 @@ function MultiImageGrid({ urls }: { urls: string[] }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12 }}>
         {display.map((url, i) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={i} src={url} alt="" style={{ width: '100%', height: 220, objectFit: 'cover', display: 'block' }} />
+          <img
+            key={i} src={url} alt=""
+            onClick={(e) => { e.stopPropagation(); onImageClick(i); }}
+            style={{ width: '100%', height: 220, objectFit: 'cover', display: 'block', cursor: 'zoom-in', transition: 'opacity 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.9'} onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          />
         ))}
       </div>
     );
@@ -70,10 +79,20 @@ function MultiImageGrid({ urls }: { urls: string[] }) {
     return (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '200px 200px', gap: 3, borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={display[0]} alt="" style={{ gridRow: '1 / 3', width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <img
+          src={display[0]} alt=""
+          onClick={(e) => { e.stopPropagation(); onImageClick(0); }}
+          style={{ gridRow: '1 / 3', width: '100%', height: '100%', objectFit: 'cover', display: 'block', cursor: 'zoom-in', transition: 'opacity 0.2s' }}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.9'} onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+        />
         {display.slice(1).map((url, i) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={i} src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img
+            key={i} src={url} alt=""
+            onClick={(e) => { e.stopPropagation(); onImageClick(i + 1); }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', cursor: 'zoom-in', transition: 'opacity 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.9'} onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          />
         ))}
       </div>
     );
@@ -83,12 +102,27 @@ function MultiImageGrid({ urls }: { urls: string[] }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '180px 180px', gap: 3, borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12 }}>
       {display.map((url, i) => (
-        <div key={i} style={{ position: 'relative' }}>
+        <div key={i} style={{ position: 'relative', cursor: 'zoom-in' }} onClick={(e) => { e.stopPropagation(); onImageClick(i); }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img
+            src={url} alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity 0.2s' }}
+            onMouseEnter={e => {
+              const el = e.currentTarget.nextElementSibling as HTMLElement;
+              if (el) el.style.background = 'rgba(0,0,0,0.6)';
+              else e.currentTarget.style.opacity = '0.9';
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget.nextElementSibling as HTMLElement;
+              if (el) el.style.background = 'rgba(0,0,0,0.52)';
+              else e.currentTarget.style.opacity = '1';
+            }}
+          />
           {/* "+N more" overlay on the last cell if extra exist */}
           {i === 3 && extra > 0 && (
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', pointerEvents: 'none' }}
+            >
               <span style={{ color: 'white', fontWeight: 800, fontSize: 22 }}>+{extra}</span>
             </div>
           )}
@@ -108,6 +142,9 @@ export function PostCard({ post }: PostCardProps) {
   const [showMenu,   setShowMenu]   = useState(false);
   const [deleted,    setDeleted]    = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  
+  // Image gallery state
+  const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
 
   // Close dropdown on outside click or Escape
   useEffect(() => {
@@ -356,29 +393,36 @@ export function PostCard({ post }: PostCardProps) {
 
         {/* Multi-image grid */}
         {post.media_urls && post.media_urls.length > 0 && (
-          <MultiImageGrid urls={post.media_urls} />
+          <MultiImageGrid urls={post.media_urls} onImageClick={(idx) => setActiveImageIndex(idx)} />
         )}
 
         {/* Single media (image or video) — only when no media_urls */}
         {!post.media_urls && (hasImage || isVideo) && (
           <div
             className="rounded-2xl overflow-hidden mb-3 max-h-[512px] flex justify-center"
-            style={{ border: '1px solid var(--border)', background: 'var(--card)' }}
+            style={{ border: '1px solid var(--border)', background: 'var(--card)', cursor: !isVideo ? 'zoom-in' : 'default' }}
+            onClick={(e) => {
+              if (!isVideo && (post.media_url || post.thumbnail_url)) {
+                e.stopPropagation();
+                setActiveImageIndex(0);
+              }
+            }}
           >
-            {isVideo ? (
+            {isVideo && post.video_url ? (
               <video
-                src={post.video_url || post.media_url}
-                controls playsInline preload="metadata"
-                className="max-w-full max-h-[512px] object-contain"
+                src={post.video_url}
+                controls
+                className="w-full max-h-[512px] object-cover"
+                onClick={e => e.stopPropagation()}
               />
-            ) : post.media_url ? (
-              <Image
-                src={post.media_url}
-                alt="Post media"
-                width={600} height={512}
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={post.media_url || post.thumbnail_url}
+                alt=""
                 className="w-full h-auto object-cover max-h-[512px]"
               />
-            ) : null}
+            )}
           </div>
         )}
 

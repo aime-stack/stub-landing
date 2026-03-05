@@ -6,6 +6,7 @@ import {
   Search, Plus, Heart, Phone, Star, X, Camera,
   MapPin, ChevronRight, ShoppingBag,
 } from 'lucide-react';
+import { ImageGallery } from '@/components/webapp/ui/ImageGallery';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
@@ -172,20 +173,29 @@ function AddProductModal({ onClose }: { onClose: () => void }) {
 }
 
 /* ─── Product Card ────────────────────────────────────────────────────────── */
-function ProductCard({ p }: { p: Product }) {
-  const [saved, setSaved] = useState(false);
+function ProductCard({ p, setActiveImage }: { p: Product, setActiveImage: (img: string) => void }) {
+  const [liked, setLiked] = useState(false);
   return (
-    <div style={{ background: 'white', borderRadius: 20, border: '1px solid #E5E7EB', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'box-shadow 0.15s, transform 0.15s', cursor: 'pointer' }}
-      onMouseEnter={e => { (e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,0,0,0.10)'); (e.currentTarget.style.transform = 'translateY(-2px)'); }}
-      onMouseLeave={e => { (e.currentTarget.style.boxShadow = 'none');                          (e.currentTarget.style.transform = 'translateY(0)'); }}
+    <div
+      style={{
+        background: 'white', borderRadius: 16, border: '1px solid #E5E7EB', overflow: 'hidden',
+        transition: 'transform 0.2s, box-shadow 0.2s', cursor: 'pointer',
+        display: 'flex', flexDirection: 'column',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.06)'; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
     >
-      {/* Image */}
-      <div style={{ position: 'relative', height: 170, background: '#F3F4F6' }}>
-        <Image src={p.img} alt={p.title} fill style={{ objectFit: 'cover' }} unoptimized />
+      {/* Image area */}
+      <div
+        style={{ position: 'relative', height: 200, cursor: 'zoom-in' }}
+        onClick={(e) => { e.stopPropagation(); setActiveImage(p.img); }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={p.img} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         {/* Save button */}
-        <button onClick={e => { e.stopPropagation(); setSaved(s => !s); }}
+        <button onClick={e => { e.stopPropagation(); setLiked(s => !s); }}
           style={{ position: 'absolute', top: 10, right: 10, width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.12)' }}>
-          <Heart style={{ width: 15, height: 15, color: saved ? '#EC4899' : '#9CA3AF', fill: saved ? '#EC4899' : 'none', transition: 'all 0.15s' }} />
+          <Heart style={{ width: 15, height: 15, color: liked ? '#EC4899' : '#9CA3AF', fill: liked ? '#EC4899' : 'none', transition: 'all 0.15s' }} />
         </button>
       </div>
 
@@ -243,6 +253,9 @@ export default function MarketplacePage() {
   const [category,   setCategory]   = useState<Category>('All');
   const [search,     setSearch]     = useState('');
   const [showAdd,    setShowAdd]    = useState(false);
+  
+  // Image gallery state
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   const filtered = PRODUCTS.filter(p => {
     const matchCat  = category === 'All' || p.category === category;
@@ -334,13 +347,21 @@ export default function MarketplacePage() {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16 }}>
-            {filtered.map(p => <ProductCard key={p.id} p={p} />)}
+            {filtered.map(p => <ProductCard key={p.id} p={p} setActiveImage={setActiveImage} />)}
           </div>
         )}
       </div>
 
       {/* ── Add product modal ────────────────────────────────────────────── */}
       {showAdd && <AddProductModal onClose={() => setShowAdd(false)} />}
+      
+      {activeImage && (
+        <ImageGallery
+          images={[activeImage]}
+          initialIndex={0}
+          onClose={() => setActiveImage(null)}
+        />
+      )}
     </div>
   );
 }
