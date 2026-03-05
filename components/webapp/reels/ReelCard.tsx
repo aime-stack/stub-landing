@@ -84,8 +84,8 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
       )}
 
       {/* Top Header */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent z-10">
-        <h2 className="text-white font-bold text-lg drop-shadow-md">Reels</h2>
+      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none">
+        <h2 className="text-white font-bold text-lg drop-shadow-md" style={{ color: '#FFFFFF' }}>Reels</h2>
       </div>
 
       {/* Bottom Overlay (User info & Caption) */}
@@ -103,7 +103,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
             </div>
           </Link>
           <div className="flex flex-col">
-            <Link href={`/profile/${username}`} className="text-white font-semibold text-[15px] hover:underline drop-shadow-md">
+            <Link href={`/profile/${username}`} className="text-white font-semibold text-[15px] hover:underline drop-shadow-md" style={{ color: '#FFFFFF' }}>
               {displayName}
             </Link>
           </div>
@@ -113,10 +113,10 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
         </div>
         
         {reel.content && (
-          <p className="text-white text-[14px] leading-snug drop-shadow-lg font-medium mb-3 line-clamp-2">
+          <p className="text-white text-[14px] leading-snug drop-shadow-lg font-medium mb-3 line-clamp-2" style={{ color: '#FFFFFF' }}>
             {/* Simple rich text parser for hashtags to keep them white but bold */}
             {reel.content.split(/((?:#|@)[\w.]+)/g).map((part, i) => 
-               /^[#@][\w.]+$/.test(part) ? <span key={i} className="font-bold text-white">{part}</span> : <span key={i}>{part}</span>
+               /^[#@][\w.]+$/.test(part) ? <span key={i} className="font-bold text-white" style={{ color: '#FFFFFF' }}>{part}</span> : <span key={i} style={{ color: '#FFFFFF' }}>{part}</span>
             )}
           </p>
         )}
@@ -124,7 +124,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
         <div className="flex items-center gap-2 max-w-[200px] overflow-hidden">
           <Music size={14} className="text-white shrink-0" />
           <div className="flex whitespace-nowrap animate-marquee">
-            <span className="text-white text-[13px] drop-shadow-md">
+            <span className="text-white text-[13px] drop-shadow-md" style={{ color: '#FFFFFF' }}>
               {displayName} • Original Audio
             </span>
           </div>
@@ -138,7 +138,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-black/40 transition">
             <Heart size={24} className={`transition-colors ${liked ? 'fill-[#FF3B30] text-[#FF3B30]' : 'text-white'}`} />
           </div>
-          <span className="text-white text-[12px] font-semibold drop-shadow-md">
+          <span className="text-white text-[12px] font-semibold drop-shadow-md" style={{ color: '#FFFFFF' }}>
             {formatCount(likesCount)}
           </span>
         </button>
@@ -148,7 +148,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-black/40 transition">
             <MessageCircle size={24} className="text-white" />
           </div>
-          <span className="text-white text-[12px] font-semibold drop-shadow-md">
+          <span className="text-white text-[12px] font-semibold drop-shadow-md" style={{ color: '#FFFFFF' }}>
             {formatCount(reel.comments_count || 0)}
           </span>
         </button>
@@ -158,7 +158,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-black/40 transition">
             <Share2 size={24} className="text-white" />
           </div>
-          <span className="text-white text-[12px] font-semibold drop-shadow-md">
+          <span className="text-white text-[12px] font-semibold drop-shadow-md" style={{ color: '#FFFFFF' }}>
             {formatCount(reel.shares_count || 0)}
           </span>
         </button>
