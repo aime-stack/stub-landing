@@ -221,12 +221,24 @@ export function PostCard({ post }: PostCardProps) {
           <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>
             <button
               onClick={e => { e.stopPropagation(); setShowMenu(m => !m); }}
-              className="shrink-0 p-1.5 rounded-full transition-all duration-200 ml-1"
-              style={{ color: showMenu ? 'var(--primary)' : 'var(--text-secondary)', background: showMenu ? 'rgba(10,126,164,0.1)' : '' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,126,164,0.1)'; e.currentTarget.style.color = 'var(--primary)'; }}
-              onMouseLeave={e => { if (!showMenu) { e.currentTarget.style.background = ''; e.currentTarget.style.color = 'var(--text-secondary)'; } }}
+              style={{
+                flexShrink: 0,
+                marginLeft: 8,
+                padding: 8,
+                borderRadius: '50%',
+                border: 'none',
+                cursor: 'pointer',
+                background: showMenu ? 'rgba(10,126,164,0.12)' : 'rgba(0,0,0,0.05)',
+                color: showMenu ? 'var(--primary)' : 'var(--text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,126,164,0.12)'; e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.transform = 'scale(1.08)'; }}
+              onMouseLeave={e => { if (!showMenu) { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; e.currentTarget.style.color = 'var(--text-secondary)'; } e.currentTarget.style.transform = 'scale(1)'; }}
             >
-              <MoreHorizontal size={17} />
+              <MoreHorizontal size={20} />
             </button>
 
             {/* Dropdown */}
