@@ -41,7 +41,7 @@ export default async function WebAppLayout({ children }: { children: ReactNode }
       <div className="mx-auto max-w-[1268px] px-4 flex">
 
         {/* Left Sidebar — sticky, full-height */}
-        <div className="hidden lg:flex w-[72px] xl:w-[280px] shrink-0 sticky top-0 h-screen">
+        <div className="hidden lg:flex w-[72px] xl:w-[280px] shrink-0 sticky top-0 h-screen xl:pr-6">
           <DesktopSidebar user={user} />
         </div>
 
