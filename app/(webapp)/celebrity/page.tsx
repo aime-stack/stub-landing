@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import {
   Star, MessageCircle, Search, X, Send, Loader2,
-  Crown, Clock, AlertCircle, CheckCircle, Coins
+  Crown, Clock, AlertCircle, CheckCircle, MapPin, Sparkles,
 } from 'lucide-react';
+
+const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 type CelebStatus = 'available' | 'busy';
@@ -14,6 +16,7 @@ interface Celebrity {
   name: string;
   handle: string;
   avatar: string;
+  coverImg: string;
   followers: string;
   bio: string;
   pricePerMsg: number;
@@ -21,45 +24,52 @@ interface Celebrity {
   status: CelebStatus;
   responseTime: string;
   totalChats: number;
+  location: string;
 }
 
 // ─── Data ──────────────────────────────────────────────────────────────────
 const INITIAL_CELEBS: Celebrity[] = [
   {
     id: 'cel1', name: 'Selena Martinez', handle: 'selena_creates',
-    avatar: '47', followers: '2.4M', bio: 'Lifestyle creator & travel junkie 🌍',
+    avatar: '47', coverImg: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&q=70',
+    followers: '2.4M', bio: 'Lifestyle creator & travel junkie 🌍',
     pricePerMsg: 50, category: 'Lifestyle', status: 'available',
-    responseTime: '~2h', totalChats: 4820,
+    responseTime: '~2h', totalChats: 4820, location: 'Los Angeles, CA',
   },
   {
     id: 'cel2', name: 'Marcus Reid', handle: 'marcus.fit',
-    avatar: '11', followers: '1.2M', bio: 'Fitness coach & @nike athlete 💪',
+    avatar: '11', coverImg: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=70',
+    followers: '1.2M', bio: 'Fitness coach & @nike athlete 💪',
     pricePerMsg: 30, category: 'Fitness', status: 'busy',
-    responseTime: '~4h', totalChats: 3201,
+    responseTime: '~4h', totalChats: 3201, location: 'New York, NY',
   },
   {
     id: 'cel3', name: 'DJ Kofi', handle: 'djkofi',
-    avatar: '33', followers: '580K', bio: 'Award-winning DJ & producer 🎵',
+    avatar: '33', coverImg: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&q=70',
+    followers: '580K', bio: 'Award-winning DJ & producer 🎵',
     pricePerMsg: 75, category: 'Music', status: 'available',
-    responseTime: '~6h', totalChats: 1940,
+    responseTime: '~6h', totalChats: 1940, location: 'Accra, Ghana',
   },
   {
     id: 'cel4', name: 'Chef Amara', handle: 'chefamara',
-    avatar: '45', followers: '320K', bio: 'Celebrity chef & cookbook author 🍽️',
+    avatar: '45', coverImg: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=70',
+    followers: '320K', bio: 'Celebrity chef & cookbook author 🍽️',
     pricePerMsg: 40, category: 'Food', status: 'busy',
-    responseTime: '~3h', totalChats: 2110,
+    responseTime: '~3h', totalChats: 2110, location: 'Lagos, Nigeria',
   },
   {
     id: 'cel5', name: 'Jake Thornton', handle: 'jakethephoto',
-    avatar: '8', followers: '320K', bio: 'Documentary photographer 📷',
+    avatar: '8', coverImg: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=600&q=70',
+    followers: '320K', bio: 'Documentary photographer 📷',
     pricePerMsg: 25, category: 'Art', status: 'available',
-    responseTime: '~1h', totalChats: 1380,
+    responseTime: '~1h', totalChats: 1380, location: 'Cape Town, SA',
   },
   {
     id: 'cel6', name: 'Nadia Wright', handle: 'nadia.eats',
-    avatar: '23', followers: '54K', bio: 'Food blogger & recipe creator 🍕',
+    avatar: '23', coverImg: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=70',
+    followers: '54K', bio: 'Food blogger & recipe creator 🍕',
     pricePerMsg: 20, category: 'Food', status: 'available',
-    responseTime: '~30m', totalChats: 892,
+    responseTime: '~30m', totalChats: 892, location: 'Nairobi, Kenya',
   },
 ];
 
@@ -77,36 +87,29 @@ function ChatModal({ celeb, onClose }: { celeb: Celebrity; onClose: () => void }
     setSending(true);
     setError(null);
     await new Promise(r => setTimeout(r, 900));
-
-    // In production: call Supabase to insert message + deduct coins
-    // await supabase.from('celebrity_messages').insert({ celeb_id: celeb.id, message, coins_spent: celeb.pricePerMsg })
-
     setSending(false);
     setSent(true);
   };
 
   if (sent) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-        <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#0a7ea4] to-[#8b5cf6] flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-white" />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'white', borderRadius: 28, padding: '52px 36px', maxWidth: 380, width: '100%', boxShadow: '0 32px 80px rgba(0,0,0,0.20)', textAlign: 'center', fontFamily: FONT }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <CheckCircle size={32} color="white" />
           </div>
-          <h2 className="text-[20px] font-bold text-gray-900 mb-1">Message Sent!</h2>
-          <p className="text-[14px] text-gray-500 mb-1">
-            Your message to <strong>{celeb.name}</strong> was delivered.
+          <h2 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 800, color: '#111827' }}>Message Sent! 🎉</h2>
+          <p style={{ margin: '0 0 6px', fontSize: 14, color: '#6B7280', lineHeight: 1.6 }}>
+            Your message to <strong style={{ color: '#111827' }}>{celeb.name}</strong> was delivered.
           </p>
-          <p className="text-[13px] text-gray-400 mb-6">
-            Expected reply in <span className="font-semibold text-[#0a7ea4]">{celeb.responseTime}</span>
+          <p style={{ margin: '0 0 20px', fontSize: 13, color: '#9CA3AF' }}>
+            Expected reply in <span style={{ fontWeight: 700, color: '#0a7ea4' }}>{celeb.responseTime}</span>
           </p>
-          <div className="flex items-center justify-center gap-1.5 text-[13px] text-amber-600 font-semibold bg-amber-50 border border-amber-200 rounded-xl py-2 mb-5">
-            <span className="text-base">🪙</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: '#D97706', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 14, padding: '10px 16px', marginBottom: 24 }}>
+            <span style={{ fontSize: 16 }}>🪙</span>
             <span>{celeb.pricePerMsg} coins deducted</span>
           </div>
-          <button
-            onClick={onClose}
-            className="w-full py-3 rounded-full bg-gradient-to-r from-[#0a7ea4] to-[#8b5cf6] text-white font-bold hover:brightness-110 transition-all"
-          >
+          <button onClick={onClose} style={{ width: '100%', height: 50, borderRadius: 999, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', color: 'white', fontFamily: FONT, fontSize: 15, fontWeight: 800, boxShadow: '0 4px 20px rgba(10,126,164,0.30)', transition: 'opacity 0.15s' }}>
             Done
           </button>
         </div>
@@ -115,62 +118,62 @@ function ChatModal({ celeb, onClose }: { celeb: Celebrity; onClose: () => void }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 py-6">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden">
+    <div
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: FONT }}
+    >
+      <div style={{ background: 'white', borderRadius: 28, width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column' }}>
 
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#0a7ea4] to-[#8b5cf6] px-5 pt-5 pb-4">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
+        {/* Header gradient */}
+        <div style={{ background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', padding: '24px 24px 20px', borderRadius: '28px 28px 0 0', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`https://i.pravatar.cc/56?img=${celeb.avatar}`}
+                src={`https://i.pravatar.cc/60?img=${celeb.avatar}`}
                 alt={celeb.name}
-                className="w-12 h-12 rounded-full border-2 border-white/40 object-cover"
+                style={{ width: 52, height: 52, borderRadius: '50%', border: '2.5px solid rgba(255,255,255,0.5)', objectFit: 'cover', flexShrink: 0 }}
               />
               <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-[16px] text-white">{celeb.name}</span>
-                  <Star size={13} className="text-yellow-300 fill-current" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                  <span style={{ fontWeight: 800, fontSize: 17, color: 'white' }}>{celeb.name}</span>
+                  <Star size={13} color="#FCD34D" fill="#FCD34D" />
                 </div>
-                <span className="text-white/75 text-[12px]">@{celeb.handle}</span>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>@{celeb.handle}</span>
               </div>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors">
-              <X size={16} className="text-white" />
+            <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <X size={16} color="white" />
             </button>
           </div>
-
-          {/* Info chips */}
-          <div className="flex items-center gap-2 mt-3">
-            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white/20 text-white px-2.5 py-1 rounded-full">
-              🪙 {celeb.pricePerMsg} coins per message
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: 999 }}>
+              🪙 {celeb.pricePerMsg} coins / message
             </span>
-            <span className="flex items-center gap-1 text-[11px] bg-white/20 text-white px-2.5 py-1 rounded-full">
-              <Clock size={11} />
-              Replies {celeb.responseTime}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, background: 'rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: 999 }}>
+              <Clock size={11} /> Replies {celeb.responseTime}
             </span>
           </div>
         </div>
 
-        {/* Message area */}
-        <div className="p-5 space-y-4">
+        {/* Body */}
+        <div style={{ padding: '20px 24px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 14, color: '#DC2626', fontSize: 13 }}>
               <AlertCircle size={15} /> {error}
             </div>
           )}
 
           {/* Guidelines */}
-          <div className="bg-gray-50 rounded-2xl p-3 text-[12px] text-gray-500 space-y-1">
-            <p className="font-semibold text-gray-700 mb-1">Before you send:</p>
-            <p>• Be respectful and genuine</p>
-            <p>• One message costs <span className="font-bold text-amber-600">🪙 {celeb.pricePerMsg} coins</span></p>
-            <p>• Celebrities respond in their own time</p>
+          <div style={{ background: '#F9FAFB', borderRadius: 16, padding: '14px 16px', fontSize: 13, color: '#6B7280', lineHeight: 1.7 }}>
+            <p style={{ margin: '0 0 6px', fontWeight: 700, color: '#374151', fontSize: 13 }}>Before you send:</p>
+            <p style={{ margin: 0 }}>• Be respectful and genuine</p>
+            <p style={{ margin: 0 }}>• One message costs <strong style={{ color: '#D97706' }}>🪙 {celeb.pricePerMsg} coins</strong></p>
+            <p style={{ margin: 0 }}>• Celebrities respond in their own time</p>
           </div>
 
           <div>
-            <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 8, fontFamily: FONT }}>
               Your message to {celeb.name.split(' ')[0]}
             </label>
             <textarea
@@ -179,25 +182,34 @@ function ChatModal({ celeb, onClose }: { celeb: Celebrity; onClose: () => void }
               placeholder={`Write your message to ${celeb.name.split(' ')[0]}…`}
               rows={5}
               maxLength={500}
-              className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-[14px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a7ea4] focus:border-transparent transition-all resize-none"
+              style={{ width: '100%', padding: '14px 16px', borderRadius: 16, border: '1.5px solid #E5E7EB', background: '#F9FAFB', fontSize: 14, color: '#111827', fontFamily: FONT, outline: 'none', resize: 'none', boxSizing: 'border-box', lineHeight: 1.6, transition: 'all 0.2s' }}
+              onFocus={e => { e.currentTarget.style.border = '1.5px solid #0a7ea4'; e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,126,164,0.08)'; }}
+              onBlur={e => { e.currentTarget.style.border = '1.5px solid #E5E7EB'; e.currentTarget.style.background = '#F9FAFB'; e.currentTarget.style.boxShadow = 'none'; }}
             />
-            <div className="flex justify-between mt-1">
-              <span className="text-[11px] text-gray-400">Keep it respectful & personal</span>
-              <span className={`text-[11px] ${message.length > 450 ? 'text-red-400' : 'text-gray-400'}`}>
-                {message.length}/500
-              </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+              <span style={{ fontSize: 11, color: '#9CA3AF' }}>Keep it respectful & personal</span>
+              <span style={{ fontSize: 11, color: message.length > 450 ? '#EF4444' : '#9CA3AF', fontWeight: 600 }}>{message.length}/500</span>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5">
+        <div style={{ padding: '0 24px 24px', flexShrink: 0 }}>
           <button
             onClick={handleSend}
             disabled={sending || !message.trim()}
-            className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#0a7ea4] to-[#8b5cf6] text-white font-bold text-[15px] hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            style={{
+              width: '100%', height: 52, borderRadius: 999, border: 'none',
+              cursor: (sending || !message.trim()) ? 'not-allowed' : 'pointer',
+              background: (sending || !message.trim()) ? '#E5E7EB' : 'linear-gradient(135deg,#0a7ea4,#8b5cf6)',
+              color: (sending || !message.trim()) ? '#9CA3AF' : 'white',
+              fontFamily: FONT, fontSize: 15, fontWeight: 800,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              boxShadow: (!sending && message.trim()) ? '0 4px 20px rgba(10,126,164,0.30)' : 'none',
+              transition: 'all 0.15s',
+            }}
           >
-            {sending ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />}
+            {sending ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={18} />}
             {sending ? 'Sending…' : `Send Message · 🪙 ${celeb.pricePerMsg}`}
           </button>
         </div>
@@ -206,94 +218,150 @@ function ChatModal({ celeb, onClose }: { celeb: Celebrity; onClose: () => void }
   );
 }
 
-// ─── Celebrity Card (column grid) ───────────────────────────────────────────
+// ─── Celebrity Card (Marketplace-style) ─────────────────────────────────────
 function CelebCard({ celeb, onChat }: { celeb: Celebrity; onChat: () => void }) {
   const isAvailable = celeb.status === 'available';
 
   return (
-    <div className={`bg-white rounded-2xl border overflow-hidden flex flex-col transition-all duration-200 hover:shadow-md ${
-      isAvailable ? 'border-gray-200' : 'border-gray-200 opacity-90'
-    }`}>
-      {/* Status banner */}
-      <div className={`flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-bold ${
-        isAvailable
-          ? 'bg-emerald-500 text-white'
-          : 'bg-gray-400 text-white'
-      }`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-white animate-pulse' : 'bg-gray-300'}`} />
-        {isAvailable ? 'AVAILABLE' : 'BUSY'}
-      </div>
+    <div
+      style={{
+        background: 'white', borderRadius: 20, border: '1px solid #E5E7EB',
+        overflow: 'hidden', display: 'flex', flexDirection: 'column',
+        transition: 'box-shadow 0.2s, transform 0.2s', cursor: 'pointer',
+        fontFamily: FONT,
+      }}
+      onMouseEnter={e => { (e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.10)'); (e.currentTarget.style.transform = 'translateY(-3px)'); }}
+      onMouseLeave={e => { (e.currentTarget.style.boxShadow = 'none'); (e.currentTarget.style.transform = 'translateY(0)'); }}
+    >
+      {/* Cover image with avatar overlay */}
+      <div style={{ position: 'relative', height: 110, background: '#F3F4F6', flexShrink: 0 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={celeb.coverImg}
+          alt=""
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+        {/* Gradient overlay */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.45))' }} />
 
-      {/* Avatar */}
-      <div className="flex flex-col items-center pt-4 pb-3 px-3">
-        <div className={`relative mb-3 p-[2.5px] rounded-full ${
-          isAvailable
-            ? 'bg-gradient-to-tr from-[#0a7ea4] via-[#8b5cf6] to-[#ec4899]'
-            : 'bg-gray-300'
-        }`}>
+        {/* Status badge */}
+        <div style={{
+          position: 'absolute', top: 10, left: 10,
+          display: 'flex', alignItems: 'center', gap: 5,
+          padding: '4px 10px', borderRadius: 999,
+          background: isAvailable ? 'rgba(16,185,129,0.92)' : 'rgba(107,114,128,0.85)',
+          backdropFilter: 'blur(4px)',
+          fontSize: 10, fontWeight: 700, color: 'white', letterSpacing: '0.03em',
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: isAvailable ? '#A7F3D0' : '#D1D5DB', animation: isAvailable ? 'pulse 2s infinite' : 'none' }} />
+          {isAvailable ? 'AVAILABLE' : 'BUSY'}
+        </div>
+
+        {/* Avatar */}
+        <div style={{
+          position: 'absolute', bottom: -26, left: '50%', transform: 'translateX(-50%)',
+          padding: 3, borderRadius: '50%',
+          background: isAvailable
+            ? 'linear-gradient(135deg,#0a7ea4,#8b5cf6,#ec4899)'
+            : '#D1D5DB',
+        }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`https://i.pravatar.cc/80?img=${celeb.avatar}`}
             alt={celeb.name}
-            className={`w-16 h-16 rounded-full object-cover border-2 border-white ${!isAvailable ? 'grayscale' : ''}`}
+            style={{
+              width: 56, height: 56, borderRadius: '50%',
+              objectFit: 'cover', border: '3px solid white',
+              display: 'block',
+              filter: isAvailable ? 'none' : 'grayscale(60%)',
+            }}
           />
-          <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white ${
-            isAvailable ? 'bg-emerald-400' : 'bg-gray-400'
-          }`} />
+          {/* Online dot */}
+          <div style={{
+            position: 'absolute', bottom: 2, right: 2,
+            width: 14, height: 14, borderRadius: '50%',
+            background: isAvailable ? '#10B981' : '#9CA3AF',
+            border: '2.5px solid white',
+          }} />
         </div>
+      </div>
 
-        {/* Name + verify */}
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1 mb-0.5">
-            <span className="font-bold text-[14px] text-gray-900 leading-tight">{celeb.name}</span>
-            <Crown size={12} className="text-yellow-500 fill-current shrink-0" />
+      {/* Body */}
+      <div style={{ padding: '36px 16px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Name + crown */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 2 }}>
+            <span style={{ fontWeight: 800, fontSize: 15, color: '#111827' }}>{celeb.name}</span>
+            <Crown size={13} color="#F59E0B" fill="#F59E0B" />
           </div>
-          <p className="text-[11px] text-gray-400">@{celeb.handle}</p>
-          <p className="text-[11px] text-gray-500 mt-0.5">{celeb.followers} followers</p>
+          <p style={{ margin: 0, fontSize: 12, color: '#0a7ea4', fontWeight: 600 }}>@{celeb.handle}</p>
+          <p style={{ margin: '2px 0 0', fontSize: 11, color: '#9CA3AF' }}>{celeb.followers} followers</p>
         </div>
 
         {/* Bio */}
-        <p className="text-[12px] text-gray-600 text-center mt-2 line-clamp-2 leading-tight px-1">
+        <p style={{ margin: 0, fontSize: 12, color: '#6B7280', textAlign: 'center', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>
           {celeb.bio}
         </p>
 
-        {/* Category chip */}
-        <span className="mt-2 px-2.5 py-0.5 rounded-full bg-[#0a7ea4]/10 text-[#0a7ea4] text-[10px] font-semibold">
-          {celeb.category}
-        </span>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-2 divide-x divide-gray-100 border-t border-gray-100 text-center">
-        <div className="py-2">
-          <p className="text-[11px] text-gray-400 leading-none">per msg</p>
-          <div className="flex items-center justify-center gap-0.5 mt-0.5">
-            <span className="text-base">🪙</span>
-            <span className="font-bold text-[14px] text-amber-600">{celeb.pricePerMsg}</span>
+        {/* Category + location */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#0a7ea4', background: 'rgba(10,126,164,0.10)', padding: '3px 10px', borderRadius: 999 }}>
+            {celeb.category}
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <MapPin size={10} color="#9CA3AF" />
+            <span style={{ fontSize: 10, color: '#9CA3AF' }}>{celeb.location}</span>
           </div>
         </div>
-        <div className="py-2">
-          <p className="text-[11px] text-gray-400 leading-none">reply</p>
-          <p className="font-semibold text-[12px] text-gray-700 mt-0.5">{celeb.responseTime}</p>
-        </div>
-      </div>
 
-      {/* Chat button */}
-      <div className="p-3 pt-2">
+        {/* Stats divider */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, borderTop: '1px solid #F3F4F6', borderBottom: '1px solid #F3F4F6', margin: '4px 0' }}>
+          <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #F3F4F6' }}>
+            <p style={{ margin: '0 0 2px', fontSize: 10, color: '#9CA3AF', fontWeight: 500 }}>per message</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+              <span style={{ fontSize: 14 }}>🪙</span>
+              <span style={{ fontWeight: 800, fontSize: 15, color: '#D97706' }}>{celeb.pricePerMsg}</span>
+            </div>
+          </div>
+          <div style={{ padding: '10px 8px', textAlign: 'center' }}>
+            <p style={{ margin: '0 0 2px', fontSize: 10, color: '#9CA3AF', fontWeight: 500 }}>reply time</p>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: '#374151' }}>{celeb.responseTime}</p>
+          </div>
+        </div>
+
+        {/* CTA */}
         {isAvailable ? (
           <button
             onClick={onChat}
-            className="w-full py-2.5 rounded-full bg-gradient-to-r from-[#0a7ea4] to-[#8b5cf6] text-white text-[13px] font-bold hover:brightness-110 active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm"
+            style={{
+              width: '100%', height: 42, borderRadius: 999, border: 'none',
+              cursor: 'pointer',
+              background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)',
+              color: 'white', fontFamily: FONT, fontSize: 13, fontWeight: 800,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              boxShadow: '0 3px 12px rgba(10,126,164,0.28)',
+              transition: 'opacity 0.15s, transform 0.1s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.90')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')}
+            onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
           >
-            <MessageCircle size={14} />
+            <MessageCircle size={15} />
             Chat Now
           </button>
         ) : (
           <button
             disabled
-            className="w-full py-2.5 rounded-full bg-gray-100 text-gray-400 text-[13px] font-semibold cursor-not-allowed flex items-center justify-center gap-1.5 border border-gray-200"
+            style={{
+              width: '100%', height: 42, borderRadius: 999,
+              border: '1.5px solid #E5E7EB', background: '#F9FAFB',
+              color: '#9CA3AF', fontFamily: FONT, fontSize: 13, fontWeight: 700,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              cursor: 'not-allowed',
+            }}
           >
-            <Clock size={14} />
+            <Clock size={15} />
             Busy — Unavailable
           </button>
         )}
@@ -319,70 +387,96 @@ export default function CelebrityPage() {
   const busy      = filtered.filter(c => c.status === 'busy');
 
   return (
-    <div className="min-h-screen bg-white">
+    <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT }}>
 
       {/* ── Hero Header ── */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a7ea4] via-[#8b5cf6] to-[#ec4899]" />
-        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
-        <div className="absolute bottom-0 left-4 w-20 h-20 rounded-full bg-white/10" />
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0a7ea4 0%,#8b5cf6 55%,#ec4899 100%)' }} />
+        {/* decorative circles */}
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} />
+        <div style={{ position: 'absolute', bottom: -20, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
+        <div style={{ position: 'absolute', top: 20, left: '40%', width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
 
-        <div className="relative px-4 pt-6 pb-6 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-2">
-            <Crown className="w-6 h-6 text-white" />
+        <div style={{ position: 'relative', padding: '32px 20px 28px', textAlign: 'center' }}>
+          <div style={{ width: 54, height: 54, borderRadius: 18, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+            <Crown size={26} color="white" fill="white" />
           </div>
-          <h1 className="text-[22px] font-bold text-white mb-1">Celebrity Chat</h1>
-          <p className="text-white/80 text-[13px]">Message your favourite celebrities directly</p>
+          <h1 style={{ margin: '0 0 6px', fontSize: 26, fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>Celebrity Chat</h1>
+          <p style={{ margin: '0 0 20px', fontSize: 14, color: 'rgba(255,255,255,0.80)', lineHeight: 1.5 }}>
+            Message your favourite celebrities directly
+          </p>
 
-          {/* Live count */}
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <span className="flex items-center gap-1.5 text-[12px] font-semibold bg-white/20 text-white px-3 py-1.5 rounded-full">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          {/* Live count chips */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', color: 'white', padding: '7px 16px', borderRadius: 999 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />
               {available.length} celebrities available now
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.90)', padding: '7px 16px', borderRadius: 999 }}>
+              <Sparkles size={12} />
+              {celebs.length} total creators
             </span>
           </div>
         </div>
       </div>
 
       {/* ── Sticky Search + Filters ── */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-3 space-y-3">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid #E5E7EB',
+      }}>
+        {/* Search */}
+        <div style={{ padding: '14px 20px 10px', position: 'relative' }}>
+          <Search style={{ position: 'absolute', left: 34, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: '#9CA3AF', pointerEvents: 'none' }} />
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search celebrities..."
-            className="w-full h-10 pl-11 pr-4 rounded-full bg-gray-100 text-[14px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a7ea4] focus:bg-white transition-all"
+            style={{ width: '100%', height: 44, paddingLeft: 42, paddingRight: 14, borderRadius: 999, border: '1.5px solid transparent', background: '#F3F4F6', fontFamily: FONT, fontSize: 14, outline: 'none', boxSizing: 'border-box', transition: 'all 0.2s' }}
+            onFocus={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.border = '1.5px solid #0a7ea4'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,126,164,0.08)'; }}
+            onBlur={e => { e.currentTarget.style.background = '#F3F4F6'; e.currentTarget.style.border = '1.5px solid transparent'; e.currentTarget.style.boxShadow = 'none'; }}
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCat(cat)}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-[12px] font-semibold transition-all duration-200 ${
-                activeCat === cat
-                  ? 'bg-gradient-to-r from-[#0a7ea4] to-[#8b5cf6] text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+
+        {/* Category pills */}
+        <div style={{ display: 'flex', gap: 8, padding: '0 20px 12px', overflowX: 'auto' }} className="no-scrollbar">
+          {CATEGORIES.map(cat => {
+            const active = activeCat === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCat(cat)}
+                style={{
+                  flexShrink: 0,
+                  height: 34, paddingLeft: 14, paddingRight: 14, borderRadius: 999,
+                  border: active ? 'none' : '1.5px solid #E5E7EB',
+                  background: active ? 'linear-gradient(135deg,#0a7ea4,#8b5cf6)' : 'white',
+                  color: active ? 'white' : '#6B7280',
+                  fontFamily: FONT, fontSize: 12, fontWeight: active ? 700 : 500, cursor: 'pointer',
+                  boxShadow: active ? '0 2px 10px rgba(10,126,164,0.25)' : 'none',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-6">
+      {/* ── Content ── */}
+      <div style={{ padding: '20px 20px 40px', maxWidth: 1200, margin: '0 auto' }}>
 
         {/* ── Available section ── */}
         {available.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <h2 className="text-[15px] font-bold text-gray-900">Available Now</h2>
-              <span className="text-[12px] text-gray-400 ml-auto">{available.length} celebrities</span>
+          <section style={{ marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block', flexShrink: 0 }} />
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#111827' }}>Available Now</h2>
+              <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 'auto', fontWeight: 500 }}>{available.length} celebrities</span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
               {available.map(c => (
                 <CelebCard key={c.id} celeb={c} onChat={() => setSelectedCeleb(c)} />
               ))}
@@ -392,13 +486,13 @@ export default function CelebrityPage() {
 
         {/* ── Busy section ── */}
         {busy.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-2 h-2 rounded-full bg-gray-400" />
-              <h2 className="text-[15px] font-bold text-gray-500">Currently Busy</h2>
-              <span className="text-[12px] text-gray-400 ml-auto">{busy.length} celebrities</span>
+          <section style={{ marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#9CA3AF', display: 'inline-block', flexShrink: 0 }} />
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#6B7280' }}>Currently Busy</h2>
+              <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 'auto', fontWeight: 500 }}>{busy.length} celebrities</span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
               {busy.map(c => (
                 <CelebCard key={c.id} celeb={c} onChat={() => {}} />
               ))}
@@ -406,13 +500,14 @@ export default function CelebrityPage() {
           </section>
         )}
 
+        {/* Empty state */}
         {filtered.length === 0 && (
-          <div className="py-20 flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-              <Crown className="w-8 h-8 text-gray-300" />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 32px', textAlign: 'center' }}>
+            <div style={{ width: 72, height: 72, borderRadius: 22, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <Crown size={32} color="#D1D5DB" />
             </div>
-            <p className="text-gray-900 font-semibold text-[15px] mb-1">No celebrities found</p>
-            <p className="text-gray-400 text-[13px]">Try a different search or category.</p>
+            <p style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 800, color: '#111827', fontFamily: FONT }}>No celebrities found</p>
+            <p style={{ margin: 0, fontSize: 14, color: '#9CA3AF', fontFamily: FONT }}>Try a different search or category.</p>
           </div>
         )}
       </div>
@@ -421,6 +516,20 @@ export default function CelebrityPage() {
       {selectedCeleb && (
         <ChatModal celeb={selectedCeleb} onClose={() => setSelectedCeleb(null)} />
       )}
+
+      {/* Keyframe for pulse animation */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }
