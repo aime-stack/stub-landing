@@ -138,6 +138,7 @@ export function DesktopSidebar({ user }: { user: any }) {
         background: '#FFFFFF',
         paddingTop: 12,
         paddingBottom: 24,
+        paddingLeft: 8,
         paddingRight: 12,
       }}
     >
