@@ -89,7 +89,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
       </div>
 
       {/* Bottom Overlay (User info & Caption) */}
-      <div className="absolute bottom-0 left-0 right-16 p-4 pt-12 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none">
+      <div className="absolute bottom-0 left-0 right-16 p-4 pt-12 bg-gradient-to-t from-black via-black/60 to-transparent z-10 pointer-events-none">
         <div className="flex items-center gap-3 mb-3 pointer-events-auto">
           <Link href={`/profile/${username}`}>
             <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 relative">
@@ -107,14 +107,17 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
               {displayName}
             </Link>
           </div>
-          <button className="px-3 py-1 bg-transparent border border-white text-white rounded-md text-[13px] font-semibold hover:bg-white/10 transition ml-1">
+          <button className="px-4 py-1.5 ml-1 bg-white text-black rounded-full text-[13px] font-bold hover:bg-gray-200 transition-colors shadow-sm">
             Follow
           </button>
         </div>
         
         {reel.content && (
-          <p className="text-white text-[14px] leading-snug drop-shadow-md mb-3 line-clamp-2">
-            {reel.content}
+          <p className="text-white text-[14px] leading-snug drop-shadow-lg font-medium mb-3 line-clamp-2">
+            {/* Simple rich text parser for hashtags to keep them white but bold */}
+            {reel.content.split(/((?:#|@)[\w.]+)/g).map((part, i) => 
+               /^[#@][\w.]+$/.test(part) ? <span key={i} className="font-bold text-white">{part}</span> : <span key={i}>{part}</span>
+            )}
           </p>
         )}
 
