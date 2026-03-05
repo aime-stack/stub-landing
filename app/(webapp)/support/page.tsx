@@ -4,14 +4,18 @@ import { useState } from 'react';
 import {
   HelpCircle, MessageCircle, Mail, ChevronRight,
   X, Send, Loader2, CheckCircle, BookOpen, Crown,
-  Zap, Shield, Flag, ExternalLink, AlertCircle
+  Zap, Shield, Flag, ExternalLink, AlertCircle, LifeBuoy,
 } from 'lucide-react';
+
+const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
 // ─── Data ──────────────────────────────────────────────────────────────────
 const FAQS = [
   {
     category: 'Coins & Rewards',
     icon: '🪙',
+    color: '#D97706',
+    bg: 'rgba(217,119,6,0.08)',
     items: [
       {
         q: 'How do I earn Stubgram Coins?',
@@ -26,6 +30,8 @@ const FAQS = [
   {
     category: 'Premium & Courses',
     icon: '⭐',
+    color: '#8b5cf6',
+    bg: 'rgba(139,92,246,0.08)',
     items: [
       {
         q: 'How do I upgrade to Premium?',
@@ -44,6 +50,8 @@ const FAQS = [
   {
     category: 'Celebrity Chat',
     icon: '👑',
+    color: '#EC4899',
+    bg: 'rgba(236,72,153,0.08)',
     items: [
       {
         q: 'How does Celebrity Chat work?',
@@ -58,6 +66,8 @@ const FAQS = [
   {
     category: 'Posts & Account',
     icon: '📝',
+    color: '#0a7ea4',
+    bg: 'rgba(10,126,164,0.08)',
     items: [
       {
         q: 'How do I boost a post?',
@@ -71,7 +81,7 @@ const FAQS = [
   },
 ];
 
-// ─── Report Modal ───────────────────────────────────────────────────────────
+// ─── Report Modal ────────────────────────────────────────────────────────────
 function ReportModal({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState({ type: '', description: '', email: '' });
   const [loading, setLoading] = useState(false);
@@ -79,8 +89,12 @@ function ReportModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
-    if (!form.type || !form.description) { setError('Please select a type and describe the issue.'); return; }
-    setLoading(true); setError(null);
+    if (!form.type || !form.description) {
+      setError('Please select a type and describe the issue.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
     await new Promise(r => setTimeout(r, 900));
     setLoading(false);
     setSent(true);
@@ -88,14 +102,21 @@ function ReportModal({ onClose }: { onClose: () => void }) {
 
   if (sent) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-        <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-emerald-500" />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: FONT }}>
+        <div style={{ background: 'white', borderRadius: 28, padding: '52px 36px', maxWidth: 380, width: '100%', boxShadow: '0 32px 80px rgba(0,0,0,0.20)', textAlign: 'center' }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#10B981,#34D399)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <CheckCircle size={32} color="white" />
           </div>
-          <h2 className="text-[20px] font-bold text-gray-900 mb-2">Report Received!</h2>
-          <p className="text-[14px] text-gray-500 mb-6">Our team will review your report within 24 hours and take appropriate action.</p>
-          <button onClick={onClose} className="w-full py-3 rounded-full bg-gradient-to-r from-[#0a7ea4] to-[#8b5cf6] text-white font-bold hover:brightness-110 transition-all">
+          <h2 style={{ margin: '0 0 10px', fontSize: 22, fontWeight: 800, color: '#111827' }}>Report Received!</h2>
+          <p style={{ margin: '0 0 28px', fontSize: 14, color: '#6B7280', lineHeight: 1.7 }}>
+            Our team will review your report within <strong style={{ color: '#111827' }}>24 hours</strong> and take appropriate action.
+          </p>
+          <button
+            onClick={onClose}
+            style={{ width: '100%', height: 50, borderRadius: 999, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', color: 'white', fontFamily: FONT, fontSize: 15, fontWeight: 800, boxShadow: '0 4px 20px rgba(10,126,164,0.30)', transition: 'opacity 0.15s' }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+          >
             Done
           </button>
         </div>
@@ -103,70 +124,107 @@ function ReportModal({ onClose }: { onClose: () => void }) {
     );
   }
 
+  const issueTypes = ['Bug / Error', 'Payment Issue', 'Content Violation', 'Account Problem', 'Feature Request', 'Other'];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 py-6">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 shrink-0">
+    <div
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: FONT }}
+    >
+      <div style={{ background: 'white', borderRadius: 28, width: '100%', maxWidth: 500, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.20)', display: 'flex', flexDirection: 'column' }}>
+
+        {/* Header */}
+        <div style={{ position: 'sticky', top: 0, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #F3F4F6', zIndex: 1, borderRadius: '28px 28px 0 0' }}>
           <div>
-            <h2 className="text-[17px] font-bold text-gray-900">Report a Problem</h2>
-            <p className="text-[12px] text-gray-400">Help us improve Stubgram</p>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#111827' }}>Report a Problem</h2>
+            <p style={{ margin: '3px 0 0', fontSize: 13, color: '#9CA3AF' }}>Help us improve Stubgram</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-            <X size={18} className="text-gray-500" />
+          <button
+            onClick={onClose}
+            style={{ width: 36, height: 36, borderRadius: '50%', background: '#F3F4F6', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <X size={17} color="#6B7280" />
           </button>
         </div>
 
-        <div className="overflow-y-auto p-5 flex-1 space-y-4">
+        {/* Body */}
+        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18, flex: 1 }}>
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-              <AlertCircle size={14} />{error}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 14, color: '#DC2626', fontSize: 13 }}>
+              <AlertCircle size={15} /> {error}
             </div>
           )}
+
+          {/* Issue type */}
           <div>
-            <label className="block text-[13px] font-semibold text-gray-700 mb-2">Issue Type *</label>
-            <div className="grid grid-cols-2 gap-2">
-              {['Bug / Error', 'Payment Issue', 'Content Violation', 'Account Problem', 'Feature Request', 'Other'].map(t => (
-                <button key={t} type="button"
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 10 }}>Issue Type *</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {issueTypes.map(t => (
+                <button
+                  key={t}
+                  type="button"
                   onClick={() => setForm(f => ({ ...f, type: t }))}
-                  className={`py-2.5 px-3 rounded-xl border-2 text-[12px] font-medium text-left transition-all ${
-                    form.type === t
-                      ? 'border-[#0a7ea4] bg-[#0a7ea4]/5 text-[#0a7ea4]'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >{t}</button>
+                  style={{
+                    padding: '10px 12px', borderRadius: 14,
+                    border: `2px solid ${form.type === t ? '#0a7ea4' : '#E5E7EB'}`,
+                    background: form.type === t ? 'rgba(10,126,164,0.06)' : 'white',
+                    color: form.type === t ? '#0a7ea4' : '#6B7280',
+                    fontFamily: FONT, fontSize: 13, fontWeight: form.type === t ? 700 : 500,
+                    cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                  }}
+                >
+                  {t}
+                </button>
               ))}
             </div>
           </div>
 
+          {/* Description */}
           <div>
-            <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Describe the problem *</label>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 8 }}>Describe the problem *</label>
             <textarea
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               placeholder="Please describe the issue in as much detail as possible. Include steps to reproduce if applicable."
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-[14px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a7ea4] transition-all resize-none"
+              style={{ width: '100%', padding: '12px 14px', borderRadius: 16, border: '1.5px solid #E5E7EB', background: '#F9FAFB', fontFamily: FONT, fontSize: 14, color: '#111827', outline: 'none', resize: 'none', boxSizing: 'border-box', lineHeight: 1.6, transition: 'all 0.2s' }}
+              onFocus={e => { e.currentTarget.style.border = '1.5px solid #0a7ea4'; e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,126,164,0.08)'; }}
+              onBlur={e => { e.currentTarget.style.border = '1.5px solid #E5E7EB'; e.currentTarget.style.background = '#F9FAFB'; e.currentTarget.style.boxShadow = 'none'; }}
             />
           </div>
 
+          {/* Email */}
           <div>
-            <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Contact email (optional)</label>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 8 }}>Contact email (optional)</label>
             <input
               type="email"
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               placeholder="your@email.com (for follow-up)"
-              className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-gray-50 text-[14px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a7ea4] transition-all"
+              style={{ width: '100%', height: 46, padding: '0 14px', borderRadius: 14, border: '1.5px solid #E5E7EB', background: '#F9FAFB', fontFamily: FONT, fontSize: 14, color: '#111827', outline: 'none', boxSizing: 'border-box', transition: 'all 0.2s' }}
+              onFocus={e => { e.currentTarget.style.border = '1.5px solid #0a7ea4'; e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,126,164,0.08)'; }}
+              onBlur={e => { e.currentTarget.style.border = '1.5px solid #E5E7EB'; e.currentTarget.style.background = '#F9FAFB'; e.currentTarget.style.boxShadow = 'none'; }}
             />
           </div>
         </div>
 
-        <div className="px-5 py-4 border-t border-gray-100 shrink-0">
+        {/* Footer */}
+        <div style={{ padding: '0 24px 24px' }}>
           <button
-            onClick={handleSubmit} disabled={loading}
-            className="w-full py-3 rounded-full bg-gradient-to-r from-red-500 to-[#8b5cf6] text-white font-bold text-[14px] hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            onClick={handleSubmit}
+            disabled={loading}
+            style={{
+              width: '100%', height: 52, borderRadius: 999, border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              background: 'linear-gradient(135deg,#EF4444,#8b5cf6)',
+              color: 'white', fontFamily: FONT, fontSize: 15, fontWeight: 800,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              boxShadow: '0 4px 20px rgba(239,68,68,0.28)',
+              opacity: loading ? 0.7 : 1,
+              transition: 'all 0.15s',
+            }}
           >
-            {loading ? <Loader2 size={15} className="animate-spin" /> : <Flag size={15} />}
+            {loading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Flag size={18} />}
             {loading ? 'Submitting…' : 'Submit Report'}
           </button>
         </div>
@@ -175,33 +233,51 @@ function ReportModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── FAQ Section ────────────────────────────────────────────────────────────
-function FaqSection({ category, icon, items }: { category: string; icon: string; items: { q: string; a: string }[] }) {
+// ─── FAQ Accordion ────────────────────────────────────────────────────────────
+function FaqSection({
+  category, icon, color, bg, items,
+}: {
+  category: string; icon: string; color: string; bg: string;
+  items: { q: string; a: string }[];
+}) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div style={{ background: 'white', borderRadius: 20, border: '1px solid #E5E7EB', overflow: 'hidden', fontFamily: FONT }}>
       {/* Section header */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
-        <span className="text-[18px]">{icon}</span>
-        <h3 className="text-[14px] font-bold text-gray-800">{category}</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', background: bg, borderBottom: '1px solid #E5E7EB' }}>
+        <span style={{ fontSize: 20 }}>{icon}</span>
+        <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: color }}>{category}</h3>
       </div>
 
       {items.map((item, i) => (
-        <div key={i} className={i > 0 ? 'border-t border-gray-100' : ''}>
+        <div key={i} style={{ borderTop: i > 0 ? '1px solid #F3F4F6' : 'none' }}>
           <button
             onClick={() => setOpenIndex(openIndex === i ? null : i)}
-            className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-gray-50 transition-colors"
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '16px 18px', background: 'white', border: 'none', cursor: 'pointer',
+              textAlign: 'left', fontFamily: FONT, gap: 12, transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'white')}
           >
-            <span className="text-[14px] font-semibold text-gray-900 pr-4 leading-snug">{item.q}</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#111827', lineHeight: 1.5, flex: 1 }}>{item.q}</span>
             <ChevronRight
-              size={16}
-              className={`shrink-0 text-gray-400 transition-transform duration-200 ${openIndex === i ? 'rotate-90' : ''}`}
+              size={17}
+              color="#9CA3AF"
+              style={{
+                flexShrink: 0,
+                transform: openIndex === i ? 'rotate(90deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s',
+              }}
             />
           </button>
           {openIndex === i && (
-            <div className="px-4 pb-4 -mt-1">
-              <p className="text-[13px] text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-3">{item.a}</p>
+            <div style={{ padding: '0 18px 18px', marginTop: -4 }}>
+              <p style={{ margin: 0, fontSize: 13, color: '#6B7280', lineHeight: 1.75, background: '#F9FAFB', borderRadius: 14, padding: '12px 14px' }}>
+                {item.a}
+              </p>
             </div>
           )}
         </div>
@@ -214,146 +290,233 @@ function FaqSection({ category, icon, items }: { category: string; icon: string;
 export default function SupportPage() {
   const [showReport, setShowReport] = useState(false);
 
+  const contactCards = [
+    {
+      icon: MessageCircle,
+      label: 'Live Chat',
+      sub: 'Chat with support',
+      badge: 'Instant help',
+      iconColor: '#0a7ea4',
+      iconBg: 'rgba(10,126,164,0.10)',
+      badgeBg: 'linear-gradient(135deg,#0a7ea4,#0ea5e9)',
+    },
+    {
+      icon: Mail,
+      label: 'Email Us',
+      sub: 'support@stubgram.com',
+      badge: 'Reply in 24h',
+      iconColor: '#8b5cf6',
+      iconBg: 'rgba(139,92,246,0.10)',
+      badgeBg: 'linear-gradient(135deg,#8b5cf6,#a78bfa)',
+    },
+  ];
+
+  const quickLinks = [
+    { icon: BookOpen, label: 'Browse Courses',     sub: 'Explore all available courses',   href: '/courses',     color: '#0a7ea4', bg: 'rgba(10,126,164,0.10)' },
+    { icon: Crown,    label: 'Upgrade to Premium', sub: 'Unlock exclusive features',        href: '/premium',     color: '#8b5cf6', bg: 'rgba(139,92,246,0.10)' },
+    { icon: Zap,      label: 'Boost a Post',        sub: 'Increase your post visibility',   href: '/advertising', color: '#D97706', bg: 'rgba(217,119,6,0.10)'  },
+    { icon: Shield,   label: 'Privacy & Terms',     sub: 'Review our policies',              href: '#',            color: '#6B7280', bg: '#F3F4F6'               },
+  ];
+
   return (
-    <div className="min-h-screen bg-white">
+    <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT }}>
 
       {/* ── Hero Header ── */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a7ea4] to-[#8b5cf6]" />
-        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
-        <div className="absolute bottom-0 left-6 w-20 h-20 rounded-full bg-white/10" />
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0a7ea4 0%,#8b5cf6 55%,#ec4899 100%)' }} />
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} />
+        <div style={{ position: 'absolute', bottom: -20, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
+        <div style={{ position: 'absolute', top: 24, left: '38%', width: 70, height: 70, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
 
-        <div className="relative px-4 pt-6 pb-6 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-2">
-            <HelpCircle className="w-6 h-6 text-white" />
+        <div style={{ position: 'relative', padding: '36px 24px 30px', textAlign: 'center' }}>
+          <div style={{ width: 56, height: 56, borderRadius: 20, background: 'rgba(255,255,255,0.20)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <LifeBuoy size={28} color="white" />
           </div>
-          <h1 className="text-[22px] font-bold text-white mb-1">Help & Support</h1>
-          <p className="text-white/80 text-[13px]">We're here to help — find answers or reach our team</p>
+          <h1 style={{ margin: '0 0 8px', fontSize: 28, fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>Help & Support</h1>
+          <p style={{ margin: '0 0 22px', fontSize: 14, color: 'rgba(255,255,255,0.80)', lineHeight: 1.6 }}>
+            We&apos;re here to help — find answers or reach our team
+          </p>
+
+          {/* Stat chips */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.20)', backdropFilter: 'blur(4px)', color: 'white', padding: '7px 16px', borderRadius: 999 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />
+              Support Online
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.90)', padding: '7px 16px', borderRadius: 999 }}>
+              {FAQS.reduce((s, f) => s + f.items.length, 0)} FAQ answers
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* ── Sticky title bar ── */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <HelpCircle size={18} className="text-[#0a7ea4]" />
-          <h2 className="text-[16px] font-bold text-gray-900">Help & Support</h2>
+      {/* ── Sticky top bar ── */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid #E5E7EB',
+        padding: '14px 20px',
+        display: 'flex', alignItems: 'center', gap: 10,
+      }}>
+        <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <HelpCircle size={17} color="white" />
         </div>
+        <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#111827' }}>Help & Support</h2>
       </div>
 
-      <div className="px-4 py-4 space-y-5">
+      {/* ── Content ── */}
+      <div style={{ padding: '24px 20px 48px', maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28 }}>
 
-        {/* ── Contact cards ── */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            {
-              icon: MessageCircle,
-              label: 'Live Chat',
-              sub: 'Chat with support',
-              desc: 'Instant help',
-              gradient: 'from-[#0a7ea4] to-[#0ea5e9]',
-              lightBg: 'bg-[#0a7ea4]/5',
-              textColor: 'text-[#0a7ea4]',
-            },
-            {
-              icon: Mail,
-              label: 'Email Us',
-              sub: 'support@stubgram.com',
-              desc: 'Reply in 24h',
-              gradient: 'from-[#8b5cf6] to-[#a78bfa]',
-              lightBg: 'bg-[#8b5cf6]/5',
-              textColor: 'text-[#8b5cf6]',
-            },
-          ].map(({ icon: Icon, label, sub, desc, gradient, lightBg, textColor }) => (
-            <button
-              key={label}
-              className="flex flex-col p-4 rounded-2xl border border-gray-200 bg-white hover:shadow-md active:scale-[0.97] transition-all duration-200 text-left group"
-            >
-              <div className={`w-11 h-11 rounded-2xl ${lightBg} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
-                <Icon size={20} className={textColor} />
-              </div>
-              <p className="font-bold text-[14px] text-gray-900">{label}</p>
-              <p className="text-[11px] text-gray-500 truncate">{sub}</p>
-              <span className={`mt-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r ${gradient} text-white self-start`}>
-                {desc}
-              </span>
-            </button>
-          ))}
-        </div>
+        {/* ── Contact Cards ── */}
+        <section>
+          <h2 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 800, color: '#111827' }}>Contact Us</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+            {contactCards.map(({ icon: Icon, label, sub, badge, iconColor, iconBg, badgeBg }) => (
+              <button
+                key={label}
+                style={{
+                  background: 'white', borderRadius: 20, border: '1px solid #E5E7EB',
+                  padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                  gap: 10, cursor: 'pointer', textAlign: 'left', fontFamily: FONT,
+                  transition: 'box-shadow 0.2s, transform 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.10)'); (e.currentTarget.style.transform = 'translateY(-3px)'); }}
+                onMouseLeave={e => { (e.currentTarget.style.boxShadow = 'none'); (e.currentTarget.style.transform = 'translateY(0)'); }}
+              >
+                {/* Icon */}
+                <div style={{ width: 48, height: 48, borderRadius: 16, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon size={22} color={iconColor} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: '0 0 3px', fontSize: 15, fontWeight: 800, color: '#111827' }}>{label}</p>
+                  <p style={{ margin: 0, fontSize: 13, color: '#6B7280', wordBreak: 'break-all' }}>{sub}</p>
+                </div>
+                {/* Badge */}
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'white', padding: '5px 12px', borderRadius: 999, background: badgeBg }}>
+                  {badge}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
 
         {/* ── Quick Links ── */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <h3 className="text-[14px] font-bold text-gray-800">Quick Links</h3>
+        <section>
+          <h2 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 800, color: '#111827' }}>Quick Links</h2>
+          <div style={{ background: 'white', borderRadius: 20, border: '1px solid #E5E7EB', overflow: 'hidden' }}>
+            {quickLinks.map(({ icon: Icon, label, sub, href, color, bg }, idx) => (
+              <a
+                key={label}
+                href={href}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '16px 20px',
+                  borderTop: idx > 0 ? '1px solid #F3F4F6' : 'none',
+                  textDecoration: 'none',
+                  background: 'white',
+                  transition: 'background 0.15s',
+                  fontFamily: FONT,
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'white')}
+              >
+                {/* Icon */}
+                <div style={{ width: 42, height: 42, borderRadius: 14, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={18} color={color} />
+                </div>
+                {/* Text */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 700, color: '#111827' }}>{label}</p>
+                  <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>{sub}</p>
+                </div>
+                <ExternalLink size={15} color="#D1D5DB" />
+              </a>
+            ))}
           </div>
-          {[
-            { icon: BookOpen,  label: 'Browse Courses',          sub: 'Explore all available courses',       href: '/courses',     color: 'text-[#0a7ea4]', bg: 'bg-[#0a7ea4]/10' },
-            { icon: Crown,     label: 'Upgrade to Premium',       sub: 'Unlock exclusive features',          href: '/premium',     color: 'text-[#8b5cf6]', bg: 'bg-[#8b5cf6]/10' },
-            { icon: Zap,       label: 'Boost a Post',             sub: 'Increase your post visibility',      href: '/advertising', color: 'text-amber-500',  bg: 'bg-amber-50' },
-            { icon: Shield,    label: 'Privacy & Terms',          sub: 'Review our policies',                href: '#',            color: 'text-gray-500',   bg: 'bg-gray-100' },
-          ].map(({ icon: Icon, label, sub, href, color, bg }) => (
-            <a
-              key={label}
-              href={href}
-              className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors border-t border-gray-100 first:border-t-0 group"
-            >
-              <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center shrink-0`}>
-                <Icon size={16} className={color} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-semibold text-gray-900">{label}</p>
-                <p className="text-[11px] text-gray-400">{sub}</p>
-              </div>
-              <ExternalLink size={14} className="text-gray-300 group-hover:text-[#0a7ea4] transition-colors shrink-0" />
-            </a>
-          ))}
-        </div>
+        </section>
 
-        {/* ── FAQ header ── */}
-        <div className="flex items-center gap-2">
-          <h2 className="text-[17px] font-bold text-gray-900">Frequently Asked Questions</h2>
-          <span className="text-[11px] font-semibold bg-[#0a7ea4]/10 text-[#0a7ea4] px-2 py-0.5 rounded-full">
-            {FAQS.reduce((s, f) => s + f.items.length, 0)} answers
-          </span>
-        </div>
-
-        {/* ── FAQ sections ── */}
-        {FAQS.map(section => (
-          <FaqSection
-            key={section.category}
-            category={section.category}
-            icon={section.icon}
-            items={section.items}
-          />
-        ))}
+        {/* ── FAQ ── */}
+        <section>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#111827' }}>Frequently Asked Questions</h2>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#0a7ea4', background: 'rgba(10,126,164,0.10)', padding: '4px 10px', borderRadius: 999 }}>
+              {FAQS.reduce((s, f) => s + f.items.length, 0)} answers
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {FAQS.map(section => (
+              <FaqSection
+                key={section.category}
+                category={section.category}
+                icon={section.icon}
+                color={section.color}
+                bg={section.bg}
+                items={section.items}
+              />
+            ))}
+          </div>
+        </section>
 
         {/* ── Report Problem CTA ── */}
-        <div className="rounded-2xl overflow-hidden border border-red-100 bg-red-50">
-          <div className="px-5 py-4 flex items-center gap-4">
-            <div className="w-11 h-11 rounded-2xl bg-red-100 flex items-center justify-center shrink-0">
-              <Flag size={18} className="text-red-500" />
+        <div style={{
+          background: 'white', borderRadius: 20, border: '1px solid #FECACA',
+          overflow: 'hidden',
+          boxShadow: '0 4px 16px rgba(239,68,68,0.08)',
+        }}>
+          {/* Top accent bar */}
+          <div style={{ height: 4, background: 'linear-gradient(90deg,#EF4444,#8b5cf6)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 22px' }}>
+            <div style={{ width: 50, height: 50, borderRadius: 16, background: 'rgba(239,68,68,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Flag size={22} color="#EF4444" />
             </div>
-            <div className="flex-1">
-              <p className="text-[14px] font-bold text-gray-900">Found a bug or issue?</p>
-              <p className="text-[12px] text-gray-500">Report it and help us fix it fast</p>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: '0 0 3px', fontSize: 15, fontWeight: 800, color: '#111827', fontFamily: FONT }}>Found a bug or issue?</p>
+              <p style={{ margin: 0, fontSize: 13, color: '#9CA3AF', fontFamily: FONT }}>Report it and help us fix it fast</p>
             </div>
             <button
               onClick={() => setShowReport(true)}
-              className="shrink-0 px-4 py-2 rounded-full bg-red-500 text-white text-[13px] font-bold hover:bg-red-600 active:scale-[0.97] transition-all flex items-center gap-1.5"
+              style={{
+                flexShrink: 0, height: 42, paddingLeft: 18, paddingRight: 18,
+                borderRadius: 999, border: 'none', cursor: 'pointer',
+                background: 'linear-gradient(135deg,#EF4444,#8b5cf6)',
+                color: 'white', fontFamily: FONT, fontSize: 13, fontWeight: 800,
+                display: 'flex', alignItems: 'center', gap: 6,
+                boxShadow: '0 3px 12px rgba(239,68,68,0.28)',
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
             >
-              <Send size={13} />
-              Report
+              <Send size={14} /> Report
             </button>
           </div>
         </div>
 
         {/* Footer */}
-        <footer className="text-center text-[12px] text-gray-400 pb-4 space-y-1">
-          <p>Stubgram Support · <a href="mailto:support@stubgram.com" className="text-[#0a7ea4] hover:underline">support@stubgram.com</a></p>
-          <p>© 2026 Stubgram Inc. · <a href="#" className="hover:underline">Terms</a> · <a href="#" className="hover:underline">Privacy</a></p>
+        <footer style={{ textAlign: 'center', fontSize: 12, color: '#9CA3AF', lineHeight: 2, fontFamily: FONT }}>
+          <p style={{ margin: 0 }}>
+            Stubgram Support ·{' '}
+            <a href="mailto:support@stubgram.com" style={{ color: '#0a7ea4', textDecoration: 'none', fontWeight: 600 }}>
+              support@stubgram.com
+            </a>
+          </p>
+          <p style={{ margin: 0 }}>
+            © 2026 Stubgram Inc. ·{' '}
+            <a href="#" style={{ color: '#9CA3AF', textDecoration: 'none' }}>Terms</a>
+            {' · '}
+            <a href="#" style={{ color: '#9CA3AF', textDecoration: 'none' }}>Privacy</a>
+          </p>
         </footer>
       </div>
 
       {showReport && <ReportModal onClose={() => setShowReport(false)} />}
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
