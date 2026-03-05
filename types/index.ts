@@ -32,6 +32,7 @@ export interface Post {
   type: 'text' | 'image' | 'video' | 'audio' | 'poll' | 'link' | 'reel' | 'post' | 'reshare';
   content?: string;
   media_url?: string;
+  media_urls?: string[];   // multi-image post (up to 4)
   video_url?: string;
   thumbnail_url?: string;
   media_metadata?: any;
@@ -44,7 +45,7 @@ export interface Post {
   is_boosted?: boolean;
   created_at: string;
   updated_at: string;
-  aspect_ratio?: number; 
+  aspect_ratio?: number;
 }
 
 export interface Comment {

@@ -19,7 +19,6 @@ function formatCount(n: number): string {
   return String(n);
 }
 
-// Text-post background presets
 const TEXT_BG_STYLES: Record<string, React.CSSProperties> = {
   gradient1: { background: 'linear-gradient(135deg,#0a7ea4,#EC4899)', color: 'white' },
   gradient2: { background: 'linear-gradient(135deg,#EC4899,#F59E0B)', color: 'white' },
@@ -27,6 +26,77 @@ const TEXT_BG_STYLES: Record<string, React.CSSProperties> = {
   gradient4: { background: 'linear-gradient(135deg,#F59E0B,#EC4899)', color: 'white' },
   gradient5: { background: 'linear-gradient(135deg,#0a7ea4,#10B981)', color: 'white' },
 };
+
+// ─── Rich text: colors #hashtags and @mentions blue ───────────────────────────
+function RichText({ text, style }: { text: string; style?: React.CSSProperties }) {
+  const parts = text.split(/((?:#|@)[\w.]+)/g);
+  return (
+    <p style={{ fontSize: 15, lineHeight: '1.55', whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, ...style }}>
+      {parts.map((part, i) =>
+        /^[#@][\w.]+$/.test(part)
+          ? <span key={i} style={{ color: '#0a7ea4', fontWeight: 600 }}>{part}</span>
+          : <span key={i}>{part}</span>
+      )}
+    </p>
+  );
+}
+
+// ─── Multi-image grid ─────────────────────────────────────────────────────────
+function MultiImageGrid({ urls }: { urls: string[] }) {
+  const display = urls.slice(0, 4);
+  const extra   = urls.length - 4;
+
+  if (display.length === 1) {
+    return (
+      <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={display[0]} alt="" style={{ width: '100%', maxHeight: 400, objectFit: 'cover', display: 'block' }} />
+      </div>
+    );
+  }
+
+  if (display.length === 2) {
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12 }}>
+        {display.map((url, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={i} src={url} alt="" style={{ width: '100%', height: 220, objectFit: 'cover', display: 'block' }} />
+        ))}
+      </div>
+    );
+  }
+
+  if (display.length === 3) {
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '200px 200px', gap: 3, borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={display[0]} alt="" style={{ gridRow: '1 / 3', width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        {display.slice(1).map((url, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={i} src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ))}
+      </div>
+    );
+  }
+
+  // 4 images (2x2)
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '180px 180px', gap: 3, borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12 }}>
+      {display.map((url, i) => (
+        <div key={i} style={{ position: 'relative' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          {/* "+N more" overlay on the last cell if extra exist */}
+          {i === 3 && extra > 0 && (
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: 'white', fontWeight: 800, fontSize: 22 }}>+{extra}</span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function PostCard({ post }: PostCardProps) {
   const [liked,      setLiked]      = useState(!!post.is_liked);
@@ -257,9 +327,9 @@ export function PostCard({ post }: PostCardProps) {
 
         {/* Text content */}
         {post.content && !isTextBg && (
-          <p className="text-[15px] leading-normal whitespace-pre-wrap break-words mb-3" style={{ color: 'var(--text)' }}>
-            {post.content}
-          </p>
+          <div className="mb-3">
+            <RichText text={post.content} style={{ color: 'var(--text)' as string }} />
+          </div>
         )}
 
         {/* Text-BG post */}
@@ -272,8 +342,13 @@ export function PostCard({ post }: PostCardProps) {
           </div>
         )}
 
-        {/* Media */}
-        {(hasImage || isVideo) && (
+        {/* Multi-image grid */}
+        {post.media_urls && post.media_urls.length > 0 && (
+          <MultiImageGrid urls={post.media_urls} />
+        )}
+
+        {/* Single media (image or video) — only when no media_urls */}
+        {!post.media_urls && (hasImage || isVideo) && (
           <div
             className="rounded-2xl overflow-hidden mb-3 max-h-[512px] flex justify-center"
             style={{ border: '1px solid var(--border)', background: 'var(--card)' }}
