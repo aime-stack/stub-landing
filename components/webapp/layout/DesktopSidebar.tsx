@@ -137,7 +137,7 @@ export function DesktopSidebar({ user }: { user: any }) {
       style={{
         background: '#FFFFFF',
         paddingTop: 12,
-        paddingBottom: 16,
+        paddingBottom: 24,
         paddingRight: 12,
       }}
     >
@@ -231,99 +231,104 @@ export function DesktopSidebar({ user }: { user: any }) {
 
       {DIVIDER}
 
-      {/* ── Settings & Support ───────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-[3px]">
-        {SETTINGS_NAV.map(item => <NavLink key={item.href} item={item} tintIcon />)}
-      </div>
+      {/* ── Bottom group: Settings/Support + Post + User card ──────────────────── */}
+      <div className="mt-auto flex flex-col" style={{ gap: 6 }}>
 
-      {/* ── Post Button ──────────────────────────────────────────────────────── */}
-      <div className="mt-5 px-[14px]">
-        <Link
-          href="/post/new"
-          className="w-12 xl:w-full flex items-center justify-center xl:justify-start gap-2.5 rounded-full transition-all hover:brightness-110 active:scale-[0.98]"
-          style={{
-            height: 48,
-            background: 'linear-gradient(135deg, #0a7ea4, #EC4899)',
-            color: 'white',
-            textDecoration: 'none',
-            fontFamily: FONT_FAMILY,
-            fontSize: 16,
-            fontWeight: 700,
-            paddingLeft: 20,
-            paddingRight: 20,
-            boxShadow: '0 2px 12px rgba(10,126,164,0.3)',
-          }}
-        >
-          <PenLine style={{ width: 19, height: 19, color: 'white', strokeWidth: 2.5, flexShrink: 0 }} />
-          <span className="hidden xl:block" style={{ color: 'white', fontSize: 16, fontWeight: 700 }}>
-            Post
-          </span>
-        </Link>
-      </div>
+        {/* Settings & Support */}
+        <div className="flex flex-col gap-[3px]">
+          {SETTINGS_NAV.map(item => <NavLink key={item.href} item={item} tintIcon />)}
+        </div>
 
-      {/* ── User card ────────────────────────────────────────────────────────── */}
-      <div
-        className="mt-auto pt-3 mx-1"
-        style={{ borderTop: '1px solid #E5E7EB' }}
-      >
-        <div
-          className="flex items-center gap-3 rounded-full cursor-pointer transition-colors"
-          style={{ padding: '10px 12px' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#F3F4F6'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
-          {/* Avatar */}
-          <div
+        {/* Post Button */}
+        <div className="px-[14px]" style={{ paddingTop: 6 }}>
+          <Link
+            href="/post/new"
+            className="w-12 xl:w-full flex items-center justify-center xl:justify-start gap-2.5 rounded-full transition-all hover:brightness-110 active:scale-[0.98]"
             style={{
-              width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+              height: 50,
               background: 'linear-gradient(135deg, #0a7ea4, #EC4899)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: FONT_FAMILY, fontSize: 15, fontWeight: 700, color: 'white',
+              color: 'white',
+              textDecoration: 'none',
+              fontFamily: FONT_FAMILY,
+              fontSize: 16,
+              fontWeight: 700,
+              paddingLeft: 20,
+              paddingRight: 20,
+              boxShadow: '0 2px 12px rgba(10,126,164,0.3)',
             }}
           >
-            {initial}
-          </div>
-
-          {/* Name + handle */}
-          <div className="hidden xl:flex flex-col min-w-0 flex-1" style={{ gap: 1 }}>
-            <span
-              style={{ fontFamily: FONT_FAMILY, fontSize: 14, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }}
-              className="truncate"
-            >
-              {username}
+            <PenLine style={{ width: 19, height: 19, color: 'white', strokeWidth: 2.5, flexShrink: 0 }} />
+            <span className="hidden xl:block" style={{ color: 'white', fontSize: 16, fontWeight: 700 }}>
+              Post
             </span>
-            <span
-              style={{ fontFamily: FONT_FAMILY, fontSize: 12, fontWeight: 400, color: '#6B7280', lineHeight: 1.3 }}
-              className="truncate"
-            >
-              @{username}
-            </span>
-          </div>
-
-          {/* Logout */}
-          <form action={logoutAction} className="hidden xl:block ml-auto shrink-0">
-            <button
-              type="submit"
-              title="Log out"
-              style={{
-                width: 30, height: 30, borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                color: '#9CA3AF', transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.background = '#FEE2E2';
-                (e.currentTarget as HTMLElement).style.color = '#EF4444';
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.background = 'transparent';
-                (e.currentTarget as HTMLElement).style.color = '#9CA3AF';
-              }}
-            >
-              <LogOut style={{ width: 14, height: 14 }} />
-            </button>
-          </form>
+          </Link>
         </div>
+
+        {/* User card */}
+        <div
+          className="mx-1"
+          style={{ borderTop: '1px solid #E5E7EB', paddingTop: 8 }}
+        >
+          <div
+            className="flex items-center gap-3 rounded-full cursor-pointer transition-colors"
+            style={{ padding: '10px 12px' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#F3F4F6'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            {/* Avatar */}
+            <div
+              style={{
+                width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                background: 'linear-gradient(135deg, #0a7ea4, #EC4899)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: FONT_FAMILY, fontSize: 15, fontWeight: 700, color: 'white',
+              }}
+            >
+              {initial}
+            </div>
+
+            {/* Name + handle */}
+            <div className="hidden xl:flex flex-col min-w-0 flex-1" style={{ gap: 1 }}>
+              <span
+                style={{ fontFamily: FONT_FAMILY, fontSize: 14, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }}
+                className="truncate"
+              >
+                {username}
+              </span>
+              <span
+                style={{ fontFamily: FONT_FAMILY, fontSize: 12, fontWeight: 400, color: '#6B7280', lineHeight: 1.3 }}
+                className="truncate"
+              >
+                @{username}
+              </span>
+            </div>
+
+            {/* Logout */}
+            <form action={logoutAction} className="hidden xl:block ml-auto shrink-0">
+              <button
+                type="submit"
+                title="Log out"
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: '#9CA3AF', transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.background = '#FEE2E2';
+                  (e.currentTarget as HTMLElement).style.color = '#EF4444';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.background = 'transparent';
+                  (e.currentTarget as HTMLElement).style.color = '#9CA3AF';
+                }}
+              >
+                <LogOut style={{ width: 15, height: 15 }} />
+              </button>
+            </form>
+          </div>
+        </div>
+
       </div>
     </nav>
   );
