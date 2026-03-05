@@ -204,7 +204,7 @@ function SectionCard({ section }: { section: typeof SETTINGS_SECTIONS[0] }) {
         <div style={{ borderTop: '1px solid #F3F4F6' }}>
           {/* Regular items */}
           {section.items.map(item => (
-            <Link key={item} href="#" style={{
+            <Link key={item} href={`/settings/${item.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '13px 20px 13px 74px',
               borderTop: '1px solid #F3F4F6',
@@ -239,7 +239,7 @@ function SectionCard({ section }: { section: typeof SETTINGS_SECTIONS[0] }) {
                 </div>
               ))}
               {d.action && (
-                <Link href="#" style={{
+                <Link href={`/settings/${d.action.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   fontFamily: FONT, fontSize: 13, fontWeight: 600, color: '#0a7ea4',
                   textDecoration: 'none',
@@ -284,7 +284,7 @@ export default function SettingsPage() {
 
       {/* ── Help Center quick link ───────────────────────────────────────────── */}
       <div style={{ padding: '16px 20px 0' }}>
-        <Link href="#" style={{
+        <Link href="/settings/help-center" style={{
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '14px 18px', borderRadius: 16,
           background: 'linear-gradient(135deg,rgba(10,126,164,0.06),rgba(236,72,153,0.04))',
