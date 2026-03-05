@@ -43,7 +43,7 @@ export default function BookmarksPage() {
             const user        = post.users;
             const username    = user?.username ?? 'unknown';
             const displayName = user?.full_name ?? username;
-            const avatarSrc   = user?.avatar;
+            const avatarSrc   = user?.avatar_url;
 
             return (
               <div
@@ -92,9 +92,9 @@ export default function BookmarksPage() {
                       {post.content}
                     </p>
                   )}
-                  {post.media_url && (
+                  {post.image_url && (
                     <div style={{ borderRadius: 12, overflow: 'hidden', height: 120, marginBottom: 8 }}>
-                      <Image src={post.media_url} alt="Post" width={400} height={120} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                      <Image src={post.image_url} alt="Post" width={400} height={120} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: 16, fontSize: 12, color: '#9CA3AF' }}>
