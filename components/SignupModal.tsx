@@ -74,6 +74,17 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (selectedType !== 'company' && formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    if (!formData.agreeToTerms) {
+      setError('You must agree to the Terms of Service to continue');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -93,22 +104,6 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
       setError(err.message || 'An unexpected error occurred. Please try again.');
       setLoading(false);
     }
-  };
-
-  const isFormValid = () => {
-    if (!selectedType || !formData.agreeToTerms) return false;
-
-    if (selectedType === 'company') {
-      return !!(formData.fullName && formData.email && formData.companyName && formData.message);
-    }
-
-    return !!(
-      formData.fullName &&
-      formData.username.trim().length >= 3 &&
-      formData.email &&
-      formData.password &&
-      formData.password === formData.confirmPassword
-    );
   };
 
   return (
@@ -330,7 +325,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                 <button
                   type="submit"
                   className={styles.submitButton}
-                  disabled={!isFormValid() || loading}
+                  disabled={loading}
                 >
                   {loading ? 'Validating...' : selectedType === 'company' ? 'Submit Request' : 'Create Account'}
                 </button>
