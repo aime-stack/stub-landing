@@ -1,5 +1,5 @@
+import { Suspense } from 'react';
 import { LoginForm } from '@/components/marketing/LoginForm';
-import Image from 'next/image';
 
 export const metadata = {
   title: 'Log in to Stubgram',
@@ -22,7 +22,9 @@ export default function LoginPage() {
             Login
           </h2>
 
-          <LoginForm />
+          <Suspense fallback={<div className="min-h-[320px] animate-pulse rounded-2xl bg-gray-100" />}>
+            <LoginForm />
+          </Suspense>
         </div>
       </section>
 
