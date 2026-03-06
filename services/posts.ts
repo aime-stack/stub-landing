@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/server';
 import { Post, PaginatedFeed } from '@/types';
 import { z } from 'zod';
 
@@ -16,28 +16,28 @@ export const CreatePostSchema = z.object({
 
 /**
  * Fetch feed with cursor pagination (created_at < cursor)
- * Prevents N+1 by joining profiles in the same query.
+ * Mirrors the exact mobile codebase query pattern for fetching the global feed.
  */
 export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<PaginatedFeed> {
-  // Validate input parameters
   const { cursor } = params;
   const limit = params.limit || 20;
 
   const supabase = await createClient();
 
-  // Query: Select all posts, inner join profiles (usually 'users' or 'profiles' in Supabase)
+  // Query: Select all posts, inner join profiles 
+  // Mirrors: .is('community_id', null).order('created_at', { ascending: false })
   let query = supabase
     .from('posts')
     .select(`
       *,
-      profiles:user_id (
+      users:user_id (
         id, username, full_name, avatar_url, is_verified, is_celebrity
       )
     `)
+    .is('community_id', null)
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  // Apply strict cursor pagination if cursor exists (offset is forbidden for performance)
   if (cursor) {
     query = query.lt('created_at', cursor);
   }
@@ -62,6 +62,7 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
 
 /**
  * Handle server-side authenticated post creation
+ * Mirrors the exact payload structure provided by the mobile schema guide.
  */
 export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
   const input = CreatePostSchema.parse(rawInput);
@@ -73,15 +74,17 @@ export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
     throw new Error('Unauthorized');
   }
 
+  // Exact shape required by the backend schema mapping
   const { data, error } = await supabase
     .from('posts')
     .insert({
       user_id: user.id,
-      content: input.content,
+      community_id: null,
       type: input.type,
-      media_url: input.mediaUrl,
+      content: input.content,
+      image_url: input.mediaUrl, // Mapping interface alias
     })
-    .select()
+    .select('*')
     .single();
 
   if (error) {

@@ -40,19 +40,14 @@ export async function loginAction(formData: FormData) {
     return { error: error.message };
   }
 
-  // Redirect to app.stubgram.com/feed (or relative /feed if already on subdomain)
-  // Our middleware handles /login redirects, but since Server Actions run on the domain
-  // where they are called, we can redirect optimally.
-  const appHost = process.env.NODE_ENV === 'production' ? 'https://app.stubgram.com' : 'http://app.localhost:3000';
-  redirect(`${appHost}/feed`);
+  redirect(`/feed`);
 }
 
 export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
 
-  const rootHost = process.env.NODE_ENV === 'production' ? 'https://stubgram.com' : 'http://localhost:3000';
-  redirect(`${rootHost}/login`);
+  redirect(`/login`);
 }
 
 export async function signupAction(rawInput: any) {
@@ -83,7 +78,5 @@ export async function signupAction(rawInput: any) {
     return { error: error.message };
   }
 
-  // Same redirect flow as login, going to the feed payload 
-  const appHost = process.env.NODE_ENV === 'production' ? 'https://app.stubgram.com' : 'http://app.localhost:3000';
-  redirect(`${appHost}/feed`);
+  redirect(`/feed`);
 }
