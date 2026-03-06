@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getMockProfile, getMockUserPosts } from '@/services/mockData';
+import { createClient } from '@/lib/supabase/server';
 import { ProfileHeader } from '@/components/webapp/profile/ProfileHeader';
 import { ProfilePostsGrid } from '@/components/webapp/profile/ProfilePostsGrid';
 
@@ -11,11 +11,33 @@ export const dynamic = 'force-dynamic';
 
 export default async function PublicProfilePage({ params }: Props) {
   const { username } = await params;
-  const profile = getMockProfile(username);
+  const supabase = await createClient();
 
-  if (!profile) notFound();
+  const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-  const posts = getMockUserPosts(profile.id);
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('username', username)
+    .single();
+
+  if (profileError || !profile) notFound();
+
+  const { data: posts = [] } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      users:user_id (
+        id,
+        username,
+        full_name,
+        avatar_url,
+        is_verified,
+        is_celebrity
+      )
+    `)
+    .eq('user_id', profile.id)
+    .order('created_at', { ascending: false });
 
   return (
     <>
@@ -27,8 +49,11 @@ export default async function PublicProfilePage({ params }: Props) {
         </linearGradient>
       </svg>
 
-      <ProfileHeader profile={profile} isOwnProfile={false} />
-      <ProfilePostsGrid posts={posts} />
+      <ProfileHeader
+        profile={profile as any}
+        isOwnProfile={currentUser?.id === profile.id}
+      />
+      <ProfilePostsGrid posts={posts as any} />
     </>
   );
 }

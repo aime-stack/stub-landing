@@ -5,12 +5,22 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Post } from '@/types';
 import {
-  MessageCircle, Heart, Share2, MoreHorizontal,
-  Bookmark, Repeat2, BarChart2, Star,
-  Trash2, Zap, Flag, UserMinus,
+  MessageCircle,
+  Heart,
+  Share2,
+  MoreHorizontal,
+  Bookmark,
+  Repeat2,
+  BarChart2,
+  Star,
+  Trash2,
+  Zap,
+  Flag,
+  UserMinus,
 } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { ImageGallery } from '@/components/webapp/ui/ImageGallery';
+import { likePost, unlikePost, bookmarkPost, unbookmarkPost, resharePost } from '@/services/interactions';
 
 interface PostCardProps { post: Post; }
 
@@ -131,7 +141,7 @@ export function PostCard({ post }: PostCardProps) {
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const [reposted,   setReposted]   = useState(false);
   const [repostCnt,  setRepostCnt]  = useState(post.shares_count || 0);
-  const [saved,      setSaved]      = useState(false);
+  const [saved,      setSaved]      = useState(!!(post as any).is_saved);
   const [heartAnim,  setHeartAnim]  = useState(false);
   const [showMenu,   setShowMenu]   = useState(false);
   const [deleted,    setDeleted]    = useState(false);
@@ -153,14 +163,42 @@ export function PostCard({ post }: PostCardProps) {
   const hasImage = post.image_url || post.thumbnail_url; // FIX: media_url → image_url (Post type)
   const isTextBg = post.type === 'text' && (post as any).text_bg;
 
-  const handleLike = () => {
-    setLiked(prev => { setLikesCount(c => prev ? c - 1 : c + 1); return !prev; });
+  const handleLike = async () => {
+    const next = !liked;
+    setLiked(next);
+    setLikesCount(c => (next ? c + 1 : Math.max(0, c - 1)));
     setHeartAnim(true);
     setTimeout(() => setHeartAnim(false), 700);
+    try {
+      if (next) {
+        await likePost(post.id);
+      } else {
+        await unlikePost(post.id);
+      }
+    } catch (err) {
+      // revert on failure
+      setLiked(!next);
+      setLikesCount(c => (!next ? c + 1 : Math.max(0, c - 1)));
+      // optional: surface toast later
+      console.error('Failed to toggle like', err);
+    }
   };
 
-  const handleRepost = () => {
-    setReposted(prev => { setRepostCnt(c => prev ? c - 1 : c + 1); return !prev; });
+  const handleRepost = async () => {
+    const next = !reposted;
+    setReposted(next);
+    setRepostCnt(c => (next ? c + 1 : Math.max(0, c - 1)));
+    try {
+      if (next) {
+        await resharePost(post.id);
+      } else {
+        // No explicit "un-reshare" record; UI-only toggle for now.
+      }
+    } catch (err) {
+      setReposted(!next);
+      setRepostCnt(c => (!next ? c + 1 : Math.max(0, c - 1)));
+      console.error('Failed to reshare', err);
+    }
   };
 
   let dateText = '';
@@ -313,7 +351,28 @@ export function PostCard({ post }: PostCardProps) {
           <ActionButton icon={<Repeat2 size={18} />} label={formatCount(repostCnt)} active={reposted} activeColor="var(--repost-green, #00BA7C)" activeBg="rgba(0,186,124,0.10)" hoverColor="var(--repost-green, #00BA7C)" hoverBg="rgba(0,186,124,0.10)" onClick={handleRepost} />
           <ActionButton icon={<Heart size={18} className={`${liked ? 'fill-current' : ''} ${heartAnim ? 'animate-heart' : ''}`} />} label={formatCount(likesCount)} active={liked} activeColor="#FF3B30" activeBg="rgba(255,59,48,0.10)" hoverColor="#FF3B30" hoverBg="rgba(255,59,48,0.10)" onClick={handleLike} />
           <ActionButton icon={<BarChart2 size={18} />} label={formatCount((post as any).views_count || Math.floor(likesCount * 8.3))} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
-          <ActionButton icon={<Bookmark size={18} className={saved ? 'fill-current' : ''} />} active={saved} activeColor="var(--primary)" activeBg="rgba(10,126,164,0.10)" hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" onClick={() => setSaved(s => !s)} />
+          <ActionButton
+            icon={<Bookmark size={18} className={saved ? 'fill-current' : ''} />}
+            active={saved}
+            activeColor="var(--primary)"
+            activeBg="rgba(10,126,164,0.10)"
+            hoverColor="var(--primary)"
+            hoverBg="rgba(10,126,164,0.10)"
+            onClick={async () => {
+              const next = !saved;
+              setSaved(next);
+              try {
+                if (next) {
+                  await bookmarkPost(post.id);
+                } else {
+                  await unbookmarkPost(post.id);
+                }
+              } catch (err) {
+                setSaved(!next);
+                console.error('Failed to toggle bookmark', err);
+              }
+            }}
+          />
           <ActionButton icon={<Share2 size={18} />} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
         </div>
       </div>

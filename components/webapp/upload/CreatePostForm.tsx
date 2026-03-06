@@ -2,7 +2,12 @@
 
 import { useState, useRef } from 'react';
 import { uploadMedia, ALLOWED_MIME_TYPES } from '@/services/upload';
-import { createPost } from '@/services/posts';
+import {
+  createStatusPost,
+  createImagePost,
+  createVideoPost,
+  createReel,
+} from '@/services/posts';
 import { Image as ImageIcon, Video, Loader2, Smile, MapPin, BarChart2, Type, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MOCK_CURRENT_USER } from '@/services/mockData';
@@ -49,12 +54,28 @@ export function CreatePostForm() {
     setError(null);
     try {
       let mediaUrl: string | undefined;
-      let type: 'text' | 'image' | 'video' = 'text';
+      let isVideo = false;
       if (file) {
         mediaUrl = await uploadMedia(file, 'posts');
-        type = file.type.startsWith('video/') ? 'video' : 'image';
+        isVideo = file.type.startsWith('video/');
       }
-      await createPost({ content: content.trim() || undefined, type, mediaUrl });
+      const trimmed = content.trim() || undefined;
+
+      // Decide which helper to use based on media presence/type.
+      if (!mediaUrl) {
+        await createStatusPost(trimmed ?? '');
+      } else if (isVideo) {
+        // For now treat all videos as regular video posts; reels can have their own entry point.
+        await createVideoPost({
+          content: trimmed,
+          videoUrl: mediaUrl,
+        });
+      } else {
+        await createImagePost({
+          content: trimmed,
+          imageUrls: [mediaUrl],
+        });
+      }
       setContent('');
       setFile(null);
       setTextBg('none');

@@ -10,15 +10,30 @@ const FeedQuerySchema = z.object({
   limit: z.number().min(1).max(50).default(20),
 });
 
+/**
+ * Core post creation input.
+ *
+ * Supports:
+ * - status:   type = 'text'
+ * - image:    type = 'image',   imageUrls[]
+ * - video:    type = 'video',   videoUrl
+ * - reel:     type = 'reel',    videoUrl
+ * - link:     type = 'link'
+ * - ad:       type = 'ad'
+ * - community: any of the above + communityId
+ */
 const CreatePostSchema = z.object({
   content: z.string().max(2000).optional(),
-  type: z.enum(['text', 'image', 'video', 'link']),
-  mediaUrl: z.string().url().optional(),
+  type: z.enum(['text', 'image', 'video', 'link', 'reel', 'ad']),
+  communityId: z.string().uuid().optional().nullable(),
+  imageUrls: z.array(z.string().url()).optional(),
+  videoUrl: z.string().url().optional(),
+  thumbnailUrl: z.string().url().optional(),
 });
 
 /**
  * Fetch feed with cursor pagination (created_at < cursor)
- * Mirrors the exact mobile codebase query pattern for fetching the global feed.
+ * Global feed: only posts with community_id IS NULL.
  */
 export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<PaginatedFeed> {
   const { cursor } = params;
@@ -26,16 +41,16 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
 
   const supabase = await createClient();
 
-  // Query: Select all posts, inner join profiles 
-  // Mirrors: .is('community_id', null).order('created_at', { ascending: false })
   let query = supabase
     .from('posts')
-    .select(`
+    .select(
+      `
       *,
       users:user_id (
         id, username, full_name, avatar_url, is_verified, is_celebrity
       )
-    `)
+    `
+    )
     .is('community_id', null)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -63,28 +78,33 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
 }
 
 /**
- * Handle server-side authenticated post creation
- * Mirrors the exact payload structure provided by the mobile schema guide.
+ * Generic core post creator used by helpers below.
  */
 export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
   const input = CreatePostSchema.parse(rawInput);
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     throw new Error('Unauthorized');
   }
 
-  // Exact shape required by the backend schema mapping
+  const primaryImage = input.imageUrls?.[0] ?? null;
+
   const { data, error } = await supabase
     .from('posts')
     .insert({
       user_id: user.id,
-      community_id: null,
+      community_id: input.communityId ?? null,
       type: input.type,
-      content: input.content,
-      image_url: input.mediaUrl, // Mapping interface alias
+      content: input.content ?? null,
+      image_url: primaryImage,
+      video_url: input.videoUrl ?? null,
+      thumbnail_url: input.thumbnailUrl ?? null,
+      media_urls: input.imageUrls ?? (input.videoUrl ? [input.videoUrl] : null),
     })
     .select('*')
     .single();
@@ -95,4 +115,75 @@ export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
   }
 
   return data;
+}
+
+/**
+ * Convenience helpers per post type
+ */
+
+export async function createStatusPost(content: string, communityId?: string | null) {
+  return createPost({
+    type: 'text',
+    content,
+    communityId: communityId ?? null,
+  });
+}
+
+export async function createImagePost(params: {
+  content?: string;
+  imageUrls: string[];
+  communityId?: string | null;
+}) {
+  return createPost({
+    type: 'image',
+    content: params.content,
+    imageUrls: params.imageUrls,
+    communityId: params.communityId ?? null,
+  });
+}
+
+export async function createVideoPost(params: {
+  content?: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  communityId?: string | null;
+}) {
+  return createPost({
+    type: 'video',
+    content: params.content,
+    videoUrl: params.videoUrl,
+    thumbnailUrl: params.thumbnailUrl,
+    communityId: params.communityId ?? null,
+  });
+}
+
+export async function createReel(params: {
+  content?: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  communityId?: string | null;
+}) {
+  return createPost({
+    type: 'reel',
+    content: params.content,
+    videoUrl: params.videoUrl,
+    thumbnailUrl: params.thumbnailUrl,
+    communityId: params.communityId ?? null,
+  });
+}
+
+export async function createAdPost(params: {
+  content: string;
+  imageUrls?: string[];
+  videoUrl?: string;
+  thumbnailUrl?: string;
+}) {
+  return createPost({
+    type: 'ad',
+    content: params.content,
+    imageUrls: params.imageUrls,
+    videoUrl: params.videoUrl,
+    thumbnailUrl: params.thumbnailUrl,
+    communityId: null,
+  });
 }

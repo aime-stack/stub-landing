@@ -17,7 +17,7 @@ export default function LoginPage() {
           <div className="absolute top-[40%] text-transparent -right-40 w-[600px] h-[600px] bg-white/10 rotate-45 transform origin-center" />
         </div>
 
-        <div className="relative z-10 w-full max-w-[440px] bg-white rounded-3xl px-10 py-10 shadow-2xl">
+        <div className="relative z-10 w-full max-w-[440px] bg-white rounded-3xl px-10 py-10 shadow-2xl min-h-0 overflow-y-auto">
           <h2 className="text-[32px] font-bold tracking-tight text-gray-900 mb-6 text-center">
             Login
           </h2>
@@ -41,14 +41,15 @@ export default function LoginPage() {
             <span className="text-xs font-semibold tracking-wider text-[#EFEFEF]">SOCIAL MEDIA THAT PAYS</span>
           </div>
           
-          <h1 className="text-5xl font-extrabold tracking-tight text-white leading-tight mb-6">
-            Connect, create, and <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#877EFF] to-[#ec4899]">
+          <h1 className="text-5xl font-extrabold tracking-tight leading-tight mb-6">
+            <span className="text-white">Connect, create, and</span>
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#c4b5fd] via-[#e9d5ff] to-[#f9a8d4] drop-shadow-[0_0_20px_rgba(196,181,253,0.3)]">
               earn rewards.
             </span>
           </h1>
           
-          <p className="text-lg text-[#B5B5BE] max-w-md mb-12">
+          <p className="text-lg text-gray-300 max-w-md mb-12">
             Join the new era of social networking. Stubgram pays you for every interaction, turning your social reach into actual earnings.
           </p>
 

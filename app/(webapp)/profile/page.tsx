@@ -1,12 +1,45 @@
-import { MOCK_CURRENT_USER, getMockUserPosts } from '@/services/mockData';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import { ProfileHeader } from '@/components/webapp/profile/ProfileHeader';
 import { ProfilePostsGrid } from '@/components/webapp/profile/ProfilePostsGrid';
 
 export const dynamic = 'force-dynamic';
 
-export default function MyProfilePage() {
-  const profile = MOCK_CURRENT_USER;
-  const posts = getMockUserPosts(profile.id);
+export default async function MyProfilePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const mainHost = isProduction ? 'https://stubgram.com' : 'http://localhost:3000';
+    redirect(`${mainHost}/login`);
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user!.id)
+    .single();
+
+  if (profileError || !profile) {
+    throw new Error('Profile not found for current user');
+  }
+
+  const { data: posts = [] } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      users:user_id (
+        id,
+        username,
+        full_name,
+        avatar_url,
+        is_verified,
+        is_celebrity
+      )
+    `)
+    .eq('user_id', user!.id)
+    .order('created_at', { ascending: false });
 
   return (
     <>
@@ -19,8 +52,8 @@ export default function MyProfilePage() {
         </linearGradient>
       </svg>
 
-      <ProfileHeader profile={profile} isOwnProfile />
-      <ProfilePostsGrid posts={posts} />
+      <ProfileHeader profile={profile as any} isOwnProfile />
+      <ProfilePostsGrid posts={posts as any} />
     </>
   );
 }
