@@ -63,10 +63,14 @@ export async function signupAction(rawInput: any) {
   const payload = result.data;
   const supabase = await createClient();
 
+  const isProduction = process.env.NODE_ENV === 'production';
+  const mainHost = isProduction ? 'https://stubgram.com' : 'http://localhost:3000';
+
   const { data, error } = await supabase.auth.signUp({
     email: payload.email,
     password: payload.password,
     options: {
+      emailRedirectTo: `${mainHost}/auth/callback`,
       data: {
         full_name: payload.fullName,
         username: payload.username || null,
@@ -87,7 +91,6 @@ export async function signupAction(rawInput: any) {
     return { success: true, requireVerification: true };
   }
 
-  const isProduction = process.env.NODE_ENV === 'production';
   const appHost = isProduction ? 'https://app.stubgram.com' : 'http://localhost:3000';
   redirect(`${appHost}/feed`);
 }

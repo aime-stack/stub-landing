@@ -25,7 +25,8 @@ export default async function middleware(request: NextRequest) {
   // APP SUBDOMAIN LOGIC
   if (isApp) {
     // If unauthenticated, redirect to signup on main marketing domain
-    if (!user) {
+    // (Except for auth callbacks which need to process the initial token)
+    if (!user && !url.pathname.startsWith('/auth/callback')) {
       const protocol = isProduction ? 'https' : 'http';
       // If we are redirecting from the app subdomain to the main domain, ensure no loop happens.
       // Next.js NextResponse.redirect needs an absolute URL object here to prevent relative loopbacks 

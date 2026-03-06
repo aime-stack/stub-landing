@@ -1,14 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { loginAction } from '@/services/auth';
-import { Eye, EyeOff, Loader2, ChevronRight, Phone } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ChevronRight, Phone, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 type AuthTab = 'password' | 'otp';
 type OtpStep = 'phone' | 'code';
 
 export function LoginForm() {
+  const searchParams = useSearchParams();
+  const isVerified = searchParams?.get('verified') === 'true';
+
   const [tab, setTab] = useState<AuthTab>('password');
 
   // Password login state
@@ -84,6 +88,14 @@ export function LoginForm() {
 
   return (
     <div className="w-full">
+
+      {isVerified && (
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-400/10 border border-emerald-500/20 flex flex-col items-center justify-center text-center gap-2 animate-in fade-in slide-in-from-top-4 duration-500">
+          <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-1" />
+          <h3 className="text-emerald-700 font-bold text-[17px] tracking-tight">Email Verified!</h3>
+          <p className="text-emerald-600/90 text-sm font-medium leading-snug">Your account is active.<br/>Please log in to continue.</p>
+        </div>
+      )}
 
       {/* Tab Switcher */}
       <div className="flex bg-gray-100 rounded-full p-1 mb-8">
