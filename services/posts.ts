@@ -5,12 +5,12 @@ import { Post, PaginatedFeed } from '@/types';
 import { z } from 'zod';
 
 // Define strict validation schemas
-export const FeedQuerySchema = z.object({
+const FeedQuerySchema = z.object({
   cursor: z.string().datetime().optional().nullable(),
   limit: z.number().min(1).max(50).default(20),
 });
 
-export const CreatePostSchema = z.object({
+const CreatePostSchema = z.object({
   content: z.string().max(2000).optional(),
   type: z.enum(['text', 'image', 'video', 'link']),
   mediaUrl: z.string().url().optional(),
