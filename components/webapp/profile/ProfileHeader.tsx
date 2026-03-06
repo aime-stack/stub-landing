@@ -190,9 +190,9 @@ export function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderPr
 
         {/* Meta row */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 20px', marginBottom: 14 }}>
-          {profile.website && (
+          {(profile as any).website && (
             <a
-              href={profile.website}
+              href={(profile as any).website}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -201,7 +201,7 @@ export function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderPr
               }}
             >
               <LinkIcon style={{ width: 13, height: 13 }} />
-              {profile.website.replace(/^https?:\/\//, '')}
+              {(profile as any).website.replace(/^https?:\/\//, '')}
             </a>
           )}
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: FONT, fontSize: 13, color: '#9CA3AF' }}>

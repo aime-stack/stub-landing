@@ -93,6 +93,7 @@ export interface Story {
     username: string;
     full_name?: string;
     avatar_url?: string;
+    account_type?: AccountType; // ✅ Added
     is_verified?: boolean;
   };
   media_url: string;

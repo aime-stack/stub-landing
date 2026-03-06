@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Post } from '@/types';
 import {
   Heart, MessageCircle, PlayCircle,
@@ -61,14 +62,18 @@ function MediaGrid({ posts, type }: { posts: Post[]; type: 'image' | 'video' }) 
           onMouseEnter={e => { const ov = e.currentTarget.querySelector('.ov') as HTMLElement; if (ov) ov.style.opacity = '1'; }}
           onMouseLeave={e => { const ov = e.currentTarget.querySelector('.ov') as HTMLElement; if (ov) ov.style.opacity = '0'; }}
         >
-          {post.media_url ? (
-            <Image src={post.media_url} alt="" fill style={{ objectFit: 'cover', transition: 'transform 0.3s' }} />
-          ) : (
-            <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,rgba(10,126,164,0.2),rgba(236,72,153,0.2))' }} />
-          )}
-          {type === 'video' && (
-            <PlayCircle style={{ position: 'absolute', top: 8, right: 8, width: 20, height: 20, color: 'white', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
-          )}
+          <Link href={`/p/${post.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ flex: 1, position: 'relative', width: '100%', minHeight: 0 }}>
+              {post.image_url ? (
+                <Image src={post.image_url} alt="" fill style={{ objectFit: 'cover', transition: 'transform 0.3s' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,rgba(10,126,164,0.2),rgba(236,72,153,0.2))' }} />
+              )}
+              {type === 'video' && (
+                <PlayCircle style={{ position: 'absolute', top: 8, right: 8, width: 20, height: 20, color: 'white', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
+              )}
+            </div>
+          </Link>
           {/* Hover overlay */}
           <div className="ov" style={{
             position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)',
@@ -107,9 +112,9 @@ function PostList({ posts, emptyTab }: { posts: Post[]; emptyTab: TabId }) {
             {post.content}
           </p>
           {/* Thumbnail if has media */}
-          {post.media_url && (
+          {post.image_url && (
             <div style={{ borderRadius: 12, overflow: 'hidden', height: 160, position: 'relative', marginBottom: 10 }}>
-              <Image src={post.media_url} alt="" fill style={{ objectFit: 'cover' }} />
+              <Image src={post.image_url} alt="" fill style={{ objectFit: 'cover' }} />
             </div>
           )}
           {/* Actions */}
@@ -134,7 +139,7 @@ function ReelsGrid({ posts }: { posts: Post[] }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 2, background: '#F3F4F6' }}>
       {posts.map(p => (
         <div key={p.id} style={{ position: 'relative', aspectRatio: '9/16', background: '#1A1A1A', overflow: 'hidden', cursor: 'pointer', maxHeight: 220 }}>
-          {p.media_url && <Image src={p.media_url} alt="" fill style={{ objectFit: 'cover', opacity: 0.85 }} />}
+          {p.image_url && <Image src={p.image_url} alt="" fill style={{ objectFit: 'cover', opacity: 0.85 }} />}
           {/* Gradient footer */}
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.70) 0%,transparent 60%)' }} />
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
@@ -156,7 +161,7 @@ function ReelsGrid({ posts }: { posts: Post[] }) {
 export function ProfilePostsGrid({ posts }: { posts: Post[] }) {
   const [tab, setTab] = useState<TabId>('posts');
 
-  const mediaPosts  = posts.filter(p => p.media_url && !p.video_url);
+  const mediaPosts  = posts.filter(p => p.image_url && !p.video_url);
   const videoPosts  = posts.filter(p => p.video_url || p.type === 'video');
   const reelsPosts  = posts.filter(p => p.type === 'reel' || (p.video_url && p.type !== 'video'));
   const allPosts    = posts.filter(p => p.type !== 'reel');

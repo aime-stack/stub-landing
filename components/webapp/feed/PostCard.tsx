@@ -28,7 +28,6 @@ const TEXT_BG_STYLES: Record<string, React.CSSProperties> = {
   gradient5: { background: 'linear-gradient(135deg,#0a7ea4,#10B981)', color: 'white' },
 };
 
-// ─── Rich text: colors #hashtags and @mentions blue ───────────────────────────
 function RichText({ text, style }: { text: string; style?: React.CSSProperties }) {
   const parts = text.split(/((?:#|@)[\w.]+)/g);
   return (
@@ -42,7 +41,6 @@ function RichText({ text, style }: { text: string; style?: React.CSSProperties }
   );
 }
 
-// ─── Multi-image grid ─────────────────────────────────────────────────────────
 function MultiImageGrid({ urls, onImageClick }: { urls: string[], onImageClick: (index: number) => void }) {
   const display = urls.slice(0, 4);
   const extra   = urls.length - 4;
@@ -98,7 +96,6 @@ function MultiImageGrid({ urls, onImageClick }: { urls: string[], onImageClick: 
     );
   }
 
-  // 4 images (2x2)
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '180px 180px', gap: 3, borderRadius: 16, overflow: 'hidden', border: '1px solid #E5E7EB', marginBottom: 12 }}>
       {display.map((url, i) => (
@@ -118,11 +115,8 @@ function MultiImageGrid({ urls, onImageClick }: { urls: string[], onImageClick: 
               else e.currentTarget.style.opacity = '1';
             }}
           />
-          {/* "+N more" overlay on the last cell if extra exist */}
           {i === 3 && extra > 0 && (
-            <div
-              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', pointerEvents: 'none' }}
-            >
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', pointerEvents: 'none' }}>
               <span style={{ color: 'white', fontWeight: 800, fontSize: 22 }}>+{extra}</span>
             </div>
           )}
@@ -142,11 +136,8 @@ export function PostCard({ post }: PostCardProps) {
   const [showMenu,   setShowMenu]   = useState(false);
   const [deleted,    setDeleted]    = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  
-  // Image gallery state
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
 
-  // Close dropdown on outside click or Escape
   useEffect(() => {
     if (!showMenu) return;
     const down = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowMenu(false); };
@@ -158,9 +149,9 @@ export function PostCard({ post }: PostCardProps) {
 
   if (deleted) return null;
 
-  const isVideo   = post.video_url || post.type === 'video' || post.type === 'reel';
-  const hasImage  = post.media_url || post.thumbnail_url;
-  const isTextBg  = post.type === 'text' && (post as any).text_bg;
+  const isVideo  = post.video_url || post.type === 'video' || post.type === 'reel';
+  const hasImage = post.image_url || post.thumbnail_url; // FIX: media_url → image_url (Post type)
+  const isTextBg = post.type === 'text' && (post as any).text_bg;
 
   const handleLike = () => {
     setLiked(prev => { setLikesCount(c => prev ? c - 1 : c + 1); return !prev; });
@@ -179,9 +170,9 @@ export function PostCard({ post }: PostCardProps) {
   const user        = post.users;
   const username    = user?.username || 'unknown';
   const displayName = user?.full_name || user?.username || 'Unknown';
-  const avatarSrc   = user?.avatar;
-  const isVerified  = user?.isVerified;
-  const isCelebrity = user?.isCelebrity;
+  const avatarSrc   = user?.avatar_url;    // FIX: avatar → avatar_url
+  const isVerified  = user?.is_verified;   // FIX: isVerified → is_verified
+  const isCelebrity = user?.is_celebrity;  // FIX: isCelebrity → is_celebrity
   const textBg      = isTextBg ? TEXT_BG_STYLES[(post as any).text_bg] : undefined;
 
   return (
@@ -191,7 +182,6 @@ export function PostCard({ post }: PostCardProps) {
       onMouseEnter={e => e.currentTarget.style.background = 'rgba(249,250,251,0.7)'}
       onMouseLeave={e => e.currentTarget.style.background = ''}
     >
-      {/* Hidden gradient defs */}
       <svg width="0" height="0" className="absolute">
         <defs>
           <linearGradient id={`vbg-${post.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -201,12 +191,8 @@ export function PostCard({ post }: PostCardProps) {
         </defs>
       </svg>
 
-      {/* Avatar column */}
       <Link href={`/profile/${username}`} className="shrink-0 mr-3">
-        <div
-          className="w-10 h-10 rounded-full overflow-hidden relative"
-          style={{ background: 'var(--gradient-primary)' }}
-        >
+        <div className="w-10 h-10 rounded-full overflow-hidden relative" style={{ background: 'var(--gradient-primary)' }}>
           {avatarSrc ? (
             <Image src={avatarSrc} alt={username} fill className="object-cover" />
           ) : (
@@ -217,156 +203,57 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       </Link>
 
-      {/* Content column */}
       <div className="flex-1 min-w-0">
-
-        {/* Header */}
         <div className="flex items-start justify-between gap-1 mb-0.5">
           <div className="flex items-center gap-1 flex-wrap min-w-0">
             <Link href={`/profile/${username}`} className="flex items-center gap-1 min-w-0">
               <span className="font-bold text-[15px] hover:underline truncate" style={{ color: 'var(--text)' }}>
                 {displayName}
               </span>
-
-              {/* Verified badge */}
               {isVerified && (
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="shrink-0">
                   <circle cx="12" cy="12" r="10" fill={`url(#vbg-${post.id})`} />
                   <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
-
-              {/* Celebrity star */}
               {isCelebrity && (
                 <Star className="w-3.5 h-3.5 shrink-0 fill-current" style={{ color: '#FF69B4' }} />
               )}
             </Link>
-
-            <span className="text-[14px] truncate hidden sm:block" style={{ color: 'var(--text-secondary)' }}>
-              @{username}
-            </span>
+            <span className="text-[14px] truncate hidden sm:block" style={{ color: 'var(--text-secondary)' }}>@{username}</span>
             <span style={{ color: 'var(--border)' }}>·</span>
-            <span
-              className="text-[13px] whitespace-nowrap hover:underline cursor-pointer"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              {dateText}
-            </span>
+            <span className="text-[13px] whitespace-nowrap hover:underline cursor-pointer" style={{ color: 'var(--text-secondary)' }}>{dateText}</span>
           </div>
 
-          {/* 3-dots menu */}
           <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>
             <button
               onClick={e => { e.stopPropagation(); setShowMenu(m => !m); }}
-              style={{
-                flexShrink: 0,
-                marginLeft: 8,
-                padding: 8,
-                borderRadius: '50%',
-                border: 'none',
-                cursor: 'pointer',
-                background: showMenu ? 'rgba(10,126,164,0.12)' : 'rgba(0,0,0,0.05)',
-                color: showMenu ? 'var(--primary)' : 'var(--text-secondary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.15s',
-              }}
+              style={{ flexShrink: 0, marginLeft: 8, padding: 8, borderRadius: '50%', border: 'none', cursor: 'pointer', background: showMenu ? 'rgba(10,126,164,0.12)' : 'rgba(0,0,0,0.05)', color: showMenu ? 'var(--primary)' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,126,164,0.12)'; e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.transform = 'scale(1.08)'; }}
               onMouseLeave={e => { if (!showMenu) { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; e.currentTarget.style.color = 'var(--text-secondary)'; } e.currentTarget.style.transform = 'scale(1)'; }}
             >
               <MoreHorizontal size={20} />
             </button>
 
-            {/* Dropdown */}
             {showMenu && (
-              <div
-                onClick={e => e.stopPropagation()}
-                style={{
-                  position: 'absolute', top: 34, right: 0, zIndex: 100,
-                  background: 'white', borderRadius: 16,
-                  border: '1px solid #E5E7EB',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.13)',
-                  minWidth: 200, overflow: 'hidden',
-                  animation: 'fadeIn 0.12s ease',
-                }}
-              >
-                {/* Boost */}
-                <Link
-                  href="/advertising"
-                  onClick={() => setShowMenu(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 16px', textDecoration: 'none',
-                    color: '#111827', transition: 'background 0.12s',
-                    fontFamily: `'Inter',-apple-system,sans-serif`,
-                    fontSize: 14, fontWeight: 600,
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <span style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Zap size={15} color="white" fill="white" />
-                  </span>
+              <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: 34, right: 0, zIndex: 100, background: 'white', borderRadius: 16, border: '1px solid #E5E7EB', boxShadow: '0 8px 32px rgba(0,0,0,0.13)', minWidth: 200, overflow: 'hidden', animation: 'fadeIn 0.12s ease' }}>
+                <Link href="/advertising" onClick={() => setShowMenu(false)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', textDecoration: 'none', color: '#111827', transition: 'background 0.12s', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600 }} onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <span style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Zap size={15} color="white" fill="white" /></span>
                   Boost Post
                   <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: '#0a7ea4', background: 'rgba(10,126,164,0.10)', padding: '2px 8px', borderRadius: 999 }}>Ad</span>
                 </Link>
-
                 <div style={{ height: 1, background: '#F3F4F6', margin: '0 12px' }} />
-
-                {/* Unfollow */}
-                <button
-                  onClick={() => { setShowMenu(false); }}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
-                    fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827',
-                    transition: 'background 0.12s', textAlign: 'left',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <UserMinus size={15} color="#6B7280" />
-                  </span>
+                <button onClick={() => setShowMenu(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827', transition: 'background 0.12s', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><UserMinus size={15} color="#6B7280" /></span>
                   Unfollow
                 </button>
-
-                {/* Report */}
-                <button
-                  onClick={() => { setShowMenu(false); }}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
-                    fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827',
-                    transition: 'background 0.12s', textAlign: 'left',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Flag size={15} color="#6B7280" />
-                  </span>
+                <button onClick={() => setShowMenu(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827', transition: 'background 0.12s', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Flag size={15} color="#6B7280" /></span>
                   Report Post
                 </button>
-
                 <div style={{ height: 1, background: '#F3F4F6', margin: '0 12px' }} />
-
-                {/* Delete */}
-                <button
-                  onClick={() => { setShowMenu(false); setDeleted(true); }}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
-                    fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 700, color: '#EF4444',
-                    transition: 'background 0.12s', textAlign: 'left',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#FEF2F2')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <span style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(239,68,68,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Trash2 size={15} color="#EF4444" />
-                  </span>
+                <button onClick={() => { setShowMenu(false); setDeleted(true); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 700, color: '#EF4444', transition: 'background 0.12s', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.background = '#FEF2F2')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <span style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(239,68,68,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Trash2 size={15} color="#EF4444" /></span>
                   Delete Post
                 </button>
               </div>
@@ -374,51 +261,39 @@ export function PostCard({ post }: PostCardProps) {
           </div>
         </div>
 
-        {/* Text content */}
         {post.content && !isTextBg && (
           <div className="mb-3">
             <RichText text={post.content} style={{ color: 'var(--text)' as string }} />
           </div>
         )}
 
-        {/* Text-BG post */}
         {isTextBg && post.content && (
-          <div
-            className="rounded-2xl p-6 mb-3 flex items-center justify-center min-h-[140px] text-center"
-            style={textBg}
-          >
+          <div className="rounded-2xl p-6 mb-3 flex items-center justify-center min-h-[140px] text-center" style={textBg}>
             <p className="text-[18px] font-semibold leading-relaxed">{post.content}</p>
           </div>
         )}
 
-        {/* Multi-image grid */}
         {post.media_urls && post.media_urls.length > 0 && (
           <MultiImageGrid urls={post.media_urls} onImageClick={(idx) => setActiveImageIndex(idx)} />
         )}
 
-        {/* Single media (image or video) — only when no media_urls */}
         {!post.media_urls && (hasImage || isVideo) && (
           <div
             className="rounded-2xl overflow-hidden mb-3 max-h-[512px] flex justify-center"
             style={{ border: '1px solid var(--border)', background: 'var(--card)', cursor: !isVideo ? 'zoom-in' : 'default' }}
             onClick={(e) => {
-              if (!isVideo && (post.media_url || post.thumbnail_url)) {
+              if (!isVideo && (post.image_url || post.thumbnail_url)) { // FIX: media_url → image_url
                 e.stopPropagation();
                 setActiveImageIndex(0);
               }
             }}
           >
             {isVideo && post.video_url ? (
-              <video
-                src={post.video_url}
-                controls
-                className="w-full max-h-[512px] object-cover"
-                onClick={e => e.stopPropagation()}
-              />
+              <video src={post.video_url} controls className="w-full max-h-[512px] object-cover" onClick={e => e.stopPropagation()} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={post.media_url || post.thumbnail_url}
+                src={post.image_url || post.thumbnail_url || ''} // FIX: media_url → image_url
                 alt=""
                 className="w-full h-auto object-cover max-h-[512px]"
               />
@@ -426,84 +301,26 @@ export function PostCard({ post }: PostCardProps) {
           </div>
         )}
 
-        {/* Coin reward strip (for premium posts) */}
         {(post as any).coinReward && (
-          <div
-            className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-xl mb-2 w-fit"
-            style={{ background: 'linear-gradient(135deg,#FFD700,#F59E0B)', color: 'white' }}
-          >
+          <div className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-xl mb-2 w-fit" style={{ background: 'linear-gradient(135deg,#FFD700,#F59E0B)', color: 'white' }}>
             <span>🪙</span>
             +{(post as any).coinReward} Snap Coins earned
           </div>
         )}
 
-        {/* Action Bar */}
         <div className="flex items-center justify-between max-w-[380px] -ml-2 mt-1">
-
-          {/* Comment */}
-          <ActionButton
-            icon={<MessageCircle size={18} />}
-            label={formatCount(post.comments_count || 0)}
-            hoverColor="var(--primary)"
-            hoverBg="rgba(10,126,164,0.10)"
-          />
-
-          {/* Repost */}
-          <ActionButton
-            icon={<Repeat2 size={18} />}
-            label={formatCount(repostCnt)}
-            active={reposted}
-            activeColor="var(--repost-green, #00BA7C)"
-            activeBg="rgba(0,186,124,0.10)"
-            hoverColor="var(--repost-green, #00BA7C)"
-            hoverBg="rgba(0,186,124,0.10)"
-            onClick={handleRepost}
-          />
-
-          {/* Like */}
-          <ActionButton
-            icon={<Heart size={18} className={`${liked ? 'fill-current' : ''} ${heartAnim ? 'animate-heart' : ''}`} />}
-            label={formatCount(likesCount)}
-            active={liked}
-            activeColor="#FF3B30"
-            activeBg="rgba(255,59,48,0.10)"
-            hoverColor="#FF3B30"
-            hoverBg="rgba(255,59,48,0.10)"
-            onClick={handleLike}
-          />
-
-          {/* Views */}
-          <ActionButton
-            icon={<BarChart2 size={18} />}
-            label={formatCount((post as any).views_count || Math.floor(likesCount * 8.3))}
-            hoverColor="var(--primary)"
-            hoverBg="rgba(10,126,164,0.10)"
-          />
-
-          {/* Bookmark */}
-          <ActionButton
-            icon={<Bookmark size={18} className={saved ? 'fill-current' : ''} />}
-            active={saved}
-            activeColor="var(--primary)"
-            activeBg="rgba(10,126,164,0.10)"
-            hoverColor="var(--primary)"
-            hoverBg="rgba(10,126,164,0.10)"
-            onClick={() => setSaved(s => !s)}
-          />
-
-          {/* Share */}
-          <ActionButton
-            icon={<Share2 size={18} />}
-            hoverColor="var(--primary)"
-            hoverBg="rgba(10,126,164,0.10)"
-          />
+          <ActionButton icon={<MessageCircle size={18} />} label={formatCount(post.comments_count || 0)} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
+          <ActionButton icon={<Repeat2 size={18} />} label={formatCount(repostCnt)} active={reposted} activeColor="var(--repost-green, #00BA7C)" activeBg="rgba(0,186,124,0.10)" hoverColor="var(--repost-green, #00BA7C)" hoverBg="rgba(0,186,124,0.10)" onClick={handleRepost} />
+          <ActionButton icon={<Heart size={18} className={`${liked ? 'fill-current' : ''} ${heartAnim ? 'animate-heart' : ''}`} />} label={formatCount(likesCount)} active={liked} activeColor="#FF3B30" activeBg="rgba(255,59,48,0.10)" hoverColor="#FF3B30" hoverBg="rgba(255,59,48,0.10)" onClick={handleLike} />
+          <ActionButton icon={<BarChart2 size={18} />} label={formatCount((post as any).views_count || Math.floor(likesCount * 8.3))} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
+          <ActionButton icon={<Bookmark size={18} className={saved ? 'fill-current' : ''} />} active={saved} activeColor="var(--primary)" activeBg="rgba(10,126,164,0.10)" hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" onClick={() => setSaved(s => !s)} />
+          <ActionButton icon={<Share2 size={18} />} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
         </div>
       </div>
     </article>
   );
 }
 
-/* ── Reusable Action Button ───────────────────────────────────────────────── */
 interface ActionButtonProps {
   icon: React.ReactNode;
   label?: string;
@@ -533,15 +350,10 @@ function ActionButton({ icon, label, active, activeColor, activeBg, hoverColor, 
         if (pill) pill.style.background = active ? (activeBg || '') : '';
       }}
     >
-      <span
-        className="action-pill p-2 rounded-full transition-all duration-200"
-        style={active ? { background: activeBg } : {}}
-      >
+      <span className="action-pill p-2 rounded-full transition-all duration-200" style={active ? { background: activeBg } : {}}>
         {icon}
       </span>
-      {label !== undefined && (
-        <span className="text-[13px] tabular-nums">{label}</span>
-      )}
+      {label !== undefined && <span className="text-[13px] tabular-nums">{label}</span>}
     </button>
   );
 }
