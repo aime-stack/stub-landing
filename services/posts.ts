@@ -1,3 +1,5 @@
+'use server';
+
 import { createClient } from '@/lib/supabase/server';
 import { Post, PaginatedFeed } from '@/types';
 import { z } from 'zod';
