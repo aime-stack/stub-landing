@@ -93,7 +93,13 @@ export function LoginForm() {
         <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-400/10 border border-emerald-500/20 flex flex-col items-center justify-center text-center gap-2 animate-in fade-in slide-in-from-top-4 duration-500">
           <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-1" />
           <h3 className="text-emerald-700 font-bold text-[17px] tracking-tight">Email Verified!</h3>
-          <p className="text-emerald-600/90 text-sm font-medium leading-snug">Your account is active.<br/>Please log in to continue.</p>
+          <p className="text-emerald-600/90 text-sm font-medium leading-snug">Your account is active.<br/>Please log in below or continue to the app.</p>
+          <a
+            href="/go-to-app"
+            className="mt-2 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 transition-colors"
+          >
+            Continue to Stubgram
+          </a>
         </div>
       )}
 

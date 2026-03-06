@@ -48,8 +48,16 @@ export default async function middleware(request: NextRequest) {
   }
 
   // MARKETING DOMAIN LOGIC
-  // If authenticated and hits login, send to app
-  if (url.pathname === '/login' && user) {
+  // Explicit "continue to app" link (e.g. after email verification) — redirect to app when logged in
+  if (url.pathname === '/go-to-app' && user) {
+    const protocol = isProduction ? 'https' : 'http';
+    return copyCookies(NextResponse.redirect(`${protocol}://${appDomain}/feed`));
+  }
+
+  // If authenticated and hits login, send to app — unless they just verified email:
+  // then let them see the "Email Verified! Please log in" banner before redirecting.
+  const verifiedParam = url.searchParams.get('verified') === 'true';
+  if (url.pathname === '/login' && user && !verifiedParam) {
     const protocol = isProduction ? 'https' : 'http';
     const redirectResponse = NextResponse.redirect(`${protocol}://${appDomain}/feed`);
     return copyCookies(redirectResponse);
