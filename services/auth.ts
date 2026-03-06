@@ -40,14 +40,18 @@ export async function loginAction(formData: FormData) {
     return { error: error.message };
   }
 
-  redirect(`/feed`);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const appHost = isProduction ? 'https://app.stubgram.com' : 'http://localhost:3000';
+  redirect(`${appHost}/feed`);
 }
 
 export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
 
-  redirect(`/login`);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const mainHost = isProduction ? 'https://stubgram.com' : 'http://localhost:3000';
+  redirect(`${mainHost}/login`);
 }
 
 export async function signupAction(rawInput: any) {
@@ -78,5 +82,7 @@ export async function signupAction(rawInput: any) {
     return { error: error.message };
   }
 
-  redirect(`/feed`);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const appHost = isProduction ? 'https://app.stubgram.com' : 'http://localhost:3000';
+  redirect(`${appHost}/feed`);
 }

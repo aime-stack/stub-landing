@@ -17,7 +17,9 @@ export default async function WebAppLayout({ children }: { children: ReactNode }
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login');
+    const isProduction = process.env.NODE_ENV === 'production';
+    const mainHost = isProduction ? 'https://stubgram.com' : 'http://localhost:3000';
+    redirect(`${mainHost}/login`);
   }
 
   return (
