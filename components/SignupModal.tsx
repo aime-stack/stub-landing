@@ -53,6 +53,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   if (!isOpen) return null;
 
@@ -97,6 +98,9 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
       if (res?.error) {
         setError(res.error);
         setLoading(false);
+      } else if (res?.requireVerification) {
+        setIsSuccess(true);
+        setLoading(false);
       } else {
         // Will be redirected
       }
@@ -121,24 +125,44 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
         </div>
         
         <div className={styles.content}>
-          <div className={styles.step}>
-            <h3 className={styles.stepTitle}>Select Account Type</h3>
-            <div className={styles.userTypeGrid}>
-              {userTypes.map((type) => (
-                <div
-                  key={type.id}
-                  className={`${styles.userTypeCard} ${
-                    selectedType === type.id ? styles.selected : ''
-                  }`}
-                  onClick={() => setSelectedType(type.id)}
-                >
-                  <span className={styles.userTypeIcon}>{type.icon}</span>
-                  <div className={styles.userTypeName}>{type.name}</div>
-                  <p className={styles.userTypeDescription}>{type.description}</p>
-                </div>
-              ))}
+          {isSuccess ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+              <div style={{ fontSize: '56px', marginBottom: '20px' }}>💌</div>
+              <h3 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '12px', color: '#111827', fontFamily: "'Inter', sans-serif" }}>
+                Check your email
+              </h3>
+              <p style={{ color: '#4B5563', fontSize: '16px', lineHeight: '1.6', marginBottom: '32px' }}>
+                We've sent a verification link to <strong>{formData.email}</strong>.<br/>
+                Please check your inbox (or spam folder) and click the link to activate your Stubgram account!
+              </p>
+              <button 
+                onClick={onClose}
+                className={styles.submitButton}
+                style={{ maxWidth: '240px', margin: '0 auto' }}
+              >
+                Done
+              </button>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className={styles.step}>
+                <h3 className={styles.stepTitle}>Select Account Type</h3>
+                <div className={styles.userTypeGrid}>
+                  {userTypes.map((type) => (
+                    <div
+                      key={type.id}
+                      className={`${styles.userTypeCard} ${
+                        selectedType === type.id ? styles.selected : ''
+                      }`}
+                      onClick={() => setSelectedType(type.id)}
+                    >
+                      <span className={styles.userTypeIcon}>{type.icon}</span>
+                      <div className={styles.userTypeName}>{type.name}</div>
+                      <p className={styles.userTypeDescription}>{type.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
           {selectedType && (
             <form className={styles.form} onSubmit={handleSubmit}>
@@ -335,6 +359,11 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                 </div>
               </div>
             </form>
+          )}
+          {/* Default closing tag for the `isSuccess` ternary condition */}
+          {!isSuccess && null}
+          {isSuccess ? null : null}
+          </>
           )}
         </div>
       </div>

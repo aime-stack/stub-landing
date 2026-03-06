@@ -82,6 +82,11 @@ export async function signupAction(rawInput: any) {
     return { error: error.message };
   }
 
+  // If email confirmation is required, Supabase will not return a session instantly
+  if (!data.session) {
+    return { success: true, requireVerification: true };
+  }
+
   const isProduction = process.env.NODE_ENV === 'production';
   const appHost = isProduction ? 'https://app.stubgram.com' : 'http://localhost:3000';
   redirect(`${appHost}/feed`);
