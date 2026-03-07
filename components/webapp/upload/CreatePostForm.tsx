@@ -10,7 +10,6 @@ import {
 } from '@/services/posts';
 import { Image as ImageIcon, Video, Loader2, Smile, MapPin, BarChart2, Type, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { MOCK_CURRENT_USER } from '@/services/mockData';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
@@ -23,7 +22,7 @@ const TEXT_BG_OPTIONS = [
   { id: 'green',     label: 'Green', style: { background: 'linear-gradient(135deg,#10B981,#0a7ea4)' } },
 ];
 
-export function CreatePostForm() {
+export function CreatePostForm({ user }: { user?: { username?: string, avatar_url?: string } | null }) {
   const [content,    setContent]    = useState('');
   const [file,       setFile]       = useState<File | null>(null);
   const [loading,    setLoading]    = useState(false);
@@ -99,7 +98,6 @@ export function CreatePostForm() {
     >
       <div style={{ display: 'flex', gap: 12 }}>
 
-        {/* Current user avatar */}
         <div style={{ flexShrink: 0 }}>
           <div
             style={{
@@ -109,12 +107,12 @@ export function CreatePostForm() {
               marginTop: 2,
             }}
           >
-            {MOCK_CURRENT_USER.avatar_url ? (
+            {user?.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={MOCK_CURRENT_USER.avatar_url} alt="you" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={user.avatar_url} alt="you" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               <span style={{ color: 'white', fontWeight: 700, fontSize: 16 }}>
-                {MOCK_CURRENT_USER.username[0]?.toUpperCase()}
+                {user?.username?.[0]?.toUpperCase() || 'U'}
               </span>
             )}
           </div>
