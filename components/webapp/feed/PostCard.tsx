@@ -21,6 +21,7 @@ import {
 import { formatDistanceToNowStrict } from 'date-fns';
 import { ImageGallery } from '@/components/webapp/ui/ImageGallery';
 import { likePost, unlikePost, bookmarkPost, unbookmarkPost, resharePost } from '@/services/interactions';
+import { CommentsModal } from '@/components/webapp/feed/CommentsModal';
 
 interface PostCardProps { post: Post; }
 
@@ -147,6 +148,7 @@ export function PostCard({ post }: PostCardProps) {
   const [deleted,    setDeleted]    = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
+  const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
     if (!showMenu) return;
@@ -347,7 +349,7 @@ export function PostCard({ post }: PostCardProps) {
         )}
 
         <div className="flex items-center justify-between max-w-[380px] -ml-2 mt-1">
-          <ActionButton icon={<MessageCircle size={18} />} label={formatCount(post.comments_count || 0)} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
+          <ActionButton icon={<MessageCircle size={18} />} label={formatCount(post.comments_count || 0)} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" onClick={() => setShowComments(true)} />
           <ActionButton icon={<Repeat2 size={18} />} label={formatCount(repostCnt)} active={reposted} activeColor="var(--repost-green, #00BA7C)" activeBg="rgba(0,186,124,0.10)" hoverColor="var(--repost-green, #00BA7C)" hoverBg="rgba(0,186,124,0.10)" onClick={handleRepost} />
           <ActionButton icon={<Heart size={18} className={`${liked ? 'fill-current' : ''} ${heartAnim ? 'animate-heart' : ''}`} />} label={formatCount(likesCount)} active={liked} activeColor="#FF3B30" activeBg="rgba(255,59,48,0.10)" hoverColor="#FF3B30" hoverBg="rgba(255,59,48,0.10)" onClick={handleLike} />
           <ActionButton icon={<BarChart2 size={18} />} label={formatCount((post as any).views_count || Math.floor(likesCount * 8.3))} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
@@ -376,6 +378,8 @@ export function PostCard({ post }: PostCardProps) {
           <ActionButton icon={<Share2 size={18} />} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
         </div>
       </div>
+
+      {showComments && <CommentsModal postId={post.id} onClose={() => setShowComments(false)} />}
     </article>
   );
 }

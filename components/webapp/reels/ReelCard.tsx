@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Post } from '@/types';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Music } from 'lucide-react';
+import { likePost, unlikePost } from '@/services/interactions';
+import { CommentsModal } from '@/components/webapp/feed/CommentsModal';
 
 interface ReelCardProps {
   reel: Post;
@@ -22,6 +24,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
   const [likesCount, setLikesCount] = useState(reel.likes_count || 0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const playIconTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -69,10 +72,18 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
     playIconTimerRef.current = setTimeout(() => setShowPlayIcon(false), 800);
   };
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setLiked(!liked);
-    setLikesCount(prev => liked ? prev - 1 : prev + 1);
+    const next = !liked;
+    setLiked(next);
+    setLikesCount(prev => next ? prev + 1 : Math.max(0, prev - 1));
+    try {
+      if (next) await likePost(reel.id);
+      else await unlikePost(reel.id);
+    } catch (err) {
+      setLiked(!next);
+      setLikesCount(prev => !next ? prev + 1 : Math.max(0, prev - 1));
+    }
   };
 
   const user = reel.users;
@@ -211,7 +222,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
         </button>
 
         {/* Comment */}
-        <button className="flex flex-col items-center gap-1 group">
+        <button onClick={(e) => { e.stopPropagation(); setShowComments(true); }} className="flex flex-col items-center gap-1 group">
           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-black/40 transition">
             <MessageCircle size={24} className="text-white" />
           </div>
@@ -246,6 +257,8 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
           )}
         </div>
       </div>
+
+      {showComments && <CommentsModal postId={reel.id} onClose={() => setShowComments(false)} />}
     </div>
   );
 }

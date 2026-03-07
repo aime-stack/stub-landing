@@ -109,3 +109,53 @@ export async function resharePost(postId: string, quote?: string) {
   }
 }
 
+/**
+ * Comments
+ */
+export async function getComments(postId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('comments')
+    .select(`
+      *,
+      users:user_id (
+        id, username, full_name, avatar_url, is_verified, is_celebrity
+      )
+    `)
+    .eq('post_id', postId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('[Interactions] getComments error', error);
+    throw new Error('Failed to fetch comments');
+  }
+
+  return data;
+}
+
+export async function createComment(postId: string, content: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error('Not authenticated');
+
+  const { data, error } = await supabase
+    .from('comments')
+    .insert({
+      post_id: postId,
+      user_id: user.id,
+      content,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[Interactions] createComment error', error);
+    throw new Error('Failed to create comment');
+  }
+
+  return data;
+}
