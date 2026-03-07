@@ -21,15 +21,20 @@ export default async function FeedPage() {
   return (
     <>
       {/* Simple sticky header */}
-      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur flex">
+      <div className="sticky top-[10px] z-20 border-b border-gray-200 bg-white/95 backdrop-blur flex items-center mb-1 max-w-2xl mx-auto rounded-t-xl overflow-hidden mt-4">
         <button
-          className="flex-1 text-center py-4 text-[15px] font-bold text-gray-900 hover:bg-gray-50 transition-colors relative"
+          className="flex-1 text-center py-4 text-[16px] font-bold text-gray-900 hover:bg-gray-50 transition-colors relative"
+          style={{ fontFamily: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` }}
         >
           For You
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-blue-500 rounded-t-full" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-[3px] bg-blue-500 rounded-t-full" />
         </button>
+
+        <div className="w-[1px] h-6 bg-gray-300" />
+
         <button
-          className="flex-1 text-center py-4 text-[15px] font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+          className="flex-1 text-center py-4 text-[16px] font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+          style={{ fontFamily: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` }}
         >
           Following
         </button>
