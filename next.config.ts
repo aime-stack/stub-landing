@@ -15,6 +15,7 @@ const cspHeader = `
       https://randomuser.me
       https://avatars.githubusercontent.com
       https://i.ytimg.com;
+    media-src 'self' blob: data: https://*.supabase.co https://*.youtube.com;
     font-src 'self' data:;
     object-src 'none';
     base-uri 'self';
@@ -97,6 +98,11 @@ const nextConfig: NextConfig = {
         hostname: 'images.pexels.com',
       },
     ],
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
   },
 };
 

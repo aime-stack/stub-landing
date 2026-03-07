@@ -7,6 +7,7 @@ export const ALLOWED_MIME_TYPES = [
   'image/webp',
   'video/mp4',
   'video/webm',
+  'video/quicktime',
 ];
 
 export async function uploadMedia(file: File, bucket: 'posts' | 'avatars' = 'posts'): Promise<string> {

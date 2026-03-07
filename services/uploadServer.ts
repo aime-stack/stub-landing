@@ -17,6 +17,7 @@ export async function uploadMediaAction(formData: FormData): Promise<string> {
     'image/webp',
     'video/mp4',
     'video/webm',
+    'video/quicktime',
   ];
 
   if (file.size > MAX_FILE_SIZE) {
@@ -24,7 +25,7 @@ export async function uploadMediaAction(formData: FormData): Promise<string> {
   }
 
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-    throw new Error(`Unsupported file type: ${file.type}. Allowed: JPEG, PNG, WEBP, MP4, WEBM.`);
+    throw new Error(`Unsupported file type: ${file.type}. Allowed: JPEG, PNG, WEBP, MP4, WEBM, MOV.`);
   }
 
   const supabase = await createClient();

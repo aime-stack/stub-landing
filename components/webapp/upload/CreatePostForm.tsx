@@ -271,8 +271,7 @@ export function CreatePostForm({ user }: { user?: { username?: string, avatar_ur
                   {icon}
                 </button>
               ))}
-              <input ref={fileRef} type="file" multiple onChange={handleFiles}
-                accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" style={{ display: 'none' }} />
+              <input type="file" ref={fileRef} hidden multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" onChange={handleFiles} />
             </div>
 
             {/* Char count + submit */}
