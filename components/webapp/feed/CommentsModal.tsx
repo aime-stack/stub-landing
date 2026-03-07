@@ -89,7 +89,7 @@ export function CommentsModal({ postId, onClose }: CommentsModalProps) {
               try { dateTxt = formatDistanceToNowStrict(new Date(c.created_at)) + ' ago'; } catch { dateTxt = ''; }
               
               return (
-                <div key={c.id} className="flex gap-3">
+                <div key={c.id} className="flex gap-4 mb-2">
                   <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-gray-200 relative">
                     {u?.avatar_url ? (
                       <Image src={u.avatar_url} alt={name} fill className="object-cover" />
@@ -100,11 +100,11 @@ export function CommentsModal({ postId, onClose }: CommentsModalProps) {
                     )}
                   </div>
                   <div className="flex-1">
-                    <div className="bg-white px-3 pb-3 pt-2 rounded-2xl border border-gray-100 shadow-sm inline-block min-w-[120px]">
+                    <div className="bg-white px-4 pb-3 pt-3 rounded-2xl rounded-tl-sm border border-gray-100 shadow-sm inline-block min-w-[120px]">
                       <span className="font-bold text-[14px] text-gray-900 mr-2">{name}</span>
-                      <p className="text-[14px] text-gray-800 break-words mt-0.5" style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{c.content}</p>
+                      <p className="text-[14px] text-gray-800 break-words mt-1" style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{c.content}</p>
                     </div>
-                    <div className="mt-1 ml-2 text-xs font-semibold text-gray-400 flex items-center gap-3">
+                    <div className="mt-1.5 ml-1 text-[13px] font-semibold text-gray-400 flex items-center gap-4">
                       <span>{dateTxt}</span>
                       <button className="hover:text-gray-600 transition-colors">Reply</button>
                     </div>

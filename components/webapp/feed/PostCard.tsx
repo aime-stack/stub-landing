@@ -270,7 +270,7 @@ export function PostCard({ post }: PostCardProps) {
         </defs>
       </svg>
 
-      <Link href={`/profile/${username}`} className="shrink-0 mr-3">
+      <Link href={`/profile/${username}`} className="shrink-0 mr-4">
         <div className="w-10 h-10 rounded-full overflow-hidden relative" style={{ background: 'var(--gradient-primary)' }}>
           {avatarSrc ? (
             <Image src={avatarSrc} alt={username} fill className="object-cover" />
@@ -284,8 +284,8 @@ export function PostCard({ post }: PostCardProps) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-1 mb-0.5">
-          <div className="flex items-center gap-1 flex-wrap min-w-0">
-            <Link href={`/profile/${username}`} className="flex items-center gap-1 min-w-0">
+          <div className="flex items-center flex-wrap min-w-0">
+            <Link href={`/profile/${username}`} className="flex items-center gap-1 min-w-0 mr-2">
               <span className="font-bold text-[15px] hover:underline truncate" style={{ color: 'var(--text)' }}>
                 {displayName}
               </span>
@@ -299,8 +299,8 @@ export function PostCard({ post }: PostCardProps) {
                 <Star className="w-3.5 h-3.5 shrink-0 fill-current" style={{ color: '#FF69B4' }} />
               )}
             </Link>
-            <span className="text-[14px] truncate hidden sm:block" style={{ color: 'var(--text-secondary)' }}>@{username}</span>
-            <span style={{ color: 'var(--border)' }}>·</span>
+            <span className="text-[14px] truncate hidden sm:block mr-2" style={{ color: 'var(--text-secondary)' }}>@{username}</span>
+            <span style={{ color: 'var(--border)' }} className="mr-2">·</span>
             <span className="text-[13px] whitespace-nowrap hover:underline cursor-pointer" style={{ color: 'var(--text-secondary)' }}>{dateText}</span>
           </div>
 

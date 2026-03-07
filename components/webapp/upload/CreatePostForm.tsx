@@ -24,7 +24,7 @@ const TEXT_BG_OPTIONS = [
 
 export function CreatePostForm({ user }: { user?: { username?: string, avatar_url?: string } | null }) {
   const [content,    setContent]    = useState('');
-  const [file,       setFile]       = useState<File | null>(null);
+  const [files,      setFiles]      = useState<File[]>([]);
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState<string | null>(null);
   const [textBg,     setTextBg]     = useState('none');
@@ -34,16 +34,34 @@ export function CreatePostForm({ user }: { user?: { username?: string, avatar_ur
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const charsLeft = 280 - content.length;
-  const isEmpty   = !content.trim() && !file;
+  const isEmpty   = !content.trim() && files.length === 0;
   const activeBg  = TEXT_BG_OPTIONS.find(o => o.id === textBg);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (!ALLOWED_MIME_TYPES.includes(f.type)) { setError('Invalid file type.'); return; }
-    if (f.size > 10 * 1024 * 1024)           { setError('File exceeds 10 MB.'); return; }
-    setFile(f);
+  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files || []);
+    if (!selected.length) return;
+    
+    // Check types & size limit (10MB total)
+    const valid = selected.every(f => ALLOWED_MIME_TYPES.includes(f.type));
+    if (!valid) { setError('One or more invalid file types.'); return; }
+    
+    if (files.length + selected.length > 4) { setError('Maximum 4 media files allowed.'); return; }
+    
+    const totalSize = selected.reduce((acc, f) => acc + f.size, 0);
+    if (totalSize > 10 * 1024 * 1024) { setError('Files exceed 10 MB total size limit.'); return; }
+
+    // If uploading video, restrict to 1 video
+    const hasVideo = files.some(f => f.type.startsWith('video/')) || selected.some(f => f.type.startsWith('video/'));
+    if (hasVideo && (files.length > 0 || selected.length > 1)) {
+      setError('You can only post 1 video at a time.'); return;
+    }
+    
+    setFiles(prev => [...prev, ...selected]);
     setError(null);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,31 +70,34 @@ export function CreatePostForm({ user }: { user?: { username?: string, avatar_ur
     setLoading(true);
     setError(null);
     try {
-      let mediaUrl: string | undefined;
+      let mediaUrls: string[] = [];
       let isVideo = false;
-      if (file) {
-        mediaUrl = await uploadMedia(file, 'posts');
-        isVideo = file.type.startsWith('video/');
+      
+      if (files.length > 0) {
+        mediaUrls = await Promise.all(files.map(f => uploadMedia(f, 'posts')));
+        isVideo = files[0].type.startsWith('video/');
       }
+      
       const trimmed = content.trim() || undefined;
 
       // Decide which helper to use based on media presence/type.
-      if (!mediaUrl) {
+      if (mediaUrls.length === 0) {
         await createStatusPost(trimmed ?? '');
       } else if (isVideo) {
         // For now treat all videos as regular video posts; reels can have their own entry point.
         await createVideoPost({
           content: trimmed,
-          videoUrl: mediaUrl,
+          videoUrl: mediaUrls[0],
         });
       } else {
         await createImagePost({
           content: trimmed,
-          imageUrls: [mediaUrl],
+          imageUrls: mediaUrls, // Send full array to backend
         });
       }
+      
       setContent('');
-      setFile(null);
+      setFiles([]);
       setTextBg('none');
       if (fileRef.current) fileRef.current.value = '';
       router.refresh();
@@ -182,35 +203,32 @@ export function CreatePostForm({ user }: { user?: { username?: string, avatar_ur
             </div>
           )}
 
-          {/* Media preview */}
-          {file && (
-            <div style={{ position: 'relative', display: 'inline-block', marginBottom: 10 }}>
-              {file.type.startsWith('image/') ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt="preview"
-                  style={{ maxHeight: 160, borderRadius: 12, border: '1px solid #E5E7EB', display: 'block' }}
-                />
-              ) : (
-                <video
-                  src={URL.createObjectURL(file)}
-                  style={{ maxHeight: 160, borderRadius: 12, border: '1px solid #E5E7EB', display: 'block' }}
-                />
-              )}
-              <button
-                type="button"
-                onClick={() => setFile(null)}
-                style={{
-                  position: 'absolute', top: 6, right: 6,
-                  width: 24, height: 24, borderRadius: '50%',
-                  background: 'rgba(0,0,0,0.6)', border: 'none',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: 'white',
-                }}
-              >
-                <X style={{ width: 13, height: 13 }} />
-              </button>
+          {/* Media previews */}
+          {files.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8, marginBottom: 12 }}>
+              {files.map((f, i) => (
+                <div key={i} style={{ position: 'relative', height: 130, borderRadius: 12, overflow: 'hidden', border: '1px solid #E5E7EB' }}>
+                  {f.type.startsWith('image/') ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={URL.createObjectURL(f)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <video src={URL.createObjectURL(f)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeFile(i)}
+                    style={{
+                      position: 'absolute', top: 6, right: 6,
+                      width: 24, height: 24, borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.6)', border: 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', color: 'white',
+                    }}
+                  >
+                    <X style={{ width: 13, height: 13 }} />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
@@ -253,7 +271,7 @@ export function CreatePostForm({ user }: { user?: { username?: string, avatar_ur
                   {icon}
                 </button>
               ))}
-              <input ref={fileRef} type="file" onChange={handleFile}
+              <input ref={fileRef} type="file" multiple onChange={handleFiles}
                 accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" style={{ display: 'none' }} />
             </div>
 
