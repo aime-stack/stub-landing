@@ -3,9 +3,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Profile } from '@/types';
-import { Star, Briefcase, Link as LinkIcon, Calendar } from 'lucide-react';
+import { Star, Briefcase, Link as LinkIcon, Calendar, Camera, Loader2 } from 'lucide-react';
 import { FollowButton } from './FollowButton';
 import { format } from 'date-fns';
+import { useState, useRef } from 'react';
+import { uploadMediaAction } from '@/services/uploadServer';
+import { updateUserAvatar, updateUserCover } from '@/services/profile';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
@@ -26,6 +29,11 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderProps) {
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
   const joinDate = (() => {
     try { return format(new Date(profile.created_at), 'MMMM yyyy'); }
     catch { return 'Member'; }
@@ -33,11 +41,54 @@ export function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderPr
 
   const planBadge = PLAN_BADGE[profile.premium_plan ?? ''];
 
+  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingAvatar(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('bucket', 'avatars');
+      
+      const publicUrl = await uploadMediaAction(formData);
+      await updateUserAvatar(publicUrl);
+    } catch (err) {
+      console.error('Failed to upload avatar:', err);
+      alert('Failed to upload avatar. Please try again.');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
+  };
+
+  const handleCoverSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingCover(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('bucket', 'avatars');
+      
+      const publicUrl = await uploadMediaAction(formData);
+      await updateUserCover(publicUrl);
+    } catch (err) {
+      console.error('Failed to upload cover:', err);
+      alert('Failed to update cover photo. Please try again.');
+    } finally {
+      setIsUploadingCover(false);
+      if (coverInputRef.current) coverInputRef.current.value = '';
+    }
+  };
+
   return (
     <div style={{ background: 'white', fontFamily: FONT }}>
 
       {/* Cover photo */}
       <div
+        className="group"
         style={{
           height: 180, position: 'relative',
           background: 'linear-gradient(135deg,#0a7ea4 0%,#8b5cf6 50%,#EC4899 100%)',
@@ -47,6 +98,30 @@ export function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderPr
         {profile.cover_url && (
           <Image src={profile.cover_url} alt="Cover" fill style={{ objectFit: 'cover' }} />
         )}
+
+        {isOwnProfile && (
+          <>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              ref={coverInputRef}
+              onChange={handleCoverSelect}
+            />
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              disabled={isUploadingCover}
+              className="absolute lg:opacity-0 group-hover:opacity-100 transition-opacity top-4 right-4 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium"
+            >
+              {isUploadingCover ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4" />
+              )}
+              {isUploadingCover ? 'Updating...' : 'Edit Cover'}
+            </button>
+          </>
+        )}
       </div>
 
       {/* Info section */}
@@ -54,25 +129,48 @@ export function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderPr
 
         {/* Avatar + action row */}
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: -48, marginBottom: 12 }}>
-          {/* Avatar */}
-          <div
-            style={{
-              width: 96, height: 96,
-              borderRadius: '50%',
-              overflow: 'hidden',
-              border: '4px solid white',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
-              background: 'linear-gradient(135deg,#0a7ea4,#EC4899)',
-              flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            {profile.avatar_url ? (
-              <Image src={profile.avatar_url} alt={profile.username} width={96} height={96} style={{ objectFit: 'cover' }} />
-            ) : (
-              <span style={{ color: 'white', fontSize: 36, fontWeight: 800 }}>
-                {profile.username[0]?.toUpperCase()}
-              </span>
+          {/* Avatar container */}
+          <div className="relative group cursor-pointer" onClick={() => isOwnProfile && avatarInputRef.current?.click()}>
+            <div
+              style={{
+                width: 96, height: 96,
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '4px solid white',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+                background: 'linear-gradient(135deg,#0a7ea4,#EC4899)',
+                flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                position: 'relative'
+              }}
+            >
+              {profile.avatar_url ? (
+                <Image src={profile.avatar_url} alt={profile.username} width={96} height={96} style={{ objectFit: 'cover' }} />
+              ) : (
+                <span style={{ color: 'white', fontSize: 36, fontWeight: 800 }}>
+                  {profile.username[0]?.toUpperCase()}
+                </span>
+              )}
+
+              {isOwnProfile && (
+                <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${isUploadingAvatar ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                   {isUploadingAvatar ? (
+                    <Loader2 className="w-8 h-8 text-white animate-spin" />
+                  ) : (
+                    <Camera className="w-8 h-8 text-white" />
+                  )}
+                </div>
+              )}
+            </div>
+
+            {isOwnProfile && (
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={avatarInputRef}
+                onChange={handleAvatarSelect}
+              />
             )}
           </div>
 
