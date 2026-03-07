@@ -380,6 +380,22 @@ export function PostCard({ post }: PostCardProps) {
       </div>
 
       {showComments && <CommentsModal postId={post.id} onClose={() => setShowComments(false)} />}
+
+      {/* Fullscreen Image Viewers */}
+      {typeof activeImageIndex === 'number' && post.media_urls && post.media_urls.length > 0 && (
+        <ImageGallery
+          images={post.media_urls}
+          initialIndex={activeImageIndex}
+          onClose={() => setActiveImageIndex(null)}
+        />
+      )}
+      {typeof activeImageIndex === 'number' && !post.media_urls && (post.image_url || post.thumbnail_url) && (
+        <ImageGallery
+          images={[post.image_url || post.thumbnail_url || '']}
+          initialIndex={0}
+          onClose={() => setActiveImageIndex(null)}
+        />
+      )}
     </article>
   );
 }

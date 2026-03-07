@@ -104,7 +104,7 @@ export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
       image_url: primaryImage,
       video_url: input.videoUrl ?? null,
       thumbnail_url: input.thumbnailUrl ?? null,
-      media_urls: input.imageUrls ?? (input.videoUrl ? [input.videoUrl] : null),
+      media_urls: input.imageUrls ?? null,
     })
     .select('*')
     .single();
