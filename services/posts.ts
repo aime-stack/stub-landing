@@ -29,6 +29,7 @@ const CreatePostSchema = z.object({
   imageUrls: z.array(z.string().url()).optional(),
   videoUrl: z.string().url().optional(),
   thumbnailUrl: z.string().url().optional(),
+  textBg: z.string().optional(),
 });
 
 /**
@@ -105,6 +106,7 @@ export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
       video_url: input.videoUrl ?? null,
       thumbnail_url: input.thumbnailUrl ?? null,
       media_urls: input.imageUrls ?? null,
+      text_bg: input.textBg ?? null,
     })
     .select('*')
     .single();
@@ -121,11 +123,12 @@ export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
  * Convenience helpers per post type
  */
 
-export async function createStatusPost(content: string, communityId?: string | null) {
+export async function createStatusPost(content: string, communityId?: string | null, textBg?: string) {
   return createPost({
     type: 'text',
     content,
     communityId: communityId ?? null,
+    textBg: textBg !== 'none' ? textBg : undefined,
   });
 }
 

@@ -82,7 +82,7 @@ export function CreatePostForm({ user }: { user?: { username?: string, avatar_ur
 
       // Decide which helper to use based on media presence/type.
       if (mediaUrls.length === 0) {
-        await createStatusPost(trimmed ?? '');
+        await createStatusPost(trimmed ?? '', null, textBg !== 'none' ? textBg : undefined);
       } else if (isVideo) {
         // For now treat all videos as regular video posts; reels can have their own entry point.
         await createVideoPost({

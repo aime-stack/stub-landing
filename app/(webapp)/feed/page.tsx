@@ -46,7 +46,7 @@ export default async function FeedPage() {
       {/* Real feed */}
       <div className="flex flex-col gap-0">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <PostCard key={post.id} post={post} currentUser={profile} />
         ))}
         {posts.length === 0 && (
           <div className="py-12 text-center text-sm text-gray-500">

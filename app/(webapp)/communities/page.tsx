@@ -5,8 +5,10 @@ import Image from 'next/image';
 import {
   Users, Plus, Search, Globe, Lock, ChevronRight,
   Heart, MessageCircle, Share2, MoreHorizontal, X,
-  Camera, Check,
+  Camera, Check, Loader2
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { createCommunity } from '@/services/communities';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
@@ -74,8 +76,30 @@ function CreateModal({ onClose }: { onClose: () => void }) {
   const [privacy, setPrivacy] = useState<'public' | 'private'>('public');
   const [category, setCategory] = useState('');
   const [step, setStep]       = useState<'form' | 'done'>('form');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const valid = name.trim().length >= 3 && desc.trim().length >= 10;
+
+  const handleCreate = async () => {
+    if (!valid) return;
+    setLoading(true);
+    try {
+      await createCommunity({
+        name,
+        description: desc,
+        category,
+        privacy,
+      });
+      setStep('done');
+      router.refresh();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to create community');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (step === 'done') return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
@@ -173,15 +197,16 @@ function CreateModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Submit */}
-          <button onClick={() => valid && setStep('done')} disabled={!valid} style={{
-            width: '100%', height: 48, borderRadius: 999, border: 'none', cursor: valid ? 'pointer' : 'not-allowed',
-            background: valid ? 'linear-gradient(135deg,#0a7ea4,#EC4899)' : '#F3F4F6',
-            color: valid ? 'white' : '#D1D5DB',
+          <button onClick={handleCreate} disabled={!valid || loading} style={{
+            width: '100%', height: 48, borderRadius: 999, border: 'none', cursor: (valid && !loading) ? 'pointer' : 'not-allowed',
+            background: (valid && !loading) ? 'linear-gradient(135deg,#0a7ea4,#EC4899)' : '#F3F4F6',
+            color: (valid && !loading) ? 'white' : '#D1D5DB',
             fontFamily: FONT, fontSize: 15, fontWeight: 700, marginTop: 20,
-            boxShadow: valid ? '0 4px 16px rgba(10,126,164,0.25)' : 'none',
+            boxShadow: (valid && !loading) ? '0 4px 16px rgba(10,126,164,0.25)' : 'none',
             transition: 'all 0.15s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
           }}>
-            Create Community 🌍
+            {loading ? <Loader2 style={{ width: 18, height: 18, animation: 'spin 1s linear infinite' }} /> : 'Create Community 🌍'}
           </button>
         </div>
       </div>

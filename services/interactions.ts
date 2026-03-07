@@ -214,3 +214,38 @@ export async function createComment(postId: string, content: string) {
 
   return data;
 }
+
+/**
+ * Moderation
+ */
+export async function deletePost(postId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { error } = await supabase
+    .from('posts')
+    .delete()
+    .eq('id', postId)
+    .eq('user_id', user.id); // Only owner can delete
+
+  if (error) {
+    console.error('[Interactions] deletePost error', error);
+    throw error;
+  }
+}
+
+export async function reportPost(postId: string, reason: string = 'Inappropriate content') {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  // We try inserting into 'post_reports', if not exist we fail gracefully
+  const { error } = await supabase
+    .from('post_reports')
+    .insert({ post_id: postId, user_id: user.id, reason });
+
+  if (error && error.code !== '42P01') { // Ignore "relation does not exist"
+    console.error('[Interactions] reportPost error', error);
+  }
+}

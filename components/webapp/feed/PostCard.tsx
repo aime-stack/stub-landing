@@ -20,10 +20,10 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { ImageGallery } from '@/components/webapp/ui/ImageGallery';
-import { likePost, unlikePost, bookmarkPost, unbookmarkPost, resharePost, sharePostExternally, viewPost } from '@/services/interactions';
+import { likePost, unlikePost, bookmarkPost, unbookmarkPost, resharePost, sharePostExternally, viewPost, deletePost, reportPost } from '@/services/interactions';
 import { CommentsModal } from '@/components/webapp/feed/CommentsModal';
 
-interface PostCardProps { post: Post; }
+interface PostCardProps { post: Post; currentUser?: any; }
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -137,7 +137,7 @@ function MultiImageGrid({ urls, onImageClick }: { urls: string[], onImageClick: 
   );
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, currentUser }: PostCardProps) {
   const [liked,      setLiked]      = useState(!!post.is_liked);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const [reposted,   setReposted]   = useState(false);
@@ -183,6 +183,7 @@ export function PostCard({ post }: PostCardProps) {
   const isVideo  = post.video_url || post.type === 'video' || post.type === 'reel';
   const hasImage = post.image_url || post.thumbnail_url; // FIX: media_url → image_url (Post type)
   const isTextBg = post.type === 'text' && (post as any).text_bg;
+  const youtubeMatch = !isTextBg && post.content ? post.content.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/) : null;
 
   const handleLike = async () => {
     const next = !liked;
@@ -316,25 +317,55 @@ export function PostCard({ post }: PostCardProps) {
 
             {showMenu && (
               <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: 34, right: 0, zIndex: 100, background: 'white', borderRadius: 16, border: '1px solid #E5E7EB', boxShadow: '0 8px 32px rgba(0,0,0,0.13)', minWidth: 200, overflow: 'hidden', animation: 'fadeIn 0.12s ease' }}>
-                <Link href="/advertising" onClick={() => setShowMenu(false)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', textDecoration: 'none', color: '#111827', transition: 'background 0.12s', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600 }} onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <span style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Zap size={15} color="white" fill="white" /></span>
-                  Boost Post
-                  <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: '#0a7ea4', background: 'rgba(10,126,164,0.10)', padding: '2px 8px', borderRadius: 999 }}>Ad</span>
-                </Link>
+                {(!currentUser || currentUser.id === post.user_id) && (
+                  <Link href={`/advertising?post=${post.id}`} onClick={() => setShowMenu(false)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', textDecoration: 'none', color: '#111827', transition: 'background 0.12s', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600 }} onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <span style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Zap size={15} color="white" fill="white" /></span>
+                    Boost Post
+                    <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: '#0a7ea4', background: 'rgba(10,126,164,0.10)', padding: '2px 8px', borderRadius: 999 }}>Ad</span>
+                  </Link>
+                )}
                 <div style={{ height: 1, background: '#F3F4F6', margin: '0 12px' }} />
-                <button onClick={() => setShowMenu(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827', transition: 'background 0.12s', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><UserMinus size={15} color="#6B7280" /></span>
-                  Unfollow
-                </button>
-                <button onClick={() => setShowMenu(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827', transition: 'background 0.12s', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Flag size={15} color="#6B7280" /></span>
-                  Report Post
-                </button>
-                <div style={{ height: 1, background: '#F3F4F6', margin: '0 12px' }} />
-                <button onClick={() => { setShowMenu(false); setDeleted(true); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 700, color: '#EF4444', transition: 'background 0.12s', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.background = '#FEF2F2')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <span style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(239,68,68,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Trash2 size={15} color="#EF4444" /></span>
-                  Delete Post
-                </button>
+                
+                {(!currentUser || currentUser.id !== post.user_id) && (
+                  <button onClick={() => setShowMenu(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827', transition: 'background 0.12s', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><UserMinus size={15} color="#6B7280" /></span>
+                    Unfollow
+                  </button>
+                )}
+                
+                {(!currentUser || currentUser.id !== post.user_id) && (
+                  <button onClick={async () => {
+                    setShowMenu(false);
+                    try {
+                      await reportPost(post.id);
+                      alert('Post reported successfully');
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 600, color: '#111827', transition: 'background 0.12s', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <span style={{ width: 32, height: 32, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Flag size={15} color="#6B7280" /></span>
+                    Report Post
+                  </button>
+                )}
+
+                {currentUser && currentUser.id === post.user_id && (
+                  <>
+                    <div style={{ height: 1, background: '#F3F4F6', margin: '0 12px' }} />
+                    <button onClick={async () => {
+                      setShowMenu(false);
+                      try {
+                        await deletePost(post.id);
+                        setDeleted(true);
+                      } catch (e) {
+                        console.error('Failed to delete post:', e);
+                        alert('Could not delete post');
+                      }
+                    }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: `'Inter',-apple-system,sans-serif`, fontSize: 14, fontWeight: 700, color: '#EF4444', transition: 'background 0.12s', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.background = '#FEF2F2')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      <span style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(239,68,68,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Trash2 size={15} color="#EF4444" /></span>
+                      Delete Post
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -349,6 +380,19 @@ export function PostCard({ post }: PostCardProps) {
         {isTextBg && post.content && (
           <div className="rounded-2xl p-6 mb-3 flex items-center justify-center min-h-[140px] text-center" style={textBg}>
             <p className="text-[18px] font-semibold leading-relaxed">{post.content}</p>
+          </div>
+        )}
+
+        {youtubeMatch && (
+          <div className="rounded-2xl overflow-hidden mb-3 w-full" style={{ border: '1px solid var(--border)', background: '#000', position: 'relative', paddingTop: '56.25%' }}>
+            <iframe
+              src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            />
           </div>
         )}
 
