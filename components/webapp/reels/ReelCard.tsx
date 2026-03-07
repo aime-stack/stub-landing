@@ -234,7 +234,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
       <div className="absolute bottom-4 right-2 w-14 flex flex-col items-center gap-4 z-10 pb-4">
 
         {/* Like */}
-        <button onClick={handleLike} className="flex flex-col items-center gap-1 group">
+        <button onClick={handleLike} className="flex flex-col items-center gap-1 group cursor-pointer">
           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-black/40 transition">
             <Heart
               size={24}
@@ -247,7 +247,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
         </button>
 
         {/* Comment */}
-        <button onClick={(e) => { e.stopPropagation(); setShowComments(true); }} className="flex flex-col items-center gap-1 group">
+        <button onClick={(e) => { e.stopPropagation(); setShowComments(true); }} className="flex flex-col items-center gap-1 group cursor-pointer">
           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-black/40 transition">
             <MessageCircle size={24} className="text-white" />
           </div>
@@ -257,7 +257,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
         </button>
 
         {/* Share */}
-        <button onClick={handleShare} className="flex flex-col items-center gap-1 group">
+        <button onClick={handleShare} className="flex flex-col items-center gap-1 group cursor-pointer">
           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-black/40 transition">
             <Share2 size={24} className="text-white" />
           </div>
@@ -267,7 +267,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
         </button>
 
         {/* More Options */}
-        <button className="flex flex-col items-center gap-1 group">
+        <button className="flex flex-col items-center gap-1 group cursor-pointer">
           <div className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:bg-black/40 transition">
             <MoreHorizontal size={24} className="text-white" />
           </div>

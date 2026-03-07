@@ -455,7 +455,7 @@ function ActionButton({ icon, label, active, activeColor, activeBg, hoverColor, 
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1 transition-all duration-200"
+      className="flex items-center gap-1 transition-all duration-200 cursor-pointer"
       style={{ color: baseColor }}
       onMouseEnter={e => {
         e.currentTarget.style.color = hoverColor || 'var(--primary)';
