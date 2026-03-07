@@ -22,6 +22,14 @@ export async function likePost(postId: string) {
     console.error('[Interactions] likePost error', error);
     throw error;
   }
+
+  // Fallback counter increment (in case RPC isn't built yet)
+  if (!error) {
+    const { data: post } = await supabase.from('posts').select('likes_count').eq('id', postId).single();
+    if (post) {
+      await supabase.from('posts').update({ likes_count: (post.likes_count || 0) + 1 }).eq('id', postId);
+    }
+  }
 }
 
 export async function unlikePost(postId: string) {
@@ -41,6 +49,14 @@ export async function unlikePost(postId: string) {
   if (error) {
     console.error('[Interactions] unlikePost error', error);
     throw error;
+  }
+
+  // Fallback counter decrement
+  if (!error) {
+    const { data: post } = await supabase.from('posts').select('likes_count').eq('id', postId).single();
+    if (post) {
+      await supabase.from('posts').update({ likes_count: Math.max(0, (post.likes_count || 0) - 1) }).eq('id', postId);
+    }
   }
 }
 
@@ -107,6 +123,39 @@ export async function resharePost(postId: string, quote?: string) {
     console.error('[Interactions] resharePost error', error);
     throw error;
   }
+
+  // Update original post shares_count
+  if (!error) {
+    const { data: originalPost } = await supabase.from('posts').select('shares_count').eq('id', postId).single();
+    if (originalPost) {
+      await supabase.from('posts').update({ shares_count: (originalPost.shares_count || 0) + 1 }).eq('id', postId);
+    }
+  }
+}
+
+/**
+ * External Shares (increment shares_count without making a Reshare post)
+ */
+export async function sharePostExternally(postId: string) {
+  const supabase = await createClient();
+  const { data: post } = await supabase.from('posts').select('shares_count').eq('id', postId).single();
+  if (post) {
+    const { error } = await supabase.from('posts').update({ shares_count: (post.shares_count || 0) + 1 }).eq('id', postId);
+    if (error) console.error('[Interactions] sharePostExternally error', error);
+  }
+}
+
+/**
+ * Views
+ */
+export async function viewPost(postId: string) {
+  const supabase = await createClient();
+  // We skip strict auth for views (allow anonymous views if needed)
+  const { data: post } = await supabase.from('posts').select('views_count').eq('id', postId).single();
+  if (post) {
+    const { error } = await supabase.from('posts').update({ views_count: (post.views_count || 0) + 1 }).eq('id', postId);
+    if (error) console.error('[Interactions] viewPost error', error);
+  }
 }
 
 /**
@@ -155,6 +204,12 @@ export async function createComment(postId: string, content: string) {
   if (error) {
     console.error('[Interactions] createComment error', error);
     throw new Error('Failed to create comment');
+  }
+
+  // Increment comments count on post
+  const { data: post } = await supabase.from('posts').select('comments_count').eq('id', postId).single();
+  if (post) {
+    await supabase.from('posts').update({ comments_count: (post.comments_count || 0) + 1 }).eq('id', postId);
   }
 
   return data;

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { ImageGallery } from '@/components/webapp/ui/ImageGallery';
-import { likePost, unlikePost, bookmarkPost, unbookmarkPost, resharePost } from '@/services/interactions';
+import { likePost, unlikePost, bookmarkPost, unbookmarkPost, resharePost, sharePostExternally, viewPost } from '@/services/interactions';
 import { CommentsModal } from '@/components/webapp/feed/CommentsModal';
 
 interface PostCardProps { post: Post; }
@@ -149,6 +149,7 @@ export function PostCard({ post }: PostCardProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
   const [showComments, setShowComments] = useState(false);
+  const postRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!showMenu) return;
@@ -158,6 +159,24 @@ export function PostCard({ post }: PostCardProps) {
     document.addEventListener('mousedown', click);
     return () => { document.removeEventListener('keydown', down); document.removeEventListener('mousedown', click); };
   }, [showMenu]);
+
+  // View tracking
+  useEffect(() => {
+    if (!postRef.current || deleted) return;
+    let timeout: NodeJS.Timeout;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        timeout = setTimeout(() => {
+          viewPost(post.id).catch(() => {});
+          observer.disconnect(); // Only count view once per render
+        }, 2000);
+      } else {
+        clearTimeout(timeout);
+      }
+    }, { threshold: 0.6 });
+    observer.observe(postRef.current);
+    return () => { clearTimeout(timeout); observer.disconnect(); };
+  }, [post.id, deleted]);
 
   if (deleted) return null;
 
@@ -203,6 +222,25 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Stubgram Post by ${displayName}`,
+          text: post.content || 'Check out this post on Stubgram!',
+          url: `${window.location.origin}/p/${post.id}`
+        });
+      } else {
+        await navigator.clipboard.writeText(`${window.location.origin}/p/${post.id}`);
+        // optional: toast "link copied!"
+      }
+      // Log external share to backend
+      await sharePostExternally(post.id);
+    } catch (err) {
+      console.error('Native share aborted or failed', err);
+    }
+  };
+
   let dateText = '';
   try { dateText = formatDistanceToNowStrict(new Date(post.created_at)) + ' ago'; }
   catch { dateText = 'Just now'; }
@@ -217,6 +255,7 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <article
+      ref={postRef}
       className="flex px-4 pt-4 pb-2 cursor-pointer transition-colors duration-150"
       style={{ borderBottom: '1px solid var(--divider)' }}
       onMouseEnter={e => e.currentTarget.style.background = 'rgba(249,250,251,0.7)'}
@@ -375,7 +414,7 @@ export function PostCard({ post }: PostCardProps) {
               }
             }}
           />
-          <ActionButton icon={<Share2 size={18} />} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
+          <ActionButton icon={<Share2 size={18} />} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" onClick={handleShare} />
         </div>
       </div>
 

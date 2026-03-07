@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Post } from '@/types';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Music } from 'lucide-react';
-import { likePost, unlikePost } from '@/services/interactions';
+import { likePost, unlikePost, viewPost, sharePostExternally } from '@/services/interactions';
 import { CommentsModal } from '@/components/webapp/feed/CommentsModal';
 
 interface ReelCardProps {
@@ -54,6 +54,13 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
     };
   }, [isActive]);
 
+  // View Tracking (count view immediately when it becomes active)
+  useEffect(() => {
+    if (isActive) {
+      viewPost(reel.id).catch(() => {});
+    }
+  }, [isActive, reel.id]);
+
   const togglePlay = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -83,6 +90,24 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
     } catch (err) {
       setLiked(!next);
       setLikesCount(prev => !next ? prev + 1 : Math.max(0, prev - 1));
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Stubgram Reel by ${displayName}`,
+          text: reel.content || 'Check out this Reel on Stubgram!',
+          url: `${window.location.origin}/reels?id=${reel.id}`
+        });
+      } else {
+        await navigator.clipboard.writeText(`${window.location.origin}/reels?id=${reel.id}`);
+      }
+      await sharePostExternally(reel.id);
+    } catch (err) {
+      console.error('Native reel share failed', err);
     }
   };
 
@@ -232,7 +257,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
         </button>
 
         {/* Share */}
-        <button className="flex flex-col items-center gap-1 group">
+        <button onClick={handleShare} className="flex flex-col items-center gap-1 group">
           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-black/40 transition">
             <Share2 size={24} className="text-white" />
           </div>
