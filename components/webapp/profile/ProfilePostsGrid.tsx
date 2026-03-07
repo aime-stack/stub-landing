@@ -93,40 +93,15 @@ function MediaGrid({ posts, type }: { posts: Post[]; type: 'image' | 'video' }) 
   );
 }
 
+import { PostCard } from '@/components/webapp/feed/PostCard';
+
 /* ─── Post list (for Posts, Replies, Likes tabs) ─────────────────────────── */
 function PostList({ posts, emptyTab }: { posts: Post[]; emptyTab: TabId }) {
   if (posts.length === 0) return <EmptyState tab={emptyTab} />;
   return (
     <div style={{ background: 'white' }}>
-      {posts.map((post, i) => (
-        <div key={post.id} style={{
-          padding: '16px 20px',
-          borderTop: i > 0 ? '1px solid #F3F4F6' : 'none',
-          cursor: 'pointer', transition: 'background 0.12s',
-        }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-        >
-          {/* Text content */}
-          <p style={{ fontFamily: FONT, fontSize: 15, color: '#1A1A1A', lineHeight: 1.55, margin: '0 0 10px', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>
-            {post.content}
-          </p>
-          {/* Thumbnail if has media */}
-          {post.image_url && (
-            <div style={{ borderRadius: 12, overflow: 'hidden', height: 160, position: 'relative', marginBottom: 10 }}>
-              <Image src={post.image_url} alt="" fill style={{ objectFit: 'cover' }} />
-            </div>
-          )}
-          {/* Actions */}
-          <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: FONT, fontSize: 13, color: '#9CA3AF' }}>
-              <Heart style={{ width: 14, height: 14 }} /> {formatCount(post.likes_count)}
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: FONT, fontSize: 13, color: '#9CA3AF' }}>
-              <MessageCircle style={{ width: 14, height: 14 }} /> {formatCount(post.comments_count)}
-            </span>
-          </div>
-        </div>
+      {posts.map((post) => (
+        <PostCard key={post.id} post={post as any} />
       ))}
     </div>
   );
