@@ -81,19 +81,30 @@ export function CreatePostForm({ user }: { user?: { username?: string, avatar_ur
       const trimmed = content.trim() || undefined;
 
       // Decide which helper to use based on media presence/type.
+      let result;
       if (mediaUrls.length === 0) {
-        await createStatusPost(trimmed ?? '', null, textBg !== 'none' ? textBg : undefined);
+        result = await createStatusPost(trimmed ?? '', null, textBg !== 'none' ? textBg : undefined);
       } else if (isVideo) {
         // For now treat all videos as regular video posts; reels can have their own entry point.
-        await createVideoPost({
+        result = await createVideoPost({
           content: trimmed,
           videoUrl: mediaUrls[0],
         });
       } else {
-        await createImagePost({
+        result = await createImagePost({
           content: trimmed,
           imageUrls: mediaUrls, // Send full array to backend
         });
+      }
+      
+      if (result && result.error) {
+        setError(
+          `DB Error: ${result.error}` + 
+          (result.details ? ` (Details: ${result.details})` : '') + 
+          (result.hint ? ` (Hint: ${result.hint})` : '')
+        );
+        setLoading(false);
+        return;
       }
       
       setContent('');

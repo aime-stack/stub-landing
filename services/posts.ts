@@ -82,45 +82,50 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
  * Generic core post creator used by helpers below.
  */
 export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
-  const input = CreatePostSchema.parse(rawInput);
-  const supabase = await createClient();
+  try {
+    const input = CreatePostSchema.parse(rawInput);
+    const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error('Unauthorized');
+    if (!user) {
+      return { error: 'Unauthorized' };
+    }
+
+    const primaryImage = input.imageUrls?.[0] ?? null;
+
+    const insertPayload = Object.fromEntries(
+      Object.entries({
+        user_id: user.id,
+        community_id: input.communityId,
+        type: input.type,
+        content: input.content,
+        image_url: primaryImage,
+        video_url: input.videoUrl,
+        thumbnail_url: input.thumbnailUrl,
+        media_urls: input.imageUrls,
+        text_bg: input.textBg,
+      }).filter(([_, v]) => v != null)
+    );
+
+    const { data, error } = await supabase
+      .from('posts')
+      .insert(insertPayload)
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('[Services:Posts] Error creating post:', error);
+      return { error: error.message, details: error.details, hint: error.hint };
+    }
+
+    return data;
+  } catch (e: any) {
+    console.error('[Services:Posts] Exception inside createPost:', e);
+    return { error: e.message || e.toString() };
   }
-
-  const primaryImage = input.imageUrls?.[0] ?? null;
-
-  const insertPayload = Object.fromEntries(
-    Object.entries({
-      user_id: user.id,
-      community_id: input.communityId,
-      type: input.type,
-      content: input.content,
-      image_url: primaryImage,
-      video_url: input.videoUrl,
-      thumbnail_url: input.thumbnailUrl,
-      media_urls: input.imageUrls,
-      text_bg: input.textBg,
-    }).filter(([_, v]) => v != null)
-  );
-
-  const { data, error } = await supabase
-    .from('posts')
-    .insert(insertPayload)
-    .select('*')
-    .single();
-
-  if (error) {
-    console.error('[Services:Posts] Error creating post:', error);
-    throw new Error('Failed to create post');
-  }
-
-  return data;
 }
 
 /**
