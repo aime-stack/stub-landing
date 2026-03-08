@@ -106,7 +106,7 @@ export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
         video_url: input.videoUrl,
         thumbnail_url: input.thumbnailUrl,
         media_urls: input.imageUrls,
-        text_bg: input.textBg,
+        background_gradient: input.textBg ? [input.textBg] : undefined,
       }).filter(([_, v]) => v != null)
     );
 

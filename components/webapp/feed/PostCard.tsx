@@ -182,7 +182,7 @@ export function PostCard({ post, currentUser }: PostCardProps) {
 
   const isVideo  = post.video_url || post.type === 'video' || post.type === 'reel';
   const hasImage = post.image_url || post.thumbnail_url; // FIX: media_url → image_url (Post type)
-  const isTextBg = post.type === 'text' && (post as any).text_bg;
+  const isTextBg = post.type === 'text' && post.background_gradient && post.background_gradient.length > 0;
   const youtubeMatch = !isTextBg && post.content ? post.content.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/) : null;
 
   const handleLike = async () => {
@@ -252,7 +252,7 @@ export function PostCard({ post, currentUser }: PostCardProps) {
   const avatarSrc   = user?.avatar_url;    // FIX: avatar → avatar_url
   const isVerified  = user?.is_verified;   // FIX: isVerified → is_verified
   const isCelebrity = user?.is_celebrity;  // FIX: isCelebrity → is_celebrity
-  const textBg      = isTextBg ? TEXT_BG_STYLES[(post as any).text_bg] : undefined;
+  const textBg      = isTextBg && post.background_gradient ? TEXT_BG_STYLES[post.background_gradient[0]] : undefined;
 
   return (
     <article
