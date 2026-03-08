@@ -92,14 +92,18 @@ function AddProductModal({ onClose, onRefresh }: { onClose: () => void, onRefres
         })
       });
 
-      if (!res.ok) throw new Error('Failed to list product');
+      if (!res.ok) {
+        const errorData = await res.json();
+        const details = errorData.details ? ` (${errorData.details})` : '';
+        throw new Error(`${errorData.error}${details}` || 'Failed to list product');
+      }
       
       setProgress(100);
       setDone(true);
       onRefresh();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Error listing product. Please try again.');
+      alert(`Error: ${err.message}`);
     } finally {
       setLoading(false);
     }

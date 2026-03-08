@@ -20,7 +20,12 @@ export async function POST(request: Request) {
     const product = await createProduct(body);
     return NextResponse.json(product);
   } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 41 : 500;
-    return NextResponse.json({ error: error.message }, { status });
+    console.error('[Marketplace API POST Error]:', error);
+    const status = error.message === 'Unauthorized' ? 401 : 500;
+    return NextResponse.json({ 
+      error: error.message,
+      details: error.details || error.hint || null,
+      code: error.code || null
+    }, { status });
   }
 }
