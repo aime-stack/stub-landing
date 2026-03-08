@@ -52,6 +52,10 @@ export function LinkPreview({ metadata }: LinkPreviewProps) {
             src={image} 
             alt={title || 'Preview'} 
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            onError={(e) => {
+              const parent = e.currentTarget.parentElement;
+              if (parent) parent.style.display = 'none';
+            }}
           />
         </div>
       )}
@@ -69,7 +73,13 @@ export function LinkPreview({ metadata }: LinkPreviewProps) {
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap'
           }}>
-            {new URL(url || '').hostname.replace(/^www\./, '')}
+            {(() => {
+              try {
+                return new URL(url || '').hostname.replace(/^www\./, '');
+              } catch {
+                return 'Link';
+              }
+            })()}
           </span>
         </div>
         

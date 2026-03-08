@@ -20,15 +20,42 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Failed to fetch URL' }, { status: res.status });
     }
 
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('image/')) {
+      return NextResponse.json({
+        title: url.split('/').pop() || 'Image',
+        image: url,
+        url: url
+      });
+    }
+
+    if (contentType.includes('video/')) {
+      return NextResponse.json({
+        title: url.split('/').pop() || 'Video',
+        image: null, // Could use a placeholder or thumbnail if generated
+        url: url
+      });
+    }
+
     const html = await res.text();
+    const sourceUrl = new URL(url);
 
     const metadata = {
-      title: extractMeta(html, 'og:title') || extractTag(html, 'title'),
-      description: extractMeta(html, 'og:description') || extractMeta(html, 'description'),
-      image: extractMeta(html, 'og:image'),
+      title: extractMeta(html, 'og:title') || extractMeta(html, 'twitter:title') || extractTag(html, 'title'),
+      description: extractMeta(html, 'og:description') || extractMeta(html, 'twitter:description') || extractMeta(html, 'description'),
+      image: extractMeta(html, 'og:image') || extractMeta(html, 'twitter:image'),
       url: extractMeta(html, 'og:url') || url,
-      siteName: extractMeta(html, 'og:site_name'),
+      siteName: extractMeta(html, 'og:site_name') || extractMeta(html, 'twitter:site'),
     };
+
+    // Resolve relative image URLs
+    if (metadata.image && !metadata.image.startsWith('http')) {
+      try {
+        metadata.image = new URL(metadata.image, sourceUrl.origin).href;
+      } catch (e) {
+        console.warn('[API:Metadata] Image resolution failed for:', metadata.image);
+      }
+    }
 
     return NextResponse.json(metadata);
   } catch (error: any) {

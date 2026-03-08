@@ -255,7 +255,15 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
                   background: '#F9FAFB', display: 'flex', gap: 12, padding: 8
                 }}>
                   {linkMeta.image && (
-                    <img src={linkMeta.image} alt="" style={{ width: 80, height: 80, borderRadius: 8, objectFit: 'cover' }} />
+                    <img 
+                      src={linkMeta.image} 
+                      alt="" 
+                      style={{ width: 80, height: 80, borderRadius: 8, objectFit: 'cover' }} 
+                      onError={(e) => {
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) parent.style.display = 'none';
+                      }}
+                    />
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{linkMeta.title}</div>

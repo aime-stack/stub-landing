@@ -405,6 +405,19 @@ export function PostCard({ post, currentUser }: PostCardProps) {
           </div>
         )}
 
+        {youtubeMatch && (
+          <div className="rounded-2xl overflow-hidden mb-3 w-full" style={{ border: '1px solid var(--border)', background: '#000', position: 'relative', paddingTop: '56.25%' }}>
+            <iframe
+              src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            />
+          </div>
+        )}
+
         {linkMeta && !youtubeMatch && (
           <LinkPreview metadata={linkMeta} />
         )}
