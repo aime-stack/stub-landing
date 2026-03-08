@@ -112,6 +112,17 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('/api/admin/logout', { method: 'POST' });
+      if (res.ok) {
+        window.location.href = '/admin/login';
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   const filteredApps = applications.filter(a => {
     if (activeTab !== 'overview' && a.type !== activeTab) return false;
     if (!query) return true;
@@ -160,7 +171,10 @@ export default function AdminDashboard() {
         </nav>
 
         <div style={{ padding: 24, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', color: '#94A3B8', fontSize: 13, cursor: 'pointer' }}>
+          <button 
+            onClick={handleLogout}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', color: '#94A3B8', fontSize: 13, cursor: 'pointer' }}
+          >
             <LogOut size={16} /> Logout
           </button>
         </div>
