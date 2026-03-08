@@ -412,7 +412,7 @@ export function PostCard({ post, currentUser }: PostCardProps) {
             }}
           >
             {isVideo && post.video_url ? (
-              <video src={post.video_url} controls className="w-full max-h-[512px] object-cover" onClick={e => e.stopPropagation()} />
+              <LazyVideoPlayer videoUrl={post.video_url} thumbnailUrl={post.thumbnail_url} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -517,5 +517,51 @@ function ActionButton({ icon, label, active, activeColor, activeBg, hoverColor, 
       </span>
       {label !== undefined && <span className="text-[13px] tabular-nums">{label}</span>}
     </button>
+  );
+}
+
+interface LazyVideoPlayerProps {
+  videoUrl: string;
+  thumbnailUrl?: string | null; // Allow null to match the type from Post
+}
+
+function LazyVideoPlayer({ videoUrl, thumbnailUrl }: LazyVideoPlayerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setInView(true);
+      } else {
+        setInView(false);
+      }
+    }, { threshold: 0.5 });
+    
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef} className="w-full h-full relative" style={{ minHeight: '300px' }} onClick={e => e.stopPropagation()}>
+      {!inView && thumbnailUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={thumbnailUrl} alt="Video thumbnail" className="w-full h-full object-cover" />
+      )}
+      {inView && (
+        <video 
+          src={videoUrl} 
+          preload="none" 
+          muted 
+          playsInline 
+          autoPlay 
+          controls 
+          className="w-full max-h-[512px] object-cover" 
+        />
+      )}
+    </div>
   );
 }

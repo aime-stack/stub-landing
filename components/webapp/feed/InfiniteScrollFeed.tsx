@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { PostCard } from './PostCard';
 import { Post } from '@/types';
-import { getMockFeed } from '@/services/mockData';
+
 
 interface InfiniteScrollFeedProps {
   initialPosts: Post[];
@@ -19,22 +19,27 @@ export function InfiniteScrollFeed({ initialPosts }: InfiniteScrollFeedProps) {
 
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  const loadMore = useCallback(() => {
+  const loadMore = useCallback(async () => {
     if (loading || !hasMore || !nextCursor) return;
 
     setLoading(true);
-    // Simulate async fetch delay with mock data
-    setTimeout(() => {
-      const result = getMockFeed(nextCursor, 3);
+    try {
+      const res = await fetch(`/api/feed?cursor=${encodeURIComponent(nextCursor)}&limit=10`);
+      if (!res.ok) throw new Error('Failed to fetch feed');
+      const result = await res.json();
+      
       setPosts((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
-        const newPosts = result.data.filter((p) => !existingIds.has(p.id));
+        const newPosts = result.data.filter((p: Post) => !existingIds.has(p.id));
         return [...prev, ...newPosts];
       });
       setNextCursor(result.nextCursor);
       setHasMore(result.hasMore);
+    } catch (err) {
+      console.error('[Feed:InfiniteScroll] Error loading more posts', err);
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   }, [loading, hasMore, nextCursor]);
 
   useEffect(() => {
