@@ -75,6 +75,84 @@ const INITIAL_CELEBS: Celebrity[] = [
 
 const CATEGORIES = ['All', 'Lifestyle', 'Fitness', 'Music', 'Food', 'Art', 'Tech'];
 
+// ─── Application Modal ───────────────────────────────────────────────────────
+function ApplyCelebrityModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState({ full_name: '', handle: '', category: 'Lifestyle', bio: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/apply-celebrity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit application');
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'white', borderRadius: 28, padding: 40, maxWidth: 400, width: '100%', textAlign: 'center', fontFamily: FONT }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <CheckCircle size={32} color="white" />
+          </div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 10px' }}>Application Sent!</h2>
+          <p style={{ color: '#64748B', fontSize: 14, marginBottom: 24 }}>Our team will review your profile and get back to you soon.</p>
+          <button onClick={onClose} style={{ width: '100%', height: 48, borderRadius: 999, background: '#0a7ea4', color: 'white', fontWeight: 700, border: 'none', cursor: 'pointer' }}>Close</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ background: 'white', borderRadius: 28, width: '100%', maxWidth: 480, padding: 32, fontFamily: FONT }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>Apply as Celebrity</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} color="#94A3B8" /></button>
+        </div>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {error && <div style={{ color: '#EF4444', fontSize: 13, background: '#FEF2F2', padding: 12, borderRadius: 12, border: '1px solid #FECACA' }}>{error}</div>}
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Full Name</label>
+            <input required value={form.full_name} onChange={e => setForm({...form, full_name: e.target.value})} placeholder="Legal name" style={{ width: '100%', height: 44, borderRadius: 12, border: '1px solid #E2E8F0', padding: '0 12px' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Social Handle</label>
+            <input required value={form.handle} onChange={e => setForm({...form, handle: e.target.value})} placeholder="@username" style={{ width: '100%', height: 44, borderRadius: 12, border: '1px solid #E2E8F0', padding: '0 12px' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Category</label>
+            <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} style={{ width: '100%', height: 44, borderRadius: 12, border: '1px solid #E2E8F0', padding: '0 12px' }}>
+              {CATEGORIES.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Short Bio</label>
+            <textarea required value={form.bio} onChange={e => setForm({...form, bio: e.target.value})} placeholder="Tell us about your audience..." rows={3} style={{ width: '100%', borderRadius: 12, border: '1px solid #E2E8F0', padding: '12px', resize: 'none' }} />
+          </div>
+          <button disabled={loading} style={{ width: '100%', height: 48, borderRadius: 999, background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)', color: 'white', fontWeight: 800, border: 'none', cursor: 'pointer', marginTop: 8 }}>
+            {loading ? 'Submitting...' : 'Submit Application'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Chat Modal ─────────────────────────────────────────────────────────────
 function ChatModal({ celeb, onClose }: { celeb: Celebrity; onClose: () => void }) {
   const [message, setMessage] = useState('');
@@ -376,6 +454,8 @@ export default function CelebrityPage() {
   const [activeCat, setActiveCat] = useState('All');
   const [query, setQuery] = useState('');
   const [selectedCeleb, setSelectedCeleb] = useState<Celebrity | null>(null);
+  const [showApply, setShowApply] = useState(false);
+
 
   const filtered = celebs.filter(c => {
     if (activeCat !== 'All' && c.category !== activeCat) return false;
@@ -405,6 +485,10 @@ export default function CelebrityPage() {
           <p style={{ margin: '0 0 20px', fontSize: 14, color: 'rgba(255,255,255,0.80)', lineHeight: 1.5 }}>
             Message your favourite celebrities directly
           </p>
+          <button onClick={() => setShowApply(true)} style={{ marginBottom: 24, height: 40, padding: '0 20px', borderRadius: 999, background: 'white', color: '#0a7ea4', border: 'none', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            Apply as Celebrity
+          </button>
+
 
           {/* Live count chips */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -516,6 +600,11 @@ export default function CelebrityPage() {
       {selectedCeleb && (
         <ChatModal celeb={selectedCeleb} onClose={() => setSelectedCeleb(null)} />
       )}
+
+      {showApply && (
+        <ApplyCelebrityModal onClose={() => setShowApply(false)} />
+      )}
+
 
       {/* Keyframe for pulse animation */}
       <style>{`

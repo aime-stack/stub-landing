@@ -99,11 +99,31 @@ function NewAdModal({ onClose, onAdd }: { onClose: () => void; onAdd: (c: Campai
   const handleSubmit = async () => {
     if (!form.budget || !form.startDate || !form.endDate) { setError('Budget and dates are required.'); return; }
     setLoading(true); setError(null);
-    await new Promise(r => setTimeout(r, 1000));
-    onAdd({ id: `ad-${Date.now()}`, name: form.name, status: 'reviewing', objective: form.objective, adType: form.adType, budget: parseInt(form.budget), spent: 0, impressions: 0, clicks: 0, ctr: 0, startDate: form.startDate, endDate: form.endDate });
-    setLoading(false);
-    setSuccess(true);
+    try {
+      const res = await fetch('/api/admin/apply-company', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_name: form.name,
+          website: form.targetAudience, // Using this field as website for now
+          industry: form.objective,
+          objective: form.adType,
+          budget_range: `RWF ${form.budget}`,
+          contact_email: 'user@example.com' // Should be fetched from auth
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit application');
+      
+      onAdd({ id: `ad-${Date.now()}`, name: form.name, status: 'reviewing', objective: form.objective, adType: form.adType, budget: parseInt(form.budget), spent: 0, impressions: 0, clicks: 0, ctr: 0, startDate: form.startDate, endDate: form.endDate });
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const steps = [{ label: 'Campaign', icon: Target }, { label: 'Creative', icon: PenLine }, { label: 'Budget', icon: Wallet }];
 
