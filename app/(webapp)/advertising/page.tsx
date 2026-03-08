@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Megaphone, Eye, MousePointer, TrendingUp, Plus, X,
   AlertCircle, Loader2, CheckCircle, Pause, Play,
@@ -29,27 +29,6 @@ interface Campaign {
 }
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
-const INITIAL_CAMPAIGNS: Campaign[] = [
-  {
-    id: 'ad1', name: 'Summer Collection Launch', status: 'active',
-    objective: 'Brand Awareness', adType: 'Image Ad',
-    budget: 50000, spent: 23400, impressions: 128400, clicks: 3421, ctr: 2.66,
-    startDate: '2025-06-01', endDate: '2025-06-30',
-  },
-  {
-    id: 'ad2', name: 'Fitness App Promo', status: 'active',
-    objective: 'App Installs', adType: 'Video Ad',
-    budget: 30000, spent: 18900, impressions: 89200, clicks: 2104, ctr: 2.36,
-    startDate: '2025-06-10', endDate: '2025-07-10',
-  },
-  {
-    id: 'ad3', name: 'Tech Course Awareness', status: 'paused',
-    objective: 'Conversions', adType: 'Carousel Ad',
-    budget: 20000, spent: 8500, impressions: 42100, clicks: 876, ctr: 2.08,
-    startDate: '2025-05-15', endDate: '2025-06-15',
-  },
-];
-
 const AD_OBJECTIVES = ['Brand Awareness', 'Reach', 'App Installs', 'Conversions', 'Lead Generation', 'Video Views'];
 const AD_TYPES      = ['Image Ad', 'Video Ad', 'Carousel Ad', 'Story Ad', 'Sponsored Post'];
 
@@ -100,22 +79,41 @@ function NewAdModal({ onClose, onAdd }: { onClose: () => void; onAdd: (c: Campai
     if (!form.budget || !form.startDate || !form.endDate) { setError('Budget and dates are required.'); return; }
     setLoading(true); setError(null);
     try {
-      const res = await fetch('/api/admin/apply-company', {
+      const res = await fetch('/api/advertising/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          company_name: form.name,
-          website: form.targetAudience, // Using this field as website for now
-          industry: form.objective,
-          objective: form.adType,
-          budget_range: `RWF ${form.budget}`,
-          contact_email: 'user@example.com' // Should be fetched from auth
+          name: form.name,
+          objective: form.objective,
+          ad_type: form.adType,
+          headline: form.headline,
+          body_text: form.body,
+          cta: form.cta,
+          budget: parseInt(form.budget),
+          start_date: form.startDate,
+          end_date: form.endDate,
+          target_audience: form.targetAudience
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to submit application');
+      if (!res.ok) throw new Error(data.error || 'Failed to submit campaign');
       
-      onAdd({ id: `ad-${Date.now()}`, name: form.name, status: 'reviewing', objective: form.objective, adType: form.adType, budget: parseInt(form.budget), spent: 0, impressions: 0, clicks: 0, ctr: 0, startDate: form.startDate, endDate: form.endDate });
+      const newCampaign: Campaign = {
+        id: data.campaign.id,
+        name: data.campaign.name,
+        status: data.campaign.status,
+        objective: data.campaign.objective,
+        adType: data.campaign.ad_type,
+        budget: data.campaign.budget,
+        spent: data.campaign.spent,
+        impressions: data.campaign.impressions,
+        clicks: data.campaign.clicks,
+        ctr: data.campaign.clicks / (data.campaign.impressions || 1),
+        startDate: data.campaign.start_date,
+        endDate: data.campaign.end_date
+      };
+
+      onAdd(newCampaign);
       setSuccess(true);
     } catch (err: any) {
       setError(err.message);
@@ -425,9 +423,61 @@ function CampaignCard({ campaign, onToggle }: { campaign: Campaign; onToggle: (i
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AdvertisingPage() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(INITIAL_CAMPAIGNS);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading,   setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [tab,       setTab]       = useState<'all' | 'active' | 'paused'>('all');
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  const fetchCampaigns = async () => {
+    try {
+      const res = await fetch('/api/advertising/campaigns');
+      const data = await res.json();
+      if (res.ok) {
+        setCampaigns(data.campaigns.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          status: c.status,
+          objective: c.objective,
+          adType: c.ad_type,
+          budget: c.budget,
+          spent: c.spent,
+          impressions: c.impressions,
+          clicks: c.clicks,
+          ctr: c.clicks / (c.impressions || 1),
+          startDate: c.start_date,
+          endDate: c.end_date
+        })));
+      }
+    } catch (err) {
+      console.error('Error fetching campaigns:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onToggle = async (id: string) => {
+    const campaign = campaigns.find(c => c.id === id);
+    if (!campaign || campaign.status === 'ended' || campaign.status === 'reviewing') return;
+
+    const newStatus = campaign.status === 'active' ? 'paused' : 'active';
+    
+    try {
+      const res = await fetch(`/api/advertising/campaigns/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        setCampaigns(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
+      }
+    } catch (err) {
+      console.error('Error toggling campaign:', err);
+    }
+  };
 
   const totalImpressions = campaigns.reduce((s, c) => s + c.impressions, 0);
   const totalClicks      = campaigns.reduce((s, c) => s + c.clicks, 0);
@@ -521,8 +571,12 @@ export default function AdvertisingPage() {
           </div>
         )}
 
-        {/* Empty state */}
-        {filtered.length === 0 ? (
+        {/* Loading/Empty state */}
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
+            <Loader2 size={32} className="animate-spin" color="#0a7ea4" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 32px', textAlign: 'center' }}>
             <div style={{ width: 72, height: 72, borderRadius: 22, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
               <Megaphone size={32} color="#D1D5DB" />
@@ -536,7 +590,7 @@ export default function AdvertisingPage() {
             </button>
           </div>
         ) : (
-          filtered.map(c => <CampaignCard key={c.id} campaign={c} onToggle={id => setCampaigns(p => p.map(x => x.id === id ? { ...x, status: x.status === 'active' ? 'paused' : x.status === 'paused' ? 'active' : x.status } : x))} />)
+          filtered.map(c => <CampaignCard key={c.id} campaign={c} onToggle={onToggle} />)
         )}
       </div>
 
@@ -544,6 +598,7 @@ export default function AdvertisingPage() {
 
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
