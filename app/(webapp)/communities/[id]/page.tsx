@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getCommunity } from '@/services/communities';
 import { getCommunityPosts } from '@/services/posts';
+import { createClient } from '@/lib/supabase/client';
 import { PostCard } from '@/components/webapp/feed/PostCard';
 import { CreatePostForm } from '@/components/webapp/upload/CreatePostForm';
 import { ArrowLeft, Loader2, Users, Globe, Lock } from 'lucide-react';
@@ -18,17 +19,28 @@ export default function CommunityDetailsPage() {
 
   const [community, setCommunity] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
     setLoading(true);
     try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      let profileData = null;
+      if (user) {
+        const { data } = await supabase.from('profiles').select('id, username, full_name, avatar_url').eq('id', user.id).single();
+        profileData = data;
+      }
+
       const [commData, postsData] = await Promise.all([
         getCommunity(id),
         getCommunityPosts(id, { limit: 50 }) // Using 50 for now, could add infinite scroll later
       ]);
       setCommunity(commData);
       setPosts(postsData?.data || []);
+      setCurrentUser(profileData);
     } catch (e) {
       console.error(e);
     } finally {
@@ -125,13 +137,13 @@ export default function CommunityDetailsPage() {
       <div style={{ maxWidth: 600, margin: '0 auto', paddingTop: 20 }}>
         {/* Composer */}
         <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', marginBottom: 20, border: '1px solid #E5E7EB' }}>
-          <CreatePostForm communityId={isMock ? undefined : id} />
+          <CreatePostForm user={currentUser} communityId={isMock ? undefined : id} onPostCreated={loadData} />
         </div>
 
         {/* Posts Feed */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {posts.length > 0 ? (
-            posts.map(p => <PostCard key={p.id} post={p} />)
+            posts.map(p => <PostCard key={p.id} post={p} currentUser={currentUser} />)
           ) : (
             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: 16, border: '1px solid #E5E7EB' }}>
               <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>

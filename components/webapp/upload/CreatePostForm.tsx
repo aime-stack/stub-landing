@@ -22,7 +22,7 @@ const TEXT_BG_OPTIONS = [
   { id: 'green',     label: 'Green', style: { background: 'linear-gradient(135deg,#10B981,#0a7ea4)' } },
 ];
 
-export function CreatePostForm({ user, communityId }: { user?: { username?: string, avatar_url?: string } | null, communityId?: string }) {
+export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { username?: string, avatar_url?: string } | null, communityId?: string, onPostCreated?: () => void }) {
   const [content,    setContent]    = useState('');
   const [files,      setFiles]      = useState<File[]>([]);
   const [loading,    setLoading]    = useState(false);
@@ -113,7 +113,11 @@ export function CreatePostForm({ user, communityId }: { user?: { username?: stri
       setFiles([]);
       setTextBg('none');
       if (fileRef.current) fileRef.current.value = '';
-      router.refresh();
+      if (onPostCreated) {
+        onPostCreated();
+      } else {
+        router.refresh(); // Fallback for Server Component pages
+      }
     } catch (err: any) {
       setError(err.message ?? 'Failed to post');
     } finally {
