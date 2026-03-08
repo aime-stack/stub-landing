@@ -367,51 +367,6 @@ export function WidgetArea() {
         </div>
       </Card>
 
-      {/* ── Trending News (Gnews API) ────────────────────────────────────── */}
-      {news.length > 0 && (
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '16px 20px 12px' }}>
-            <Newspaper style={{ width: 18, height: 18, color: '#FF6B35', flexShrink: 0 }} />
-            <span style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>Top News</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {news.map((item, idx) => (
-              <a
-                key={idx}
-                href={item.url}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 12,
-                  padding: '12px 20px',
-                  borderTop: '1px solid #F3F4F6',
-                  textDecoration: 'none',
-                  transition: 'background 0.12s',
-                  color: 'inherit',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-              >
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF', fontWeight: 600, textTransform: 'uppercase' }}>{item.source.name}</span>
-                  <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.title}</span>
-                </div>
-                {item.image && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.image} alt="" style={{ width: 64, height: 48, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                )}
-              </a>
-            ))}
-          </div>
-          <div style={{ padding: '12px 20px', borderTop: '1px solid #F3F4F6' }}>
-            <button onClick={() => window.open('https://news.google.com/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 600, color: '#0a7ea4', display: 'flex', alignItems: 'center', gap: 4 }}>
-              Read more <ChevronRight style={{ width: 14, height: 14 }} />
-            </button>
-          </div>
-        </Card>
-      )}
 
       {/* ── Who to follow ───────────────────────────────────────────────────── */}
       <Card>

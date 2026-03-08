@@ -8,7 +8,7 @@ import {
   createVideoPost,
   createReel,
 } from '@/services/posts';
-import { Image as ImageIcon, Video, Loader2, Smile, MapPin, BarChart2, Type, X } from 'lucide-react';
+import { Image as ImageIcon, Video, Loader2, Smile, MapPin, BarChart2, Type, X, Newspaper, Search as SearchIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
@@ -29,9 +29,63 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
   const [error,      setError]      = useState<string | null>(null);
   const [textBg,     setTextBg]     = useState('none');
   const [showBgPick, setShowBgPick] = useState(false);
+  const [showNews,   setShowNews]   = useState(false);
+  const [newsSearch, setNewsSearch] = useState('');
+  const [newsResults, setNewsResults] = useState<any[]>([]);
+  const [searching,  setSearching]  = useState(false);
+  const [linkMeta,   setLinkMeta]   = useState<any>(null);
+  const [fetchingMeta, setFetchingMeta] = useState(false);
+  
   const router     = useRouter();
   const fileRef    = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const metaTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Link Preview Logic
+  const detectLink = (text: string) => {
+    const urlMatch = text.match(/https?:\/\/[^\s]+/);
+    if (!urlMatch) {
+      setLinkMeta(null);
+      return;
+    }
+    const url = urlMatch[0];
+    if (linkMeta?.url === url) return;
+
+    if (metaTimeout.current) clearTimeout(metaTimeout.current);
+    metaTimeout.current = setTimeout(async () => {
+      setFetchingMeta(true);
+      try {
+        const res = await fetch(`/api/metadata?url=${encodeURIComponent(url)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setLinkMeta({ ...data, url });
+        }
+      } catch (e) {
+        console.error('Meta fetch error:', e);
+      } finally {
+        setFetchingMeta(false);
+      }
+    }, 1000);
+  };
+
+  const handleContentChange = (val: string) => {
+    setContent(val);
+    detectLink(val);
+  };
+
+  const handleNewsSearch = async () => {
+    if (!newsSearch.trim()) return;
+    setSearching(true);
+    try {
+      const res = await fetch(`/api/news/search?q=${encodeURIComponent(newsSearch)}`);
+      const data = await res.json();
+      setNewsResults(data.articles || []);
+    } catch (e) {
+      console.error('News search error:', e);
+    } finally {
+      setSearching(false);
+    }
+  };
 
   const charsLeft = 280 - content.length;
   const isEmpty   = !content.trim() && files.length === 0;
@@ -171,7 +225,7 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
             <textarea
               ref={textareaRef}
               value={content}
-              onChange={e => setContent(e.target.value)}
+              onChange={e => handleContentChange(e.target.value)}
               placeholder="What's happening?"
               maxLength={280}
               rows={3}
@@ -191,6 +245,33 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
               }}
             />
           </div>
+
+          {/* Link Preview within composer */}
+          {linkMeta && (
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <div style={{ opacity: fetchingMeta ? 0.6 : 1 }}>
+                <div style={{
+                  borderRadius: 12, border: '1px solid #E5E7EB', overflow: 'hidden',
+                  background: '#F9FAFB', display: 'flex', gap: 12, padding: 8
+                }}>
+                  {linkMeta.image && (
+                    <img src={linkMeta.image} alt="" style={{ width: 80, height: 80, borderRadius: 8, objectFit: 'cover' }} />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{linkMeta.title}</div>
+                    <div style={{ fontSize: 12, color: '#6B7280', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{linkMeta.description}</div>
+                  </div>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setLinkMeta(null)}
+                style={{ position: 'absolute', top: -8, right: -8, width: 22, height: 22, borderRadius: '50%', background: '#1A1A1A', color: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+              >
+                <X style={{ width: 12, height: 12 }} />
+              </button>
+            </div>
+          )}
 
           {/* Text-bg colour picker */}
           {showBgPick && (
@@ -265,6 +346,7 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
               {[
                 { icon: <ImageIcon  style={{ width: 19, height: 19 }} />, title: 'Photo',      onClick: () => fileRef.current?.click() },
                 { icon: <Video      style={{ width: 19, height: 19 }} />, title: 'Video',      onClick: () => fileRef.current?.click() },
+                { icon: <Newspaper  style={{ width: 19, height: 19 }} />, title: 'News',       onClick: () => setShowNews(true) },
                 { icon: <Type       style={{ width: 19, height: 19 }} />, title: 'Text Style', onClick: () => setShowBgPick(p => !p) },
                 { icon: <BarChart2  style={{ width: 19, height: 19 }} />, title: 'Poll',        onClick: () => {} },
                 { icon: <Smile      style={{ width: 19, height: 19 }} />, title: 'Emoji',      onClick: () => {} },
@@ -330,6 +412,65 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
           </div>
         </div>
       </div>
+
+      {/* News Search Modal */}
+      {showNews && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 500, maxHeight: '80vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ padding: '20px 20px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F3F4F6' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Newspaper style={{ width: 20, height: 20, color: '#0a7ea4' }} />
+                <span style={{ fontFamily: FONT, fontSize: 18, fontWeight: 700 }}>Search News</span>
+              </div>
+              <button onClick={() => setShowNews(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}><X /></button>
+            </div>
+
+            <div style={{ padding: 16 }}>
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type="text" 
+                  value={newsSearch}
+                  onChange={e => setNewsSearch(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleNewsSearch()}
+                  placeholder="What news are you looking for?"
+                  style={{ width: '100%', height: 44, paddingLeft: 40, paddingRight: 12, borderRadius: 12, border: '1.5px solid #E5E7EB', outline: 'none', fontFamily: FONT }}
+                />
+                <SearchIcon style={{ position: 'absolute', left: 12, top: 12, width: 20, height: 20, color: '#9CA3AF' }} />
+              </div>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px' }}>
+              {searching ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><Loader2 className="animate-spin" /></div>
+              ) : newsResults.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {newsResults.map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => {
+                        handleContentChange(content + (content ? '\n' : '') + item.url);
+                        setShowNews(false);
+                        setNewsResults([]);
+                        setNewsSearch('');
+                      }}
+                      style={{ padding: 12, borderRadius: 12, border: '1px solid #F3F4F6', cursor: 'pointer', transition: 'background 0.2s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#F9FAFB'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <div style={{ fontSize: 11, color: '#0a7ea4', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>{item.source.name}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.4 }}>{item.title}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : newsSearch && !searching ? (
+                <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>No results found.</div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>Search for topics to share latest news.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

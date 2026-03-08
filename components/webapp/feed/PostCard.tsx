@@ -22,6 +22,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { ImageGallery } from '@/components/webapp/ui/ImageGallery';
 import { likePost, unlikePost, bookmarkPost, unbookmarkPost, resharePost, sharePostExternally, viewPost, deletePost, reportPost } from '@/services/interactions';
 import { CommentsModal } from '@/components/webapp/feed/CommentsModal';
+import { LinkPreview } from '@/components/webapp/feed/LinkPreview';
 
 interface PostCardProps { post: Post; currentUser?: any; }
 
@@ -149,7 +150,36 @@ export function PostCard({ post, currentUser }: PostCardProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
   const [showComments, setShowComments] = useState(false);
+  const [linkMeta, setLinkMeta] = useState<any>(null);
   const postRef = useRef<HTMLElement>(null);
+
+  if (deleted) return null;
+
+  const isVideo  = post.video_url || post.type === 'video' || post.type === 'reel';
+  const hasImage = post.image_url || post.thumbnail_url;
+  const isTextBg = post.type === 'text' && post.background_gradient && post.background_gradient.length > 0;
+  const youtubeMatch = !isTextBg && post.content ? post.content.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/) : null;
+
+  useEffect(() => {
+    const detectPostLink = async () => {
+      if (!isTextBg && post.content) {
+        const urlMatch = post.content.match(/https?:\/\/(?!www\.youtube\.com|youtu\.be)[^\s]+/);
+        if (urlMatch) {
+          const url = urlMatch[0];
+          try {
+            const res = await fetch(`/api/metadata?url=${encodeURIComponent(url)}`);
+            if (res.ok) {
+              const data = await res.json();
+              setLinkMeta({ ...data, url });
+            }
+          } catch (e) {
+            console.error('Post link meta fetch error:', e);
+          }
+        }
+      }
+    };
+    detectPostLink();
+  }, [post.content, isTextBg]);
 
   useEffect(() => {
     if (!showMenu) return;
@@ -160,7 +190,6 @@ export function PostCard({ post, currentUser }: PostCardProps) {
     return () => { document.removeEventListener('keydown', down); document.removeEventListener('mousedown', click); };
   }, [showMenu]);
 
-  // View tracking
   useEffect(() => {
     if (!postRef.current || deleted) return;
     let timeout: NodeJS.Timeout;
@@ -168,7 +197,7 @@ export function PostCard({ post, currentUser }: PostCardProps) {
       if (entry.isIntersecting) {
         timeout = setTimeout(() => {
           viewPost(post.id).catch(() => {});
-          observer.disconnect(); // Only count view once per render
+          observer.disconnect();
         }, 2000);
       } else {
         clearTimeout(timeout);
@@ -177,13 +206,6 @@ export function PostCard({ post, currentUser }: PostCardProps) {
     observer.observe(postRef.current);
     return () => { clearTimeout(timeout); observer.disconnect(); };
   }, [post.id, deleted]);
-
-  if (deleted) return null;
-
-  const isVideo  = post.video_url || post.type === 'video' || post.type === 'reel';
-  const hasImage = post.image_url || post.thumbnail_url; // FIX: media_url → image_url (Post type)
-  const isTextBg = post.type === 'text' && post.background_gradient && post.background_gradient.length > 0;
-  const youtubeMatch = !isTextBg && post.content ? post.content.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/) : null;
 
   const handleLike = async () => {
     const next = !liked;
@@ -383,17 +405,8 @@ export function PostCard({ post, currentUser }: PostCardProps) {
           </div>
         )}
 
-        {youtubeMatch && (
-          <div className="rounded-2xl overflow-hidden mb-3 w-full" style={{ border: '1px solid var(--border)', background: '#000', position: 'relative', paddingTop: '56.25%' }}>
-            <iframe
-              src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-            />
-          </div>
+        {linkMeta && !youtubeMatch && (
+          <LinkPreview metadata={linkMeta} />
         )}
 
         {post.media_urls && post.media_urls.length > 0 && (
