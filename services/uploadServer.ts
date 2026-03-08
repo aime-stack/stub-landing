@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function uploadMediaAction(formData: FormData): Promise<string> {
   const file = formData.get('file') as File;
-  const bucket = (formData.get('bucket') as 'posts' | 'avatars') || 'posts';
+  const bucket = (formData.get('bucket') as 'posts' | 'avatars' | 'stories') || 'posts';
 
   if (!file) {
     throw new Error('No file provided');

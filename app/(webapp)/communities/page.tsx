@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Users, Plus, Search, Globe, Lock, ChevronRight,
@@ -8,8 +8,7 @@ import {
   Camera, Check, Loader2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { createCommunity } from '@/services/communities';
-
+import { createCommunity, getDiscoverCommunities, getUserCommunities, joinCommunity, leaveCommunity } from '@/services/communities';
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
 /* ── Mock data ─────────────────────────────────────────────────────────────── */
@@ -70,7 +69,7 @@ function VerifiedBadge() {
 }
 
 /* ── Create community modal ────────────────────────────────────────────────── */
-function CreateModal({ onClose }: { onClose: () => void }) {
+function CreateModal({ onClose, onCreated }: { onClose: () => void, onCreated?: () => void }) {
   const [name, setName]       = useState('');
   const [desc, setDesc]       = useState('');
   const [privacy, setPrivacy] = useState<'public' | 'private'>('public');
@@ -92,6 +91,7 @@ function CreateModal({ onClose }: { onClose: () => void }) {
         privacy,
       });
       setStep('done');
+      if (onCreated) onCreated();
       router.refresh();
     } catch (e) {
       console.error(e);
@@ -215,8 +215,30 @@ function CreateModal({ onClose }: { onClose: () => void }) {
 }
 
 /* ── Community card (discover) ─────────────────────────────────────────────── */
-function CommunityCard({ c }: { c: typeof DISCOVER_COMMUNITIES[0] }) {
-  const [joined, setJoined] = useState(false);
+function CommunityCard({ 
+  c, 
+  isJoined,
+  onJoinToggle
+}: { 
+  c: typeof DISCOVER_COMMUNITIES[0],
+  isJoined: boolean,
+  onJoinToggle: (id: string, join: boolean) => Promise<void>
+}) {
+  const [loading, setLoading] = useState(false);
+
+  const handleJoinClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (loading) return;
+    setLoading(true);
+    try {
+      await onJoinToggle(c.id, !isJoined);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{ background: 'white', borderRadius: 20, border: '1px solid #E5E7EB', overflow: 'hidden', transition: 'box-shadow 0.15s', cursor: 'pointer' }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)')}
@@ -224,7 +246,7 @@ function CommunityCard({ c }: { c: typeof DISCOVER_COMMUNITIES[0] }) {
     >
       {/* Banner */}
       <div style={{ height: 90, position: 'relative', background: 'linear-gradient(135deg,#0a7ea4,#EC4899)' }}>
-        <Image src={c.banner} alt={c.name} fill style={{ objectFit: 'cover', opacity: 0.85 }} unoptimized />
+        <Image src={c.banner || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=70'} alt={c.name} fill style={{ objectFit: 'cover', opacity: 0.85 }} unoptimized />
         {/* Private badge */}
         {c.private && (
           <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.55)', borderRadius: 999, padding: '3px 8px' }}>
@@ -244,22 +266,29 @@ function CommunityCard({ c }: { c: typeof DISCOVER_COMMUNITIES[0] }) {
           <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }}>{c.name}</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
-          <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: 'rgba(10,126,164,0.08)', color: '#0a7ea4', border: '1px solid rgba(10,126,164,0.15)' }}>{c.category}</span>
-          <span style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF' }}>· {c.members} members</span>
+          <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: 'rgba(10,126,164,0.08)', color: '#0a7ea4', border: '1px solid rgba(10,126,164,0.15)' }}>{c.category || 'General'}</span>
+          <span style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF' }}>· {c.members || 0} members</span>
         </div>
         <p style={{ fontFamily: FONT, fontSize: 12, color: '#6B7280', lineHeight: 1.5, margin: '0 0 12px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{c.description}</p>
 
-        <button onClick={e => { e.stopPropagation(); setJoined(j => !j); }} style={{
+        <button onClick={handleJoinClick} disabled={loading} style={{
           width: '100%', height: 36, borderRadius: 999,
-          border: joined ? '1.5px solid #E5E7EB' : 'none',
-          background: joined ? 'white' : 'linear-gradient(135deg,#0a7ea4,#EC4899)',
-          color: joined ? '#1A1A1A' : 'white',
-          fontFamily: FONT, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+          border: isJoined ? '1.5px solid #E5E7EB' : 'none',
+          background: isJoined ? 'white' : 'linear-gradient(135deg,#0a7ea4,#EC4899)',
+          color: isJoined ? '#1A1A1A' : 'white',
+          fontFamily: FONT, fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          boxShadow: joined ? 'none' : '0 2px 8px rgba(10,126,164,0.2)',
+          boxShadow: isJoined ? 'none' : '0 2px 8px rgba(10,126,164,0.2)',
+          opacity: loading ? 0.7 : 1,
           transition: 'all 0.15s',
         }}>
-          {joined ? <><Check style={{ width: 13, height: 13 }} /> Joined</> : <><Plus style={{ width: 13, height: 13 }} /> Join</>}
+          {loading ? (
+            <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
+          ) : isJoined ? (
+            <><Check style={{ width: 13, height: 13 }} /> Joined</>
+          ) : (
+            <><Plus style={{ width: 13, height: 13 }} /> Join</>
+          )}
         </button>
       </div>
     </div>
@@ -328,16 +357,93 @@ export default function CommunitiesPage() {
   const [showCreate,  setShowCreate]  = useState(false);
   const [search,      setSearch]      = useState('');
 
+  // Data states
+  const [realDiscover, setRealDiscover] = useState<any[]>([]);
+  const [realUserComms, setRealUserComms] = useState<any[]>([]);
+  const [loadingComms, setLoadingComms] = useState(true);
+
+  // Fetch from DB
+  const loadData = async () => {
+    setLoadingComms(true);
+    try {
+      const [d, u] = await Promise.all([
+        getDiscoverCommunities(),
+        getUserCommunities()
+      ]);
+      setRealDiscover(d || []);
+      setRealUserComms(u || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingComms(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleJoinToggle = async (communityId: string, join: boolean) => {
+    if (join) {
+      // For mock data, we might not be able to actually join in DB since the ID doesn't exist
+      if (communityId.startsWith('dc')) {
+        // Just mock it in state
+        const c = DISCOVER_COMMUNITIES.find(x => x.id === communityId);
+        if (c) {
+          setRealUserComms(prev => [...prev, { ...c, isMockJoined: true }]);
+        }
+        return;
+      }
+      await joinCommunity(communityId);
+    } else {
+      if (communityId.startsWith('dc') || communityId.startsWith('mc')) {
+        setRealUserComms(prev => prev.filter(x => x.id !== communityId));
+        return;
+      }
+      await leaveCommunity(communityId);
+    }
+    // Refresh lists
+    await loadData();
+  };
+
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'posts', label: 'Community Posts', icon: <MessageCircle style={{ width: 15, height: 15 }} /> },
     { id: 'join',  label: 'Discover',        icon: <Globe         style={{ width: 15, height: 15 }} /> },
     { id: 'my',    label: 'My Communities',  icon: <Users         style={{ width: 15, height: 15 }} /> },
   ];
 
-  const filteredDiscover = DISCOVER_COMMUNITIES.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.category.toLowerCase().includes(search.toLowerCase())
+  // Merge real and mock discovers
+  // Format real to match exactly what CommunityCard needs
+  const combinedDiscover = [
+    ...realDiscover.map(r => ({
+      id: r.id,
+      name: r.name,
+      description: r.description || '',
+      category: 'General',
+      members: r.members_count || 0,
+      banner: r.cover_image || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=70',
+      avatar: '47',
+      private: r.is_private
+    })),
+    ...DISCOVER_COMMUNITIES
+  ];
+
+  const filteredDiscover = combinedDiscover.filter(c =>
+    (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.category || '').toLowerCase().includes(search.toLowerCase())
   );
+
+  // Merge real and mock my communities
+  const combinedMyComms = [
+    ...realUserComms.map(r => ({
+      id: r.id,
+      name: r.name,
+      members: r.members_count || 0,
+      avatar: '47',
+      unread: 0
+    })),
+    ...MY_COMMUNITIES
+  ];
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT }}>
@@ -426,9 +532,20 @@ export default function CommunitiesPage() {
             />
           </div>
           <p style={{ fontFamily: FONT, fontSize: 13, color: '#9CA3AF', margin: '0 0 14px' }}>{filteredDiscover.length} communities found</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 16 }}>
-            {filteredDiscover.map(c => <CommunityCard key={c.id} c={c} />)}
-          </div>
+          {loadingComms ? (
+            <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}><Loader2 style={{ animation: 'spin 1s linear infinite', color: '#0a7ea4' }} /></div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 16 }}>
+              {filteredDiscover.map(c => (
+                <CommunityCard 
+                  key={c.id} 
+                  c={c} 
+                  isJoined={combinedMyComms.some(my => my.id === c.id)}
+                  onJoinToggle={handleJoinToggle}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -459,7 +576,15 @@ export default function CommunitiesPage() {
             <div style={{ padding: '14px 20px 8px', borderBottom: '1px solid #F3F4F6' }}>
               <p style={{ margin: 0, fontFamily: FONT, fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>Your communities</p>
             </div>
-            {MY_COMMUNITIES.map((c, i) => (
+            {combinedMyComms.length === 0 && !loadingComms && (
+              <div style={{ padding: '24px 20px', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontFamily: FONT, fontSize: 14, color: '#6B7280' }}>You haven't joined any communities yet.</p>
+              </div>
+            )}
+            {loadingComms && (
+              <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}><Loader2 style={{ animation: 'spin 1s linear infinite', color: '#0a7ea4' }} /></div>
+            )}
+            {!loadingComms && combinedMyComms.map((c, i) => (
               <div key={c.id} style={{
                 display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px',
                 borderTop: i > 0 ? '1px solid #F3F4F6' : 'none',
@@ -469,7 +594,7 @@ export default function CommunitiesPage() {
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`https://i.pravatar.cc/44?img=${c.avatar}`} alt={c.name} style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
+                <img src={`https://i.pravatar.cc/44?img=${c.avatar || '47'}`} alt={c.name} style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: '0 0 2px', fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>
                   <p style={{ margin: 0, fontFamily: FONT, fontSize: 12, color: '#9CA3AF' }}>{c.members} members</p>
@@ -485,7 +610,7 @@ export default function CommunitiesPage() {
       )}
 
       {/* ── Create modal ──────────────────────────────────────────────────── */}
-      {showCreate && <CreateModal onClose={() => setShowCreate(false)} />}
+      {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreated={loadData} />}
     </div>
   );
 }

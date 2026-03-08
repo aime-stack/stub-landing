@@ -1,6 +1,8 @@
 import { CreatePostForm } from '@/components/webapp/upload/CreatePostForm';
 import { PostCard } from '@/components/webapp/feed/PostCard';
 import { getFeed } from '@/services/posts';
+import { getStories } from '@/services/stories';
+import { StoriesStrip } from '@/components/webapp/stories/StoriesStrip';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -16,8 +18,11 @@ export default async function FeedPage() {
   }
 
   try {
-    // Server-side fetch of the latest posts from Supabase.
-    const { data: posts } = await getFeed({ cursor: null, limit: 30 });
+    // Server-side fetch of the latest posts and stories from Supabase.
+    const [{ data: posts }, stories] = await Promise.all([
+      getFeed({ cursor: null, limit: 30 }),
+      getStories(),
+    ]);
 
     return (
       <>
@@ -40,6 +45,9 @@ export default async function FeedPage() {
             Following
           </button>
         </div>
+
+        {/* Stories Strip */}
+        <StoriesStrip stories={stories} currentUser={profile} />
 
         {/* Composer */}
         <CreatePostForm user={profile} />
