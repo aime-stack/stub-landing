@@ -87,11 +87,11 @@ export function ReelsFeed({ reels: initialReels }: ReelsFeedProps) {
             className="reel-container w-full h-full snap-always snap-center flex items-center justify-center relative"
           >
             {isVisible ? (
-              <div className="w-full h-full sm:max-w-[400px] sm:max-h-[750px] sm:rounded-xl overflow-hidden relative sm:my-4 sm:border sm:border-white/20 bg-black">
+              <div className="w-full h-full sm:max-w-[400px] sm:max-h-[750px] aspect-[9/16] sm:rounded-xl overflow-hidden relative sm:my-4 sm:border sm:border-white/20 bg-black shadow-2xl">
                 <ReelCard reel={reel} isActive={activeIndex === index} />
               </div>
             ) : (
-              <div className="w-full h-full bg-black" />
+              <div className="w-full h-full sm:max-w-[400px] sm:max-h-[750px] aspect-[9/16] bg-black sm:rounded-xl sm:my-4 sm:border sm:border-white/20" />
             )}
           </div>
         );

@@ -46,6 +46,7 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
       console.warn('[VideoPlayer] Low-res failed, falling back to original source');
       setVideoSrc(src);
       setIsFallingBack(true);
+      setIsReady(false); // Reset ready state for fallback source
     } else {
       setError(true);
     }
@@ -55,9 +56,11 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
     const video = videoRef.current;
     if (!video) return;
 
+    // When videoSrc changes without a key change, we need to load it
+    video.load();
+
     if (isActive) {
       video.play().catch((err) => {
-        // Only log, don't set error state for autoplay blocks
         console.warn('[VideoPlayer] Play interrupted or blocked:', err);
       });
     } else {
@@ -67,32 +70,34 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
 
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
-      {/* Thumbnail shown while video is not ready or if it's inactive (to save memory/cpu) */}
-      {thumbnailUrl && !isReady && (
+      {/* 
+        Thumbnail layer - always present but fades out 
+        This prevents the "black flash" when the video element is loading/playing
+      */}
+      {thumbnailUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={thumbnailUrl}
           alt="Thumbnail"
-          className="absolute inset-0 w-full h-full object-cover"
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-0 ${isReady ? 'opacity-0' : 'opacity-100'}`}
         />
       )}
 
       {src ? (
         <video
           ref={videoRef}
-          key={videoSrc} // Force re-mount or re-load when src changes
           src={videoSrc}
-          className={`absolute inset-0 w-full h-full object-cover cursor-pointer transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 w-full h-full object-cover cursor-pointer transition-opacity duration-700 z-10 ${isReady ? 'opacity-100' : 'opacity-0'}`}
           loop
           playsInline
           muted
-          preload="auto" // Changed from 'none' to 'auto' for active/visible videos
-          onCanPlay={() => setIsReady(true)}
+          preload="auto"
+          onPlaying={() => setIsReady(true)} // onPlaying is more reliable than onCanPlay for "visual" ready
           onError={handleVideoError}
           onClick={onClick}
         />
       ) : (
-        <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+        <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center z-10">
           <Music size={48} className="text-white/20" />
         </div>
       )}
