@@ -13,12 +13,13 @@ CREATE TABLE IF NOT EXISTS public.news_links (
 -- Add read policy for public
 ALTER TABLE public.news_links ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read access to news_links" ON public.news_links;
 CREATE POLICY "Allow public read access to news_links" 
     ON public.news_links 
     FOR SELECT 
     USING (true);
 
--- Allow authenticated users to insert (used indirectly via Edge Function/Next API)
+DROP POLICY IF EXISTS "Allow authenticated insert to news_links" ON public.news_links;
 CREATE POLICY "Allow authenticated insert to news_links" 
     ON public.news_links 
     FOR INSERT 

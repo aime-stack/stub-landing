@@ -49,7 +49,7 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
       return;
     }
     const url = urlMatch[0];
-    if (linkMeta?.url === url) return;
+    if (linkMeta?.url === url || linkMeta) return;
 
     if (metaTimeout.current) clearTimeout(metaTimeout.current);
     metaTimeout.current = setTimeout(async () => {

@@ -183,7 +183,12 @@ export function PostCard({ post, currentUser }: PostCardProps) {
             });
             if (res.ok) {
               const data = await res.json();
-              setLinkMeta({ ...data, url, image: data.image_url });
+              setLinkMeta({ 
+                ...data, 
+                url, 
+                image: data.image_url, 
+                source: data.source 
+              });
             }
           } catch (e) {
             console.error('Post link meta fetch error:', e);
