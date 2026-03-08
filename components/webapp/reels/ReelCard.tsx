@@ -102,7 +102,14 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
           {/* Username */}
           <Link
             href={`/profile/${username}`}
-            className="text-white font-bold text-[16px] hover:underline drop-shadow-lg truncate max-w-[150px] pointer-events-auto"
+            className="pointer-events-auto hover:underline"
+            style={{ 
+              color: '#FFFFFF', 
+              fontWeight: '800', 
+              fontSize: '17px',
+              textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+              zIndex: 50
+            }}
           >
             {displayName}
           </Link>

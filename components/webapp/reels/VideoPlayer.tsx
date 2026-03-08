@@ -118,12 +118,21 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
       )}
 
       {/* Mute/Unmute Toggle Overlay */}
-      <button 
-        onClick={toggleMute}
-        className="absolute bottom-4 left-4 p-2.5 bg-black/40 hover:bg-black/60 rounded-full text-white backdrop-blur-md z-20 transition-all active:scale-95 shadow-lg border border-white/10"
-      >
-        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-      </button>
+      <div className="absolute bottom-4 left-4 flex items-center gap-2 z-20 pointer-events-auto">
+        <button 
+          onClick={toggleMute}
+          className="p-3 bg-white text-black rounded-full shadow-2xl transition-all active:scale-90 flex items-center justify-center border-2 border-white/20"
+          title={isMuted ? 'Unmute' : 'Mute'}
+        >
+          {isMuted ? <VolumeX size={22} fill="black" /> : <Volume2 size={22} fill="black" />}
+        </button>
+        
+        {isMuted && isActive && (
+          <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 animate-fade-in">
+            <span className="text-white text-[12px] font-bold">Tap for sound</span>
+          </div>
+        )}
+      </div>
 
       {error && (
         <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-30 p-4 text-center">
