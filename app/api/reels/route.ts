@@ -27,12 +27,17 @@ export async function GET(req: NextRequest) {
       limit: 10,
     });
 
+    const responseData = {
+      reels: result.data,
+      nextCursor: result.nextCursor,
+    };
+
     if (canCache && redis) {
-      await redis.set(CACHE_KEY, result, { ex: CACHE_TTL });
+      await redis.set(CACHE_KEY, responseData, { ex: CACHE_TTL });
       console.log('[API:Reels] Cache Populated');
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(responseData);
   } catch (error: any) {
     console.error('[API:Reels] Error:', error);
     return NextResponse.json(

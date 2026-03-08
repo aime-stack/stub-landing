@@ -15,21 +15,41 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(false);
 
-  // Resolution switching logic based on connection
   const [videoSrc, setVideoSrc] = useState(src);
+  const [isFallingBack, setIsFallingBack] = useState(false);
 
   useEffect(() => {
+    // Reset state when source changes
+    setIsFallingBack(false);
+    setError(false);
+    setIsReady(false);
+    
     // Check if browser supports Network Information API
     const conn = (navigator as any).connection;
     if (conn) {
       const isSlow = conn.effectiveType === '2g' || conn.effectiveType === '3g' || conn.saveData;
       if (isSlow) {
-        // Assume _480 suffix for low-res as per requirements
+        // Assume _480 suffix for low-res
         const lowRes = src.replace(/\.(mp4|webm|mov)$/i, '_480.$1');
-        setVideoSrc(lowRes);
+        if (lowRes !== src) {
+          setVideoSrc(lowRes);
+          return;
+        }
       }
     }
+    setVideoSrc(src);
   }, [src]);
+
+  const handleVideoError = () => {
+    // If the error happened on a modified URL (low-res), try falling back to original
+    if (videoSrc !== src && !isFallingBack) {
+      console.warn('[VideoPlayer] Low-res failed, falling back to original source');
+      setVideoSrc(src);
+      setIsFallingBack(true);
+    } else {
+      setError(true);
+    }
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -37,7 +57,8 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
 
     if (isActive) {
       video.play().catch((err) => {
-        console.warn('[VideoPlayer] Autoplay failed:', err);
+        // Only log, don't set error state for autoplay blocks
+        console.warn('[VideoPlayer] Play interrupted or blocked:', err);
       });
     } else {
       video.pause();
@@ -59,14 +80,15 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
       {src ? (
         <video
           ref={videoRef}
+          key={videoSrc} // Force re-mount or re-load when src changes
           src={videoSrc}
           className={`absolute inset-0 w-full h-full object-cover cursor-pointer transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`}
           loop
           playsInline
           muted
-          preload="none" // Requirements: Lazy Video Loading
+          preload="auto" // Changed from 'none' to 'auto' for active/visible videos
           onCanPlay={() => setIsReady(true)}
-          onError={() => setError(true)}
+          onError={handleVideoError}
           onClick={onClick}
         />
       ) : (
