@@ -55,7 +55,11 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
     metaTimeout.current = setTimeout(async () => {
       setFetchingMeta(true);
       try {
-        const res = await fetch(`/api/metadata?url=${encodeURIComponent(url)}`);
+        const res = await fetch('/api/news/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
         if (res.ok) {
           const data = await res.json();
           setLinkMeta({ ...data, url });
@@ -137,7 +141,12 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
       // Decide which helper to use based on media presence/type.
       let result;
       if (mediaUrls.length === 0) {
-        result = await createStatusPost(trimmed ?? '', communityId, textBg !== 'none' ? textBg : undefined);
+        result = await createStatusPost(
+          trimmed ?? '', 
+          communityId, 
+          textBg !== 'none' ? textBg : undefined,
+          linkMeta?.id // Pass the news_link_id here
+        );
       } else if (isVideo) {
         // For now treat all videos as regular video posts; reels can have their own entry point.
         result = await createVideoPost({

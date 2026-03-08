@@ -69,6 +69,15 @@ export interface Post {
   visibility?: 'public' | 'private' | 'followers';
   
   reshared_from?: string | null; // References posts.id
+  news_links?: {
+    id: string;
+    url: string;
+    title: string;
+    description: string;
+    image_url: string;
+    source: string;
+    published_at: string;
+  } | null;
   created_at: string;
   updated_at: string;
 }

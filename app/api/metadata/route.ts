@@ -9,9 +9,40 @@ export async function GET(req: Request) {
   }
 
   try {
+    // 1. YouTube API Integration
+    const youtubeKey = process.env.YOUTUBE_API_KEY;
+    const youtubeMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    
+    if (youtubeMatch && youtubeKey) {
+      const videoId = youtubeMatch[1];
+      try {
+        const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${youtubeKey}&part=snippet`);
+        if (ytRes.ok) {
+          const ytData = await ytRes.json();
+          if (ytData.items?.length > 0) {
+            const snippet = ytData.items[0].snippet;
+            return NextResponse.json({
+              title: snippet.title,
+              description: snippet.description,
+              image: snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url,
+              url: url,
+              siteName: 'YouTube'
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('[API:Metadata] YouTube API fetch failed, falling back to scraper:', e);
+      }
+    }
+
+    // 2. Performance Scraper with better headers
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'StubgramBot/1.0 (+https://stubgram.com/bot)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
       },
       next: { revalidate: 86400 }, // Cache for 24 hours
     });
@@ -32,7 +63,7 @@ export async function GET(req: Request) {
     if (contentType.includes('video/')) {
       return NextResponse.json({
         title: url.split('/').pop() || 'Video',
-        image: null, // Could use a placeholder or thumbnail if generated
+        image: null,
         url: url
       });
     }

@@ -150,10 +150,16 @@ export function PostCard({ post, currentUser }: PostCardProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
   const [showComments, setShowComments] = useState(false);
-  const [linkMeta, setLinkMeta] = useState<any>(null);
+  const [linkMeta, setLinkMeta] = useState<any>(post.news_links ? {
+    id: post.news_links.id,
+    url: post.news_links.url,
+    title: post.news_links.title,
+    description: post.news_links.description,
+    image: post.news_links.image_url,
+    source: post.news_links.source
+  } : null);
   const postRef = useRef<HTMLElement>(null);
 
-  if (deleted) return null;
 
   const isVideo  = post.video_url || post.type === 'video' || post.type === 'reel';
   const hasImage = post.image_url || post.thumbnail_url;
@@ -163,14 +169,18 @@ export function PostCard({ post, currentUser }: PostCardProps) {
   useEffect(() => {
     const detectPostLink = async () => {
       if (!isTextBg && post.content) {
-        const urlMatch = post.content.match(/https?:\/\/(?!www\.youtube\.com|youtu\.be)[^\s]+/);
+        const urlMatch = post.content.match(/https?:\/\/[^\s]+/);
         if (urlMatch) {
           const url = urlMatch[0];
           try {
-            const res = await fetch(`/api/metadata?url=${encodeURIComponent(url)}`);
+            const res = await fetch('/api/news/submit', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url }),
+            });
             if (res.ok) {
               const data = await res.json();
-              setLinkMeta({ ...data, url });
+              setLinkMeta({ ...data, url, image: data.image_url });
             }
           } catch (e) {
             console.error('Post link meta fetch error:', e);
@@ -275,6 +285,8 @@ export function PostCard({ post, currentUser }: PostCardProps) {
   const isVerified  = user?.is_verified;   // FIX: isVerified → is_verified
   const isCelebrity = user?.is_celebrity;  // FIX: isCelebrity → is_celebrity
   const textBg      = isTextBg && post.background_gradient ? TEXT_BG_STYLES[post.background_gradient[0]] : undefined;
+
+  if (deleted) return null;
 
   return (
     <article
@@ -418,8 +430,8 @@ export function PostCard({ post, currentUser }: PostCardProps) {
           </div>
         )}
 
-        {linkMeta && !youtubeMatch && (
-          <LinkPreview metadata={linkMeta} />
+        {linkMeta && (
+          <LinkPreview metadata={linkMeta} hideImage={!!youtubeMatch} />
         )}
 
         {post.media_urls && post.media_urls.length > 0 && (

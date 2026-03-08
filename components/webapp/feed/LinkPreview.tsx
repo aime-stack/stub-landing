@@ -11,11 +11,12 @@ interface LinkPreviewProps {
     url?: string;
     siteName?: string | null;
   };
+  hideImage?: boolean;
 }
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
-export function LinkPreview({ metadata }: LinkPreviewProps) {
+export function LinkPreview({ metadata, hideImage }: LinkPreviewProps) {
   const { title, description, image, url } = metadata;
   
   if (!title && !description) return null;
@@ -45,7 +46,7 @@ export function LinkPreview({ metadata }: LinkPreviewProps) {
         e.currentTarget.style.background = 'white';
       }}
     >
-      {image && (
+      {image && !hideImage && (
         <div style={{ width: '100%', height: 200, position: 'relative', overflow: 'hidden' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 

@@ -30,6 +30,7 @@ const CreatePostSchema = z.object({
   videoUrl: z.string().url().optional(),
   thumbnailUrl: z.string().url().optional(),
   textBg: z.string().optional(),
+  newsLinkId: z.string().uuid().optional().nullable(),
 });
 
 /**
@@ -49,7 +50,8 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
       *,
       users:user_id (
         id, username, full_name, avatar_url, is_verified, is_celebrity
-      )
+      ),
+      news_links (*)
     `
     )
     .is('community_id', null)
@@ -87,7 +89,8 @@ export async function getReels(params: { cursor?: string | null; limit?: number 
     .from('posts')
     .select(`
       *,
-      users:user_id (id, username, full_name, avatar_url, is_verified, is_celebrity)
+      users:user_id (id, username, full_name, avatar_url, is_verified, is_celebrity),
+      news_links (*)
     `)
     .eq('type', 'reel')
     .is('community_id', null)
@@ -123,7 +126,8 @@ export async function getCommunityPosts(communityId: string, params: z.infer<typ
       *,
       users:user_id (
         id, username, full_name, avatar_url, is_verified, is_celebrity
-      )
+      ),
+      news_links (*)
     `
     )
     .eq('community_id', communityId)
@@ -181,6 +185,7 @@ export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
         thumbnail_url: input.thumbnailUrl,
         media_urls: input.imageUrls,
         background_gradient: input.textBg ? [input.textBg] : undefined,
+        news_link_id: input.newsLinkId,
       }).filter(([_, v]) => v != null)
     );
 
@@ -206,12 +211,13 @@ export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
  * Convenience helpers per post type
  */
 
-export async function createStatusPost(content: string, communityId?: string | null, textBg?: string) {
+export async function createStatusPost(content: string, communityId?: string | null, textBg?: string, newsLinkId?: string) {
   return createPost({
     type: 'text',
     content,
     communityId: communityId ?? null,
     textBg: textBg !== 'none' ? textBg : undefined,
+    newsLinkId: newsLinkId,
   });
 }
 
