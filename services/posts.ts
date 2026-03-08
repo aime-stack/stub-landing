@@ -199,3 +199,57 @@ export async function createAdPost(params: {
     communityId: null,
   });
 }
+
+export async function getBookmarkedPosts(params: { cursor?: string | null; limit?: number }) {
+  const { cursor } = params;
+  const limit = params.limit || 20;
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+
+  let query = supabase
+    .from('bookmarks')
+    .select(`
+      created_at,
+      posts (
+        *,
+        users:user_id (
+          id, username, full_name, avatar_url, is_verified, is_celebrity
+        )
+      )
+    `)
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (cursor) {
+    query = query.lt('created_at', cursor);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('[Services:Posts] Error fetching bookmarked posts:', error);
+    throw new Error('Failed to fetch bookmarked posts');
+  }
+
+  const posts = (data as any[])
+    .map(b => ({
+      ...b.posts,
+      // Pass the bookmark's created_at for cursor pagination if needed, or sort works ok
+    }))
+    .filter(p => p.id) as Post[];
+
+  const hasMore = data.length === limit;
+  const nextCursor = data.length > 0 ? data[data.length - 1].created_at : null;
+
+  return {
+    data: posts,
+    hasMore,
+    nextCursor,
+  };
+}

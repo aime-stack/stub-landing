@@ -1,15 +1,19 @@
-'use client';
-
 import { Bookmark } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getMockFeed } from '@/services/mockData';
+import { getBookmarkedPosts } from '@/services/posts';
+import { Post } from '@/types';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
-export default function BookmarksPage() {
-  const { data: posts } = getMockFeed(null, 5);
-  const bookmarked = posts.slice(0, 3);
+export default async function BookmarksPage() {
+  let bookmarked: Post[] = [];
+  try {
+    const { data } = await getBookmarkedPosts({ limit: 50 });
+    bookmarked = data;
+  } catch (error) {
+    console.error('Failed to load bookmarks', error);
+  }
 
   return (
     <div style={{ minHeight: '100vh', fontFamily: FONT }}>
@@ -48,6 +52,7 @@ export default function BookmarksPage() {
             return (
               <div
                 key={post.id}
+                className="hover:bg-gray-50"
                 style={{
                   display: 'flex', gap: 12,
                   padding: '16px 20px',
@@ -55,8 +60,6 @@ export default function BookmarksPage() {
                   cursor: 'pointer',
                   transition: 'background 0.12s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 {/* Avatar */}
                 <Link href={`/profile/${username}`} style={{ flexShrink: 0, display: 'block' }}>
