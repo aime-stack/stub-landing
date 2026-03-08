@@ -95,19 +95,23 @@ export async function createPost(rawInput: z.infer<typeof CreatePostSchema>) {
 
   const primaryImage = input.imageUrls?.[0] ?? null;
 
+  const insertPayload = Object.fromEntries(
+    Object.entries({
+      user_id: user.id,
+      community_id: input.communityId,
+      type: input.type,
+      content: input.content,
+      image_url: primaryImage,
+      video_url: input.videoUrl,
+      thumbnail_url: input.thumbnailUrl,
+      media_urls: input.imageUrls,
+      text_bg: input.textBg,
+    }).filter(([_, v]) => v != null)
+  );
+
   const { data, error } = await supabase
     .from('posts')
-    .insert({
-      user_id: user.id,
-      community_id: input.communityId ?? null,
-      type: input.type,
-      content: input.content ?? null,
-      image_url: primaryImage,
-      video_url: input.videoUrl ?? null,
-      thumbnail_url: input.thumbnailUrl ?? null,
-      media_urls: input.imageUrls ?? null,
-      text_bg: input.textBg ?? null,
-    })
+    .insert(insertPayload)
     .select('*')
     .single();
 
