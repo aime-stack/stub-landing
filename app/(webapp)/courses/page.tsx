@@ -32,62 +32,6 @@ interface Course {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const CATEGORIES = ['All', 'Development', 'Marketing', 'Photography', 'Health', 'Beauty', 'Food & Business', 'Finance', 'Design'];
 
-const INITIAL_COURSES: Course[] = [
-  {
-    id: 'cr1',
-    title: 'Full Stack Development with Next.js & AI',
-    teacher: 'Kevin Osei', avatar: '12',
-    rating: 4.9, students: 14320, duration: '42h', price: 500, enrolled: true,
-    thumb: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80',
-    category: 'Development',
-    description: 'Master Next.js 14, AI integrations, and full-stack architecture. Build 5 real-world projects.',
-  },
-  {
-    id: 'cr2',
-    title: 'Content Creation Masterclass 2024',
-    teacher: 'Selena Martinez', avatar: '47',
-    rating: 4.8, students: 28900, duration: '18h', price: 300, enrolled: false,
-    thumb: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80',
-    category: 'Marketing',
-    description: 'Go viral consistently. Learn shooting, editing, scripting, and monetization strategies.',
-  },
-  {
-    id: 'cr3',
-    title: 'Professional Photography & Editing',
-    teacher: 'Jake Thornton', avatar: '8',
-    rating: 4.7, students: 9400, duration: '24h', price: 400, enrolled: false,
-    thumb: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=600&q=80',
-    category: 'Photography',
-    description: 'From beginner to professional: camera techniques, Lightroom mastery, and portfolio building.',
-  },
-  {
-    id: 'cr4',
-    title: 'Fitness Coaching Certification',
-    teacher: 'Marcus Reid', avatar: '11',
-    rating: 4.9, students: 7800, duration: '30h', price: 600, enrolled: true,
-    thumb: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=80',
-    category: 'Health',
-    description: 'Become a certified fitness coach. Nutrition, programming, and client management.',
-  },
-  {
-    id: 'cr5',
-    title: 'Skincare & Beauty Business',
-    teacher: 'Amara Diallo', avatar: '45',
-    rating: 4.6, students: 5200, duration: '15h', price: 250, enrolled: false,
-    thumb: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600&q=80',
-    category: 'Beauty',
-    description: 'Launch and scale your beauty brand: formulation, branding, e-commerce, and content.',
-  },
-  {
-    id: 'cr6',
-    title: 'Food Business & Recipe Monetization',
-    teacher: 'Nadia Wright', avatar: '23',
-    rating: 4.8, students: 3900, duration: '20h', price: 350, enrolled: false,
-    thumb: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=80',
-    category: 'Food & Business',
-    description: 'Turn your culinary passion into a profitable business. Recipes, cookbooks, and food brand strategy.',
-  },
-];
 
 // ─── Input helper ─────────────────────────────────────────────────────────────
 const inputStyle: React.CSSProperties = {
@@ -99,15 +43,30 @@ const inputStyle: React.CSSProperties = {
 };
 
 // ─── Course Card ──────────────────────────────────────────────────────────────
-function CourseCard({ course, onEnroll }: { course: Course; onEnroll: (id: string) => void }) {
+function CourseCard({ course, onEnroll }: { course: Course; onEnroll: (id: string, price: number) => void }) {
   const [enrolling, setEnrolling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleEnroll = async () => {
     setEnrolling(true);
-    await new Promise(r => setTimeout(r, 800));
-    onEnroll(course.id);
-    setEnrolling(false);
+    setError(null);
+    try {
+      const res = await fetch('/api/courses/enroll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId: course.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Enrollment failed');
+      onEnroll(course.id, course.price);
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setEnrolling(false);
+    }
   };
+
 
   return (
     <article
@@ -225,6 +184,11 @@ function CourseCard({ course, onEnroll }: { course: Course; onEnroll: (id: strin
         </div>
 
         {/* CTA */}
+        {error && (
+          <div style={{ fontSize: 12, color: '#DC2626', textAlign: 'center', background: '#FEF2F2', padding: '6px 10px', borderRadius: 10 }}>
+            {error}
+          </div>
+        )}
         {course.isOwner ? (
           <button style={{
             width: '100%', height: 42, borderRadius: 999, border: '2px solid #0a7ea4',
@@ -272,6 +236,7 @@ function CourseCard({ course, onEnroll }: { course: Course; onEnroll: (id: strin
             {enrolling ? 'Enrolling…' : 'Enroll Now'}
           </button>
         )}
+
       </div>
     </article>
   );
@@ -292,23 +257,20 @@ function ApplyTeachModal({ onClose }: { onClose: () => void }) {
     }
     setLoading(true); setError(null);
     try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      const { error: dbErr } = await supabase.from('teacher_applications').insert({
-        user_id: user?.id, email: user?.email, full_name: form.full_name,
-        expertise: form.expertise, bio: form.bio,
-        experience_years: parseInt(form.experience_years) || 0,
-        social_link: form.social_link || null, sample_topic: form.sample_topic,
-        status: 'pending', applied_at: new Date().toISOString(),
+      const res = await fetch('/api/courses/apply-teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
       });
-      if (dbErr) throw dbErr;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Submission failed');
       setSuccess(true);
-    } catch {
-      console.warn('Teacher application (DB may not exist yet):', form);
-      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
+
   };
 
   if (success) {
@@ -433,29 +395,44 @@ function AddCourseModal({ onClose, onAdd }: { onClose: () => void; onAdd: (c: Co
     setLoading(true); setError(null);
     const fallbackThumb = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80';
     try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data } = await supabase.from('courses').insert({
-        title: form.title, description: form.description, category: form.category,
-        duration: form.duration, price: parseInt(form.price),
-        thumb_url: form.thumb || fallbackThumb,
-        teacher_id: user?.id,
-        teacher_name: user?.user_metadata?.full_name || user?.email?.split('@')[0],
-        status: 'published', created_at: new Date().toISOString(),
-      }).select().single();
+      const res = await fetch('/api/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description,
+          category: form.category,
+          duration: form.duration,
+          price: parseInt(form.price),
+          thumb_url: form.thumb || fallbackThumb,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create course');
+      
       const newCourse: Course = {
-        id: data?.id || `cr-${Date.now()}`, title: form.title, description: form.description,
-        category: form.category, duration: form.duration, price: parseInt(form.price),
-        teacher: 'You', avatar: '32', rating: 0, students: 0, enrolled: false,
-        thumb: form.thumb || fallbackThumb, isOwner: true,
+        id: data.course.id,
+        title: data.course.title,
+        description: data.course.description,
+        category: data.course.category,
+        duration: data.course.duration,
+        price: data.course.price,
+        teacher: data.course.teacher_name,
+        avatar: '32',
+        rating: data.course.rating,
+        students: data.course.students_count,
+        enrolled: false,
+        thumb: data.course.thumb_url || fallbackThumb,
+        isOwner: true,
       };
-      onAdd(newCourse); onClose();
-    } catch {
-      onAdd({ id: `cr-${Date.now()}`, title: form.title, description: form.description, category: form.category, duration: form.duration, price: parseInt(form.price) || 0, teacher: 'You', avatar: '32', rating: 0, students: 0, enrolled: false, thumb: form.thumb || fallbackThumb, isOwner: true });
+      onAdd(newCourse);
       onClose();
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
+
   };
 
   return (
@@ -561,11 +538,71 @@ export default function CoursesPage() {
   const [tab, setTab] = useState<CourseTab>('all');
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<{ is_teacher: boolean; coins: number } | null>(null);
 
-  const isTeacher = false;
+  const supabase = createClient();
+
+  useState(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        // Fetch profile
+        if (user) {
+          const { data: prof } = await supabase.from('profiles').select('is_teacher, coins').eq('id', user.id).single();
+          if (prof) setProfile(prof);
+        }
+
+        // Fetch courses
+        const res = await fetch('/api/courses');
+        const data = await res.json();
+        
+        // Fetch enrollments if user exists
+        let enrolledIds: string[] = [];
+        if (user) {
+          const { data: enrollments } = await supabase.from('course_enrollments').select('course_id').eq('user_id', user.id);
+          enrolledIds = enrollments?.map(e => e.course_id) || [];
+        }
+
+        const mapped: Course[] = data.courses.map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          description: c.description,
+          category: c.category,
+          duration: c.duration,
+          price: c.price,
+          teacher: c.teacher_name,
+          avatar: '32',
+          rating: c.rating,
+          students: c.students_count,
+          thumb: c.thumb_url || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80',
+          enrolled: enrolledIds.includes(c.id),
+          isOwner: user?.id === c.teacher_id,
+        }));
+
+        setCourses(mapped);
+      } catch (err) {
+        console.error('Error loading courses:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  });
+
+  const isTeacher = profile?.is_teacher || false;
+
+  const handleEnrollSuccess = (id: string, price: number) => {
+    setCourses(prev => prev.map(c => c.id === id ? { ...c, enrolled: true } : c));
+    if (profile) {
+      setProfile({ ...profile, coins: profile.coins - price });
+    }
+  };
 
   const filtered = courses.filter(c => {
     if (tab === 'mine' && !c.enrolled && !c.isOwner) return false;
@@ -576,6 +613,7 @@ export default function CoursesPage() {
     }
     return true;
   });
+
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT }}>
@@ -600,8 +638,9 @@ export default function CoursesPage() {
               <BookOpen size={13} /> {courses.length} courses available
             </span>
             <span style={{ fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.90)', padding: '7px 16px', borderRadius: 999 }}>
-              🪙 Earn coins while learning
+               🪙 {profile?.coins || 0} Stubcoins
             </span>
+
           </div>
         </div>
       </div>
@@ -734,8 +773,11 @@ export default function CoursesPage() {
           </div>
         )}
 
-        {/* Empty state */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+            <Loader2 size={40} className="animate-spin" color="#0a7ea4" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 32px', textAlign: 'center' }}>
             <div style={{ width: 72, height: 72, borderRadius: 22, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
               <GraduationCap size={32} color="#D1D5DB" />
@@ -750,10 +792,11 @@ export default function CoursesPage() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
             {filtered.map(c => (
-              <CourseCard key={c.id} course={c} onEnroll={id => setCourses(p => p.map(x => x.id === id ? { ...x, enrolled: true } : x))} />
+              <CourseCard key={c.id} course={c} onEnroll={handleEnrollSuccess} />
             ))}
           </div>
         )}
+
       </div>
 
       {/* Modals */}
