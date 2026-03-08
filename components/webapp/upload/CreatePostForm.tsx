@@ -62,7 +62,12 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
         });
         if (res.ok) {
           const data = await res.json();
-          setLinkMeta({ ...data, url });
+          setLinkMeta({ 
+            ...data, 
+            url, 
+            image: data.image_url, // Map DB field to component prop
+            source: data.source || data.siteName 
+          });
         }
       } catch (e) {
         console.error('Meta fetch error:', e);

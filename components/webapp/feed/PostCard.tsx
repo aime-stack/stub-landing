@@ -168,6 +168,9 @@ export function PostCard({ post, currentUser }: PostCardProps) {
 
   useEffect(() => {
     const detectPostLink = async () => {
+      // Skip if already have metadata from server join
+      if (post.news_links || linkMeta?.title) return;
+
       if (!isTextBg && post.content) {
         const urlMatch = post.content.match(/https?:\/\/[^\s]+/);
         if (urlMatch) {
