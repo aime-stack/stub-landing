@@ -1,11 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Video, Plus, Link2, Users, Clock, Copy, Check,
   Phone, Mail, X, Search, Mic, MicOff, VideoOff,
   PhoneOff, Monitor, ChevronRight, Calendar,
 } from 'lucide-react';
+import {
+  LiveKitRoom,
+  VideoConference,
+  RoomAudioRenderer,
+  ControlBar,
+  useTracks,
+} from '@livekit/components-react';
+import '@livekit/components-styles';
+import { Track } from 'livekit-client';
+import { createClient } from '@/lib/supabase/client';
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
@@ -31,67 +41,27 @@ const UPCOMING = [
 const randomId = () => Math.random().toString(36).slice(2, 7).toUpperCase();
 const makeMeetingLink = () => `https://stub.gram/meet/${randomId()}-${randomId()}-${randomId()}`;
 
-/* ─── In-call overlay (simulated) ────────────────────────────────────────── */
-function CallOverlay({ onEnd }: { onEnd: () => void }) {
-  const [micOn,  setMicOn]  = useState(true);
-  const [vidOn,  setVidOn]  = useState(true);
-  const [shared, setShared] = useState(false);
-
-  const CtrlBtn = ({ icon, label, active = true, danger = false, onClick }: {
-    icon: React.ReactNode; label: string; active?: boolean; danger?: boolean; onClick?: () => void;
-  }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-      <button onClick={onClick} style={{
-        width: 52, height: 52, borderRadius: '50%', border: 'none', cursor: 'pointer',
-        background: danger ? '#EF4444' : active ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'white', transition: 'all 0.15s', backdropFilter: 'blur(8px)',
-      }}
-        onMouseEnter={e => (e.currentTarget.style.background = danger ? '#DC2626' : 'rgba(255,255,255,0.3)')}
-        onMouseLeave={e => (e.currentTarget.style.background = danger ? '#EF4444' : active ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)')}
-      >{icon}</button>
-      <span style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>{label}</span>
-    </div>
-  );
+/* ─── Real LiveKit Call Overlay ────────────────────────────────────────── */
+function CallOverlay({ roomName, token, onEnd }: { roomName: string; token: string; onEnd: () => void }) {
+  const wsUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 300,
-      background: 'linear-gradient(160deg,#0a0f1e 0%,#0d3951 40%,#0a7ea4 100%)',
+      background: '#0a0f1e',
       display: 'flex', flexDirection: 'column',
     }}>
-      {/* Participants grid */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 16 }}>
-        {/* Self tile */}
-        <div style={{ borderRadius: 20, background: 'rgba(255,255,255,0.06)', position: 'relative', overflow: 'hidden', minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {vidOn ? (
-            <div style={{ inset: 0, position: 'absolute', background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6)' }} />
-          ) : (
-            <VideoOff style={{ width: 32, height: 32, color: 'rgba(255,255,255,0.4)' }} />
-          )}
-          <div style={{ position: 'absolute', bottom: 10, left: 12, fontFamily: FONT, fontSize: 12, fontWeight: 600, color: 'white', background: 'rgba(0,0,0,0.4)', borderRadius: 999, padding: '2px 10px' }}>You</div>
-        </div>
-
-        {/* Remote participant */}
-        <div style={{ borderRadius: 20, background: 'rgba(255,255,255,0.06)', position: 'relative', overflow: 'hidden', minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://i.pravatar.cc/150?img=47" alt="Selena" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.9 }} />
-          <div style={{ position: 'absolute', bottom: 10, left: 12, fontFamily: FONT, fontSize: 12, fontWeight: 600, color: 'white', background: 'rgba(0,0,0,0.4)', borderRadius: 999, padding: '2px 10px' }}>Selena</div>
-        </div>
-      </div>
-
-      {/* Timer */}
-      <div style={{ textAlign: 'center', fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>
-        00:03:27 · Stubgram Meet
-      </div>
-
-      {/* Controls bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '16px 20px 32px' }}>
-        <CtrlBtn icon={micOn  ? <Mic style={{ width: 20, height: 20 }} />   : <MicOff  style={{ width: 20, height: 20 }} />}   label={micOn  ? 'Mute'   : 'Unmute'} active={micOn}  onClick={() => setMicOn(m  => !m)}  />
-        <CtrlBtn icon={vidOn  ? <Video style={{ width: 20, height: 20 }} /> : <VideoOff style={{ width: 20, height: 20 }} />}  label={vidOn  ? 'Stop'   : 'Start'}  active={vidOn}  onClick={() => setVidOn(v  => !v)}  />
-        <CtrlBtn icon={<Monitor style={{ width: 20, height: 20 }} />}  label={shared ? 'Stop share' : 'Share screen'} active={!shared} onClick={() => setShared(s => !s)} />
-        <CtrlBtn icon={<PhoneOff style={{ width: 22, height: 22 }} />} label="End call" danger onClick={onEnd} />
-      </div>
+      <LiveKitRoom
+        video={true}
+        audio={true}
+        token={token}
+        serverUrl={wsUrl}
+        onDisconnected={onEnd}
+        data-lk-theme="default"
+        style={{ height: '100vh' }}
+      >
+        <VideoConference />
+      </LiveKitRoom>
     </div>
   );
 }
@@ -106,6 +76,9 @@ function NewMeetingModal({ onClose }: { onClose: () => void }) {
   const [link,      setLink]      = useState('');
   const [copied,    setCopied]    = useState(false);
   const [calling,   setCalling]   = useState(false);
+  const [roomName,  setRoomName]  = useState('');
+  const [token,     setToken]     = useState('');
+  const [loading,   setLoading]   = useState(false);
 
   const filtered = APP_USERS.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -114,14 +87,63 @@ function NewMeetingModal({ onClose }: { onClose: () => void }) {
 
   const toggle = (id: string) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
 
-  const startMeeting = () => {
-    const l = makeMeetingLink();
-    setLink(l);
-    setStep('invite');
+  const startMeeting = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/meetings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, isLive: true }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      setRoomName(data.room_name);
+      setLink(window.location.origin + '/meetings?room=' + data.room_name);
+      setStep('invite');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create meeting');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const sendInvites = () => {
-    setStep('shared');
+  const sendInvites = async () => {
+    setLoading(true);
+    try {
+      await fetch('/api/meetings/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomName, userIds: selected, via: notifyVia }),
+      });
+      setStep('shared');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const joinNow = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await (await createClient()).auth.getUser();
+      const res = await fetch('/api/livekit/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomName, participantName: user?.email?.split('@')[0] || 'Host' }),
+      });
+      const data = await res.json();
+      if (data.token) {
+        setToken(data.token);
+        setCalling(true);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyLink = () => {
@@ -130,7 +152,7 @@ function NewMeetingModal({ onClose }: { onClose: () => void }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (calling) return <CallOverlay onEnd={() => { setCalling(false); onClose(); }} />;
+  if (calling && token) return <CallOverlay roomName={roomName} token={token} onEnd={() => { setCalling(false); onClose(); }} />;
 
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
@@ -299,14 +321,15 @@ function NewMeetingModal({ onClose }: { onClose: () => void }) {
               </button>
             </div>
             {/* Start now */}
-            <button onClick={() => setCalling(true)} style={{
-              width: '100%', height: 48, borderRadius: 999, border: 'none', cursor: 'pointer',
+            <button onClick={joinNow} disabled={loading} style={{
+              width: '100%', height: 48, borderRadius: 999, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
               background: 'linear-gradient(135deg,#0a7ea4,#EC4899)', color: 'white',
               fontFamily: FONT, fontSize: 15, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               boxShadow: '0 4px 16px rgba(10,126,164,0.25)',
+              opacity: loading ? 0.7 : 1
             }}>
-              <Video style={{ width: 18, height: 18 }} /> Start Call Now
+              <Video style={{ width: 18, height: 18 }} /> {loading ? 'Starting...' : 'Start Call Now'}
             </button>
             <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, color: '#9CA3AF', textDecoration: 'underline' }}>
               Maybe later
@@ -322,8 +345,40 @@ function NewMeetingModal({ onClose }: { onClose: () => void }) {
 function JoinModal({ onClose }: { onClose: () => void }) {
   const [val,  setVal]  = useState('');
   const [calling, setCalling] = useState(false);
+  const [token, setToken] = useState('');
+  const [roomName, setRoomName] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  if (calling) return <CallOverlay onEnd={() => { setCalling(false); onClose(); }} />;
+  const joinCall = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await (await createClient()).auth.getUser();
+      
+      // Extract room name from link or use ID
+      const extractedRoom = val.includes('room=') ? val.split('room=')[1] : val;
+      setRoomName(extractedRoom);
+
+      const res = await fetch('/api/livekit/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomName: extractedRoom, participantName: user?.email?.split('@')[0] || 'Guest' }),
+      });
+      const data = await res.json();
+      if (data.token) {
+        setToken(data.token);
+        setCalling(true);
+      } else {
+        alert('Invalid meeting link or ID');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to join meeting');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (calling && token) return <CallOverlay roomName={roomName} token={token} onEnd={() => { setCalling(false); onClose(); }} />;
 
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
@@ -341,15 +396,16 @@ function JoinModal({ onClose }: { onClose: () => void }) {
           onFocus={e => (e.currentTarget.style.border = '1.5px solid #0a7ea4')}
           onBlur={e => (e.currentTarget.style.border = '1.5px solid #E5E7EB')}
         />
-        <button onClick={() => val.trim() && setCalling(true)} disabled={!val.trim()} style={{
+        <button onClick={joinCall} disabled={!val.trim() || loading} style={{
           width: '100%', height: 48, borderRadius: 999, border: 'none',
-          cursor: val.trim() ? 'pointer' : 'not-allowed',
-          background: val.trim() ? 'linear-gradient(135deg,#0a7ea4,#EC4899)' : '#F3F4F6',
-          color: val.trim() ? 'white' : '#D1D5DB',
+          cursor: (val.trim() && !loading) ? 'pointer' : 'not-allowed',
+          background: (val.trim() && !loading) ? 'linear-gradient(135deg,#0a7ea4,#EC4899)' : '#F3F4F6',
+          color: (val.trim() && !loading) ? 'white' : '#D1D5DB',
           fontFamily: FONT, fontSize: 15, fontWeight: 700,
-          boxShadow: val.trim() ? '0 4px 16px rgba(10,126,164,0.25)' : 'none',
+          boxShadow: (val.trim() && !loading) ? '0 4px 16px rgba(10,126,164,0.25)' : 'none',
+          opacity: loading ? 0.7 : 1
         }}>
-          Join Call
+          {loading ? 'Joining...' : 'Join Call'}
         </button>
       </div>
     </div>
@@ -360,6 +416,23 @@ function JoinModal({ onClose }: { onClose: () => void }) {
 export default function MeetingsPage() {
   const [showNew,  setShowNew]  = useState(false);
   const [showJoin, setShowJoin] = useState(false);
+  const [meetings, setMeetings] = useState<any[]>([]);
+  const [loading,  setLoading]  = useState(true);
+
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        const res = await fetch('/api/meetings');
+        const data = await res.json();
+        if (Array.isArray(data)) setMeetings(data);
+      } catch (err) {
+        console.error('Error fetching meetings:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMeetings();
+  }, [showNew]); // Re-fetch when new meeting is created
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT }}>
@@ -412,67 +485,51 @@ export default function MeetingsPage() {
         </div>
       </div>
 
-      {/* ── Online now strip ─────────────────────────────────────────────── */}
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB' }}>
-        <p style={{ margin: '0 0 12px', fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>
-          🟢 Online Now
-        </p>
-        <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 4 }} className="no-scrollbar">
-          {APP_USERS.filter(u => u.online).map(u => (
-            <div key={u.id} onClick={() => setShowNew(true)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, cursor: 'pointer' }}>
-              <div style={{ position: 'relative' }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`https://i.pravatar.cc/48?img=${u.avatar}`} alt={u.name}
-                  style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #0a7ea4' }} />
-                <span style={{ position: 'absolute', bottom: 1, right: 1, width: 13, height: 13, borderRadius: '50%', background: '#10B981', border: '2px solid white' }} />
-              </div>
-              <span style={{ fontFamily: FONT, fontSize: 11, color: '#374151', maxWidth: 56, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {u.name.split(' ')[0]}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* ── Upcoming meetings ────────────────────────────────────────────── */}
       <div style={{ padding: '16px 20px' }}>
-        <p style={{ margin: '0 0 14px', fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>📅 Upcoming Meetings</p>
+        <p style={{ margin: '0 0 14px', fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>📅 {loading ? 'Loading Meetings...' : 'Upcoming Meetings'}</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {UPCOMING.map(m => (
+          {meetings.length === 0 && !loading && (
+            <div style={{ textAlign: 'center', padding: '40px 20px', background: 'white', borderRadius: 20, border: '1px solid #E5E7EB' }}>
+              <p style={{ color: '#9CA3AF', fontSize: 14 }}>No upcoming meetings.</p>
+            </div>
+          )}
+          {meetings.map((m: any) => (
             <div key={m.id} style={{ background: 'white', borderRadius: 20, border: '1px solid #E5E7EB', overflow: 'hidden', transition: 'box-shadow 0.15s' }}
               onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)')}
               onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
             >
               {/* Live banner */}
-              {m.live && (
+              {m.is_live && (
                 <div style={{ background: 'linear-gradient(135deg,#EF4444,#EC4899)', padding: '4px 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'white', animation: 'pulse 1s infinite' }} />
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'white' }} />
                   <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: 'white', letterSpacing: '0.06em' }}>LIVE NOW</span>
                 </div>
               )}
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px' }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`https://i.pravatar.cc/48?img=${m.avatar}`} alt={m.host}
-                  style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid #E5E7EB' }} />
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Video style={{ width: 24, height: 24, color: '#0a7ea4' }} />
+                </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: '0 0 3px', fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.title}</p>
-                  <p style={{ margin: '0 0 5px', fontFamily: FONT, fontSize: 12, color: '#6B7280' }}>Hosted by {m.host}</p>
+                  <p style={{ margin: '0 0 5px', fontFamily: FONT, fontSize: 12, color: '#6B7280' }}>Host ID: {m.host_id.slice(0, 8)}...</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: FONT, fontSize: 11, color: '#9CA3AF' }}>
-                      <Clock style={{ width: 11, height: 11 }} /> {m.time}
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: FONT, fontSize: 11, color: '#9CA3AF' }}>
-                      <Users style={{ width: 11, height: 11 }} /> {m.joining} joining
+                      <Clock style={{ width: 11, height: 11 }} /> {new Date(m.scheduled_at).toLocaleString()}
                     </span>
                   </div>
                 </div>
 
-                <button onClick={() => setShowJoin(true)} style={{
+                <button onClick={() => {
+                   setMeetings(prev => prev.map(mm => mm.id === m.id ? { ...mm, joining: true } : mm));
+                   // Logic to join would go here or open join modal with pre-filled ID
+                   setShowJoin(true);
+                }} style={{
                   flexShrink: 0, height: 36, paddingLeft: 16, paddingRight: 16, borderRadius: 999,
                   border: 'none', cursor: 'pointer',
-                  background: m.live
+                  background: m.is_live
                     ? 'linear-gradient(135deg,#EF4444,#EC4899)'
                     : 'linear-gradient(135deg,#0a7ea4,#EC4899)',
                   color: 'white', fontFamily: FONT, fontSize: 13, fontWeight: 700,
@@ -480,7 +537,7 @@ export default function MeetingsPage() {
                   boxShadow: '0 2px 8px rgba(10,126,164,0.22)',
                 }}>
                   <Video style={{ width: 13, height: 13 }} />
-                  {m.live ? 'Join Live' : 'Join'}
+                  {m.is_live ? 'Join Live' : 'Join'}
                 </button>
               </div>
             </div>
