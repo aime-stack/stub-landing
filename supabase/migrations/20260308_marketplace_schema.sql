@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     description TEXT,
     price BIGINT NOT NULL,
     category TEXT NOT NULL,
-    image_url TEXT,
+    image_urls TEXT[] DEFAULT '{}',
     phone TEXT,
     location TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),

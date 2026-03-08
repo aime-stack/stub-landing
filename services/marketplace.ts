@@ -5,7 +5,7 @@ export interface ProductCreateInput {
   description?: string;
   price: number;
   category: string;
-  image_url?: string;
+  image_urls?: string[];
   phone?: string;
   location?: string;
 }
