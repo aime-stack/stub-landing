@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import { Music } from 'lucide-react';
+import { Volume2, VolumeX, Music } from 'lucide-react';
 
 interface VideoPlayerProps {
   src: string;
@@ -10,13 +10,31 @@ interface VideoPlayerProps {
   onClick?: () => void;
 }
 
+// Shared state via a simple global (works in Next.js SPA navigation)
+let globalIsMuted = true;
+
 export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(false);
+  const [isMuted, setIsMuted] = useState(globalIsMuted);
 
   const [videoSrc, setVideoSrc] = useState(src);
   const [isFallingBack, setIsFallingBack] = useState(false);
+
+  // Sync with global state
+  useEffect(() => {
+    const handleMuteChange = () => setIsMuted(globalIsMuted);
+    window.addEventListener('reels-mute-change', handleMuteChange);
+    return () => window.removeEventListener('reels-mute-change', handleMuteChange);
+  }, []);
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    globalIsMuted = !isMuted;
+    setIsMuted(globalIsMuted);
+    window.dispatchEvent(new CustomEvent('reels-mute-change'));
+  };
 
   useEffect(() => {
     // Reset state when source changes
@@ -46,7 +64,7 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
       console.warn('[VideoPlayer] Low-res failed, falling back to original source');
       setVideoSrc(src);
       setIsFallingBack(true);
-      setIsReady(false); // Reset ready state for fallback source
+      setIsReady(false);
     } else {
       setError(true);
     }
@@ -56,7 +74,7 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
     const video = videoRef.current;
     if (!video) return;
 
-    // When videoSrc changes without a key change, we need to load it
+    // Load necessary for source changes
     video.load();
 
     if (isActive) {
@@ -70,10 +88,7 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
 
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
-      {/* 
-        Thumbnail layer - always present but fades out 
-        This prevents the "black flash" when the video element is loading/playing
-      */}
+      {/* Thumbnail layer */}
       {thumbnailUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -90,9 +105,9 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
           className={`absolute inset-0 w-full h-full object-cover cursor-pointer transition-opacity duration-700 z-10 ${isReady ? 'opacity-100' : 'opacity-0'}`}
           loop
           playsInline
-          muted
+          muted={isMuted}
           preload="auto"
-          onPlaying={() => setIsReady(true)} // onPlaying is more reliable than onCanPlay for "visual" ready
+          onPlaying={() => setIsReady(true)}
           onError={handleVideoError}
           onClick={onClick}
         />
@@ -102,9 +117,18 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
         </div>
       )}
 
+      {/* Mute/Unmute Toggle Overlay */}
+      <button 
+        onClick={toggleMute}
+        className="absolute bottom-4 left-4 p-2.5 bg-black/40 hover:bg-black/60 rounded-full text-white backdrop-blur-md z-20 transition-all active:scale-95 shadow-lg border border-white/10"
+      >
+        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+      </button>
+
       {error && (
-        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-          <span className="text-white text-sm">Failed to load video</span>
+        <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-30 p-4 text-center">
+          <Music size={32} className="text-white/40 mb-2" />
+          <span className="text-white text-sm font-medium">Failed to load video</span>
         </div>
       )}
     </div>
