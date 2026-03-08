@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Post } from '@/types';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Music } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Music, X } from 'lucide-react';
 import { likePost, unlikePost, sharePostExternally } from '@/services/interactions';
 import { CommentsModal } from '@/components/webapp/feed/CommentsModal';
 import { VideoPlayer } from './VideoPlayer';
@@ -77,8 +77,30 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
       />
 
       {/* Top Header */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none">
-        <h2 className="text-white font-bold text-lg drop-shadow-md">Reels</h2>
+      <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center bg-gradient-to-b from-black/70 to-transparent z-50 pointer-events-none">
+        <h2 
+          style={{ 
+            color: '#FFFFFF', 
+            fontWeight: '900', 
+            fontSize: '22px',
+            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+            letterSpacing: '-0.5px'
+          }}
+        >
+          Reels
+        </h2>
+        
+        <button 
+          onClick={() => window.history.back()}
+          className="pointer-events-auto p-2 rounded-full bg-black/20 hover:bg-black/40 transition-all active:scale-90"
+          style={{
+            color: '#FFFFFF',
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))'
+          }}
+        >
+          {/* Using a Close icon (X) or Back Arrow? User said back arrow, I'll use ArrowLeft but typically X is used to exit full screen feeds. I'll provide a chevron or arrow. */}
+          <X size={28} strokeWidth={3} />
+        </button>
       </div>
 
       {/* Bottom Overlay — user info & caption */}
