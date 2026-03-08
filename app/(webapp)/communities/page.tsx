@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import {
   Users, Plus, Search, Globe, Lock, ChevronRight,
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createCommunity, getDiscoverCommunities, getUserCommunities, joinCommunity, leaveCommunity } from '@/services/communities';
+import { uploadMedia } from '@/services/upload';
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
 /* ── Mock data ─────────────────────────────────────────────────────────────── */
@@ -74,11 +75,29 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void, onCreated?: 
   const [desc, setDesc]       = useState('');
   const [privacy, setPrivacy] = useState<'public' | 'private'>('public');
   const [category, setCategory] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [step, setStep]       = useState<'form' | 'done'>('form');
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const valid = name.trim().length >= 3 && desc.trim().length >= 10;
+  const valid = name.trim().length >= 3 && desc.trim().length >= 10 && !uploadingImage;
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const url = await uploadMedia(file, 'posts');
+      setCoverUrl(url);
+    } catch (err) {
+      console.error('Failed to upload cover:', err);
+      alert('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleCreate = async () => {
     if (!valid) return;
@@ -89,6 +108,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void, onCreated?: 
         description: desc,
         category,
         privacy,
+        banner_url: coverUrl,
       });
       setStep('done');
       if (onCreated) onCreated();
@@ -134,16 +154,30 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void, onCreated?: 
 
         <div style={{ padding: '20px' }}>
           {/* Banner upload area */}
-          <div style={{
+          <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
+          <div onClick={() => fileInputRef.current?.click()} style={{
             height: 100, borderRadius: 16, marginBottom: 16,
-            background: 'linear-gradient(135deg,#0a7ea4,#8b5cf6,#EC4899)',
+            background: coverUrl ? `url(${coverUrl}) center / cover no-repeat` : 'linear-gradient(135deg,#0a7ea4,#8b5cf6,#EC4899)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
             position: 'relative', overflow: 'hidden',
           }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, color: 'white' }}>
-              <Camera style={{ width: 24, height: 24 }} />
-              <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600 }}>Add cover photo</span>
-            </div>
+            {!coverUrl && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, color: 'white' }}>
+                {uploadingImage ? (
+                  <Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite' }} />
+                ) : (
+                  <>
+                    <Camera style={{ width: 24, height: 24 }} />
+                    <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600 }}>Add cover photo</span>
+                  </>
+                )}
+              </div>
+            )}
+            {coverUrl && uploadingImage && (
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                 <Loader2 style={{ width: 24, height: 24, color: 'white', animation: 'spin 1s linear infinite' }} />
+              </div>
+            )}
           </div>
 
           {/* Fields */}
@@ -157,7 +191,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void, onCreated?: 
               />
             </div>
             <div>
-              <label style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Description *</label>
+              <label style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Description * (min 10 chars)</label>
               <textarea value={desc} onChange={e => setDesc(e.target.value)} placeholder="What's your community about?" rows={3}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1.5px solid #E5E7EB', fontFamily: FONT, fontSize: 14, outline: 'none', resize: 'none', boxSizing: 'border-box', transition: 'border 0.2s' }}
                 onFocus={e => (e.currentTarget.style.border = '1.5px solid #0a7ea4')}
