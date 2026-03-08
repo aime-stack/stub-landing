@@ -78,6 +78,48 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
   };
 }
 
+export async function getCommunityPosts(communityId: string, params: z.infer<typeof FeedQuerySchema>): Promise<PaginatedFeed> {
+  const { cursor } = params;
+  const limit = params.limit || 20;
+
+  const supabase = await createClient();
+
+  let query = supabase
+    .from('posts')
+    .select(
+      `
+      *,
+      users:user_id (
+        id, username, full_name, avatar_url, is_verified, is_celebrity
+      )
+    `
+    )
+    .eq('community_id', communityId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (cursor) {
+    query = query.lt('created_at', cursor);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('[Services:Posts] Error fetching community feed:', error);
+    throw new Error('Failed to fetch community feed data');
+  }
+
+  const posts = data as Post[];
+  const hasMore = posts.length === limit;
+  const nextCursor = posts.length > 0 ? posts[posts.length - 1].created_at : null;
+
+  return {
+    data: posts,
+    hasMore,
+    nextCursor,
+  };
+}
+
 /**
  * Generic core post creator used by helpers below.
  */

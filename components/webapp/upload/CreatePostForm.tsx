@@ -22,7 +22,7 @@ const TEXT_BG_OPTIONS = [
   { id: 'green',     label: 'Green', style: { background: 'linear-gradient(135deg,#10B981,#0a7ea4)' } },
 ];
 
-export function CreatePostForm({ user }: { user?: { username?: string, avatar_url?: string } | null }) {
+export function CreatePostForm({ user, communityId }: { user?: { username?: string, avatar_url?: string } | null, communityId?: string }) {
   const [content,    setContent]    = useState('');
   const [files,      setFiles]      = useState<File[]>([]);
   const [loading,    setLoading]    = useState(false);
@@ -83,17 +83,19 @@ export function CreatePostForm({ user }: { user?: { username?: string, avatar_ur
       // Decide which helper to use based on media presence/type.
       let result;
       if (mediaUrls.length === 0) {
-        result = await createStatusPost(trimmed ?? '', null, textBg !== 'none' ? textBg : undefined);
+        result = await createStatusPost(trimmed ?? '', communityId, textBg !== 'none' ? textBg : undefined);
       } else if (isVideo) {
         // For now treat all videos as regular video posts; reels can have their own entry point.
         result = await createVideoPost({
           content: trimmed,
           videoUrl: mediaUrls[0],
+          communityId
         });
       } else {
         result = await createImagePost({
           content: trimmed,
           imageUrls: mediaUrls, // Send full array to backend
+          communityId
         });
       }
       

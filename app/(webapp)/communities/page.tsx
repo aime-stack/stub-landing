@@ -259,6 +259,7 @@ function CommunityCard({
   onJoinToggle: (id: string, join: boolean) => Promise<void>
 }) {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleJoinClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -275,6 +276,7 @@ function CommunityCard({
 
   return (
     <div style={{ background: 'white', borderRadius: 20, border: '1px solid #E5E7EB', overflow: 'hidden', transition: 'box-shadow 0.15s', cursor: 'pointer' }}
+      onClick={() => router.push(`/communities/${c.id}`)}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)')}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
     >
@@ -390,6 +392,7 @@ export default function CommunitiesPage() {
   const [tab,         setTab]         = useState<Tab>('posts');
   const [showCreate,  setShowCreate]  = useState(false);
   const [search,      setSearch]      = useState('');
+  const router = useRouter();
 
   // Data states
   const [realDiscover, setRealDiscover] = useState<any[]>([]);
@@ -624,6 +627,7 @@ export default function CommunitiesPage() {
                 borderTop: i > 0 ? '1px solid #F3F4F6' : 'none',
                 cursor: 'pointer', transition: 'background 0.12s',
               }}
+                onClick={() => router.push(`/communities/${c.id}`)}
                 onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >

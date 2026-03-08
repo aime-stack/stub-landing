@@ -140,3 +140,23 @@ export async function leaveCommunity(communityId: string) {
   }
   return true;
 }
+
+export async function getCommunity(id: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('communities')
+    .select(`
+      *,
+      users:creator_id (
+        id, username, full_name, avatar_url
+      )
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error(`[Services:Communities] Error fetching community ${id}:`, error);
+    return null;
+  }
+  return data;
+}
