@@ -40,3 +40,16 @@ USING (auth.uid() = seller_id);
 CREATE INDEX IF NOT EXISTS products_category_idx ON public.products(category);
 CREATE INDEX IF NOT EXISTS products_title_trgm_idx ON public.products USING gin (title gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS products_created_at_idx ON public.products(created_at DESC);
+
+-- Register marketplace bucket
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('marketplace', 'marketplace', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage Policies for marketplace bucket
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'marketplace');
+CREATE POLICY "Authenticated users can upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'marketplace' AND auth.role() = 'authenticated');
+CREATE POLICY "Users can delete their own files" ON storage.objects FOR DELETE USING (bucket_id = 'marketplace' AND auth.uid() = owner);
+
+-- Enable RLS on storage.objects (if not already enabled)
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;

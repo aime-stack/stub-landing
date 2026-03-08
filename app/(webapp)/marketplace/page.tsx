@@ -27,6 +27,8 @@ const CATEGORIES: { id: Category; emoji: string }[] = [
 ];
 
 
+import { uploadMediaAction } from '@/services/uploadServer';
+
 /* ─── Add Product Modal ──────────────────────────────────────────────────── */
 function AddProductModal({ onClose, onRefresh }: { onClose: () => void, onRefresh: () => void }) {
   const [title,    setTitle]    = useState('');
@@ -35,25 +37,47 @@ function AddProductModal({ onClose, onRefresh }: { onClose: () => void, onRefres
   const [category, setCategory] = useState('');
   const [desc,     setDesc]     = useState('');
   const [location, setLocation] = useState('');
-  const [images,   setImages]   = useState<string[]>(['']);
+  const [files,    setFiles]    = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [loading,  setLoading]  = useState(false);
   const [done,     setDone]     = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  const addImageField = () => setImages([...images, '']);
-  const updateImage = (val: string, idx: number) => {
-    const next = [...images];
-    next[idx] = val;
-    setImages(next);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = Array.from(e.target.files || []);
+    if (newFiles.length === 0) return;
+
+    setFiles(prev => [...prev, ...newFiles]);
+    const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+    setPreviews(prev => [...prev, ...newPreviews]);
   };
-  const removeImage = (idx: number) => {
-    if (images.length === 1) return;
-    setImages(images.filter((_, i) => i !== idx));
+
+  const removeFile = (idx: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== idx));
+    URL.revokeObjectURL(previews[idx]);
+    setPreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleSubmit = async () => {
+    if (files.length === 0) {
+      alert('Please add at least one image.');
+      return;
+    }
+
     try {
       setLoading(true);
-      const filteredImages = images.filter(img => img.trim() !== '');
+      setProgress(10);
+      
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        formData.append('bucket', 'marketplace');
+        const url = await uploadMediaAction(formData);
+        uploadedUrls.push(url);
+        setProgress(10 + Math.floor(((i + 1) / files.length) * 80));
+      }
+
       const res = await fetch('/api/marketplace', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,22 +88,24 @@ function AddProductModal({ onClose, onRefresh }: { onClose: () => void, onRefres
           category,
           phone,
           location,
-          image_urls: filteredImages.length > 0 ? filteredImages : [`https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80`]
+          image_urls: uploadedUrls
         })
       });
 
       if (!res.ok) throw new Error('Failed to list product');
       
+      setProgress(100);
       setDone(true);
       onRefresh();
     } catch (err) {
+      console.error(err);
       alert('Error listing product. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const valid = title.trim() && price.trim() && phone.trim() && category && !loading;
+  const valid = title.trim() && price.trim() && phone.trim() && category && files.length > 0 && !loading;
 
   if (done) return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
@@ -111,22 +137,27 @@ function AddProductModal({ onClose, onRefresh }: { onClose: () => void, onRefres
         <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Photos */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: '#374151' }}>Product Images (URLs) *</label>
-            {images.map((img, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8 }}>
-                <input value={img} onChange={e => updateImage(e.target.value, i)} placeholder="https://..."
-                  style={{ flex: 1, height: 44, padding: '0 14px', borderRadius: 12, border: '1.5px solid #E5E7EB', fontFamily: FONT, fontSize: 14, outline: 'none' }}
-                />
-                {images.length > 1 && (
-                  <button onClick={() => removeImage(i)} style={{ width: 44, height: 44, borderRadius: 12, border: '1px solid #FEE2E2', background: '#FEF2F2', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <X style={{ width: 16, height: 16 }} />
+            <label style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: '#374151' }}>Product Images *</label>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+              {previews.map((src, i) => (
+                <div key={i} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: 12, overflow: 'hidden', border: '1px solid #E5E7EB' }}>
+                  <Image src={src} alt="Preview" fill style={{ objectFit: 'cover' }} />
+                  <button onClick={() => removeFile(i)} style={{ position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <X style={{ width: 12, height: 12 }} />
                   </button>
-                )}
-              </div>
-            ))}
-            <button onClick={addImageField} style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: '#0a7ea4', fontFamily: FONT, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, padding: '4px 0' }}>
-              <Plus style={{ width: 14, height: 14 }} /> Add another image
-            </button>
+                </div>
+              ))}
+              <label style={{ 
+                aspectRatio: '1/1', borderRadius: 12, border: '2px dashed #E5E7EB', 
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+                cursor: 'pointer', gap: 4, background: '#FAFAFA' 
+              }}>
+                <Plus style={{ width: 20, height: 20, color: '#9CA3AF' }} />
+                <span style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 600 }}>Add Photo</span>
+                <input type="file" multiple accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+              </label>
+            </div>
           </div>
 
           {[
@@ -159,6 +190,12 @@ function AddProductModal({ onClose, onRefresh }: { onClose: () => void, onRefres
             />
           </div>
 
+          {loading && (
+            <div style={{ height: 4, background: '#F3F4F6', borderRadius: 2, overflow: 'hidden', marginTop: 10 }}>
+              <div style={{ height: '100%', width: `${progress}%`, background: '#0a7ea4', transition: 'width 0.3s' }} />
+            </div>
+          )}
+
           <button onClick={handleSubmit} disabled={!valid} style={{
             width: '100%', height: 48, borderRadius: 999, border: 'none', cursor: valid ? 'pointer' : 'not-allowed',
             background: valid ? 'linear-gradient(135deg,#0a7ea4,#EC4899)' : '#F3F4F6',
@@ -166,15 +203,16 @@ function AddProductModal({ onClose, onRefresh }: { onClose: () => void, onRefres
             fontFamily: FONT, fontSize: 15, fontWeight: 700,
             boxShadow: valid ? '0 4px 16px rgba(10,126,164,0.25)' : 'none',
             transition: 'all 0.15s',
-            marginTop: 10
+            marginTop: loading ? 4 : 10
           }}>
-            {loading ? 'Processing...' : 'List Product 🛍️'}
+            {loading ? 'Uploading Images...' : 'List Product 🛍️'}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
 
 /* ─── Product Card ────────────────────────────────────────────────────────── */
 function ProductCard({ p, onShowGallery }: { p: any, onShowGallery: (imgs: string[]) => void }) {
