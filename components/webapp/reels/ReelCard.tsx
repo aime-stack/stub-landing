@@ -5,8 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Post } from '@/types';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Music } from 'lucide-react';
-import { likePost, unlikePost, viewPost, sharePostExternally } from '@/services/interactions';
+import { likePost, unlikePost, sharePostExternally } from '@/services/interactions';
 import { CommentsModal } from '@/components/webapp/feed/CommentsModal';
+import { VideoPlayer } from './VideoPlayer';
 
 interface ReelCardProps {
   reel: Post;
@@ -22,72 +23,20 @@ function formatCount(n: number): string {
 export function ReelCard({ reel, isActive }: ReelCardProps) {
   const [liked, setLiked] = useState(!!reel.is_liked);
   const [likesCount, setLikesCount] = useState(reel.likes_count || 0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [showComments, setShowComments] = useState(false);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const playIconTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // FIX 1: Removed autoPlay={isActive} from <video> — autoPlay only fires on mount,
-  // not when isActive changes. The useEffect below handles all play/pause logic reliably.
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (isActive) {
-      // Reset to beginning when becoming active so it always starts fresh
-      video.currentTime = 0;
-      video.play().catch(() => {
-        // Autoplay may be blocked; user must tap to play
-        setIsPlaying(false);
-      });
-      setIsPlaying(true);
-    } else {
-      video.pause();
-      setIsPlaying(false);
-    }
-
-    return () => {
-      // Cleanup: pause if component unmounts while active
-      video.pause();
-    };
-  }, [isActive]);
-
-  // View Tracking (count view immediately when it becomes active)
-  useEffect(() => {
-    if (isActive) {
-      viewPost(reel.id).catch(() => {});
-    }
-  }, [isActive, reel.id]);
-
-  const togglePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (isPlaying) {
-      video.pause();
-      setIsPlaying(false);
-    } else {
-      video.play().catch(() => {});
-      setIsPlaying(true);
-    }
-
-    // Show the play/pause icon briefly as visual feedback
-    setShowPlayIcon(true);
-    if (playIconTimerRef.current) clearTimeout(playIconTimerRef.current);
-    playIconTimerRef.current = setTimeout(() => setShowPlayIcon(false), 800);
-  };
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const next = !liked;
+    // Optimistic Update
     setLiked(next);
     setLikesCount(prev => next ? prev + 1 : Math.max(0, prev - 1));
+
     try {
       if (next) await likePost(reel.id);
       else await unlikePost(reel.id);
     } catch (err) {
+      // Rollback
       setLiked(!next);
       setLikesCount(prev => !next ? prev + 1 : Math.max(0, prev - 1));
     }
@@ -118,58 +67,14 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
 
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center snap-always snap-center overflow-hidden">
-
-      {/* Video — FIX: removed autoPlay={isActive}; useEffect handles play/pause */}
-      {reel.video_url ? (
-        <video
-          ref={videoRef}
-          src={reel.video_url}
-          className="absolute inset-0 w-full h-full object-cover cursor-pointer"
-          loop
-          playsInline
-          muted
-          preload="metadata"
-          onClick={togglePlay}
-        />
-      ) : (
-        // Fallback placeholder when no video_url is available (e.g. during dev with mock data)
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-zinc-800 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3 opacity-40">
-            <Music size={48} className="text-white" />
-            <span className="text-white text-sm font-medium">No video available</span>
-          </div>
-        </div>
-      )}
-
-      {/* Tap feedback: play/pause icon flash */}
-      {showPlayIcon && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <div className="w-20 h-20 rounded-full bg-black/50 flex items-center justify-center text-white animate-ping-once">
-            {isPlaying ? (
-              // Pause icon
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-              </svg>
-            ) : (
-              // Play icon
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Persistent play indicator when paused (only show when not animating) */}
-      {!isPlaying && !showPlayIcon && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/10 z-10">
-          <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center text-white backdrop-blur-sm">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
-        </div>
-      )}
+      
+      {/* Optimized Video Player */}
+      <VideoPlayer 
+        src={reel.video_url || ''} 
+        thumbnailUrl={reel.thumbnail_url || ''}
+        isActive={isActive}
+        onClick={() => {}} // Play/pause handled internally or can be passed
+      />
 
       {/* Top Header */}
       <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none">
@@ -187,7 +92,7 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
               {avatarSrc ? (
                 <Image src={avatarSrc} alt={username} fill className="object-cover" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-tr from-brand-primary to-brand-secondary flex items-center justify-center text-white font-bold">
+                <div className="w-full h-full bg-gradient-to-tr from-[#0a7ea4] to-[#EC4899] flex items-center justify-center text-white font-bold">
                   {username[0]?.toUpperCase()}
                 </div>
               )}
@@ -202,7 +107,6 @@ export function ReelCard({ reel, isActive }: ReelCardProps) {
             {displayName}
           </Link>
 
-          {/* FIX 2: Follow button — ml-1 → ml-3, px-4 → px-5, added shrink-0 and border */}
           <button className="shrink-0 ml-3 px-5 py-1.5 bg-white text-black rounded-full text-[13px] font-bold hover:bg-gray-100 active:scale-95 transition-all shadow-sm border border-white/10">
             Follow
           </button>

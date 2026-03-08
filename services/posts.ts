@@ -78,6 +78,38 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
   };
 }
 
+export async function getReels(params: { cursor?: string | null; limit?: number }): Promise<PaginatedFeed> {
+  const { cursor } = params;
+  const limit = params.limit || 10;
+  const supabase = await createClient();
+
+  let query = supabase
+    .from('posts')
+    .select(`
+      *,
+      users:user_id (id, username, full_name, avatar_url, is_verified, is_celebrity)
+    `)
+    .eq('type', 'reel')
+    .is('community_id', null)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (cursor) query = query.lt('created_at', cursor);
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('[Services:Posts] Error fetching reels:', error);
+    throw new Error('Failed to fetch reels data');
+  }
+
+  const posts = data as Post[];
+  return {
+    data: posts,
+    hasMore: posts.length === limit,
+    nextCursor: posts.length > 0 ? posts[posts.length - 1].created_at : null,
+  };
+}
+
 export async function getCommunityPosts(communityId: string, params: z.infer<typeof FeedQuerySchema>): Promise<PaginatedFeed> {
   const { cursor } = params;
   const limit = params.limit || 20;
