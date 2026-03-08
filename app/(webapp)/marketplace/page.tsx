@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Search, Plus, Heart, Phone, Star, X, Camera,
@@ -26,64 +26,47 @@ const CATEGORIES: { id: Category; emoji: string }[] = [
   { id: 'Property',    emoji: '🏠' },
 ];
 
-/* ─── Mock Products ──────────────────────────────────────────────────────── */
-const PRODUCTS = [
-  /* Electronics */
-  { id: 'p1',  category: 'Electronics', title: 'Premium Wireless Headphones',    price: 45000,  rating: 4.8, seller: 'TechStore KGL',  username: '@techstore_kgl', phone: '+250788100200', location: 'Kigali, RW', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=70' },
-  { id: 'p2',  category: 'Electronics', title: 'Professional Camera Lens 50mm',  price: 195000, rating: 4.9, seller: 'PhotoHub RW',    username: '@photohub_rw',  phone: '+250782334455', location: 'Kigali, RW', img: 'https://images.unsplash.com/photo-1617005082133-548c4dd27f35?w=400&q=70' },
-  { id: 'p3',  category: 'Electronics', title: 'iPhone 15 Pro — 256GB',           price: 1350000,rating: 4.9, seller: 'iZone Kigali',   username: '@izone_kgl',    phone: '+250788901122', location: 'Nyarugenge', img: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&q=70' },
-  { id: 'p4',  category: 'Electronics', title: 'Samsung 4K Smart TV 55"',        price: 680000, rating: 4.7, seller: 'ElectroRW',      username: '@electro_rw',   phone: '+250789654321', location: 'Remera',     img: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400&q=70' },
-
-  /* Fashion */
-  { id: 'p5',  category: 'Fashion', title: 'Handmade Leather Bag',            price: 28000,  rating: 4.9, seller: 'KigeliCrafts',  username: '@kigeli_crafts', phone: '+250787112233', location: 'Nyamirambo', img: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=70' },
-  { id: 'p6',  category: 'Fashion', title: 'African Print Dress Collection',  price: 12000,  rating: 4.7, seller: 'Amara Diallo',   username: '@amara.glow',    phone: '+250788445566', location: 'Kimironko',  img: 'https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400&q=70' },
-  { id: 'p7',  category: 'Fashion', title: 'Men\'s Leather Sneakers',        price: 35000,  rating: 4.6, seller: 'UrbanStep RW',   username: '@urbanstep_rw',  phone: '+250783221100', location: 'Kacyiru',    img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=70' },
-  { id: 'p8',  category: 'Fashion', title: 'Ankara Ankara Suit (Custom)',    price: 55000,  rating: 4.8, seller: 'NaijaTailor',   username: '@naija_tailor',  phone: '+250788007654', location: 'Kigali, RW', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=70' },
-
-  /* Beauty */
-  { id: 'p9',  category: 'Beauty', title: 'Organic Skincare Set (5pcs)',      price: 22000,  rating: 4.6, seller: 'NaturalGlow RW', username: '@naturalglow_rw', phone: '+250787765432', location: 'Kigali, RW', img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&q=70' },
-  { id: 'p10', category: 'Beauty', title: 'Luxury Perfume Collection',        price: 48000,  rating: 4.8, seller: 'ScentHouse KGL', username: '@scenthouse',     phone: '+250788123456', location: 'Nyarugenge', img: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=400&q=70' },
-  { id: 'p11', category: 'Beauty', title: 'Natural Hair Growth Oil',          price: 8500,   rating: 4.5, seller: 'Amara Diallo',   username: '@amara.glow',     phone: '+250788445566', location: 'Kimironko',  img: 'https://images.unsplash.com/photo-1619451334792-150fd785ee74?w=400&q=70' },
-  { id: 'p12', category: 'Beauty', title: 'Makeup Starter Kit',               price: 31000,  rating: 4.7, seller: 'GlamUp RW',     username: '@glamup_rw',      phone: '+250789001122', location: 'Kicukiro',   img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=70' },
-
-  /* Sports */
-  { id: 'p13', category: 'Sports', title: 'Fitness Resistance Band Set',      price: 8500,   rating: 4.6, seller: 'Marcus Reid',    username: '@marcus.fit',     phone: '+250787334455', location: 'Kigali, RW', img: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=400&q=70' },
-  { id: 'p14', category: 'Sports', title: 'Professional Football (Size 5)',   price: 18000,  rating: 4.8, seller: 'SportZone RW',   username: '@sportzone_rw',   phone: '+250788990011', location: 'Remera',     img: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=400&q=70' },
-  { id: 'p15', category: 'Sports', title: 'Running Shoes (Nike Air Max)',     price: 120000, rating: 4.9, seller: 'SneakerHub',     username: '@sneakerhub_rw',  phone: '+250783556677', location: 'Kacyiru',    img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=70' },
-  { id: 'p16', category: 'Sports', title: 'Yoga Mat Premium (Non-slip)',      price: 15000,  rating: 4.7, seller: 'YogaRW',         username: '@yoga_rw',        phone: '+250789112233', location: 'Kimironko',  img: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&q=70' },
-
-  /* Food */
-  { id: 'p17', category: 'Food', title: 'Fresh Organic Honey (1kg)',          price: 7500,   rating: 4.9, seller: 'HiveFarm RW',    username: '@hivefarm_rw',    phone: '+250787223344', location: 'Musanze',    img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&q=70' },
-  { id: 'p18', category: 'Food', title: 'Homemade Rwandan Isombe',            price: 3500,   rating: 4.7, seller: 'MamaKitchen',    username: '@mama_kitchen',   phone: '+250788667788', location: 'Nyamirambo', img: 'https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=400&q=70' },
-  { id: 'p19', category: 'Food', title: 'Freshly Roasted Coffee (500g)',      price: 6000,   rating: 4.8, seller: 'Gorilla Coffee',  username: '@gorilla_coffee', phone: '+250783778899', location: 'Kigali, RW', img: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&q=70' },
-  { id: 'p20', category: 'Food', title: 'Avocado Box (12 pcs)',               price: 4000,   rating: 4.6, seller: 'FarmFirst RW',   username: '@farmfirst_rw',   phone: '+250788334455', location: 'Rwamagana',  img: 'https://images.unsplash.com/photo-1519905905-0fb8a87f9bfb?w=400&q=70' },
-
-  /* Vehicles */
-  { id: 'p21', category: 'Vehicles', title: 'Toyota RAV4 2020 — Low KMs',    price: 22500000,rating:4.8, seller: 'AutoGen RW',     username: '@autogen_rw',     phone: '+250788445500', location: 'Kigali, RW', img: 'https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=400&q=70' },
-  { id: 'p22', category: 'Vehicles', title: 'Honda CB150R Motorbike',         price: 3800000, rating:4.7, seller: 'MotoHub RW',     username: '@motohub_rw',     phone: '+250789556600', location: 'Nyarugenge', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400&q=70' },
-  { id: 'p23', category: 'Vehicles', title: 'Bicycle (Mountain Trek 3000)',   price: 450000,  rating:4.6, seller: 'CycleRW',        username: '@cycle_rw',       phone: '+250787665544', location: 'Kacyiru',    img: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&q=70' },
-  { id: 'p24', category: 'Vehicles', title: 'VW Golf GTI 2019 Full Option',  price: 18900000,rating:4.9, seller: 'PremiumAutos',   username: '@premium_autos',  phone: '+250783667788', location: 'Kigali, RW', img: 'https://images.unsplash.com/photo-1546614042-7df3c24c9e5d?w=400&q=70' },
-
-  /* Property */
-  { id: 'p25', category: 'Property', title: '3-Bedroom Villa — Kacyiru',      price: 85000000,rating:4.9, seller: 'EstatePro RW',   username: '@estatepro_rw',   phone: '+250788009900', location: 'Kacyiru',    img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=70' },
-  { id: 'p26', category: 'Property', title: 'Studio Apartment for Rent',      price: 250000,  rating:4.6, seller: 'RentRW',         username: '@rent_rw',        phone: '+250782334400', location: 'Remera',     img: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=70' },
-  { id: 'p27', category: 'Property', title: 'Land 5 Acres — Musanze',         price: 12000000,rating:4.7, seller: 'LandFirst RW',   username: '@landfirst_rw',   phone: '+250789445566', location: 'Musanze',     img: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=70' },
-  { id: 'p28', category: 'Property', title: 'Commercial Space — CBD',         price: 1500000, rating:4.8, seller: 'CommercePro',    username: '@commercepro_rw', phone: '+250788112233', location: 'Nyarugenge', img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70' },
-];
-
-type Product = typeof PRODUCTS[0];
 
 /* ─── Add Product Modal ──────────────────────────────────────────────────── */
-function AddProductModal({ onClose }: { onClose: () => void }) {
+function AddProductModal({ onClose, onRefresh }: { onClose: () => void, onRefresh: () => void }) {
   const [title,    setTitle]    = useState('');
   const [price,    setPrice]    = useState('');
   const [phone,    setPhone]    = useState('');
   const [category, setCategory] = useState('');
   const [desc,     setDesc]     = useState('');
   const [location, setLocation] = useState('');
+  const [loading,  setLoading]  = useState(false);
   const [done,     setDone]     = useState(false);
 
-  const valid = title.trim() && price.trim() && phone.trim() && category;
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/marketplace', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description: desc,
+          price: parseInt(price),
+          category,
+          phone,
+          location,
+          image_url: `https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80` // Placeholder for now
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to list product');
+      
+      setDone(true);
+      onRefresh();
+    } catch (err) {
+      alert('Error listing product. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const valid = title.trim() && price.trim() && phone.trim() && category && !loading;
 
   if (done) return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
@@ -114,7 +97,7 @@ function AddProductModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Photo upload */}
+          {/* Photo upload placeholder */}
           <div style={{ height: 120, borderRadius: 16, background: 'linear-gradient(135deg,rgba(10,126,164,0.10),rgba(236,72,153,0.08))', border: '2px dashed rgba(10,126,164,0.25)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}>
             <Camera style={{ width: 28, height: 28, color: '#0a7ea4' }} />
             <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: '#0a7ea4' }}>Upload product photos</span>
@@ -156,7 +139,7 @@ function AddProductModal({ onClose }: { onClose: () => void }) {
             />
           </div>
 
-          <button onClick={() => valid && setDone(true)} disabled={!valid} style={{
+          <button onClick={handleSubmit} disabled={!valid} style={{
             width: '100%', height: 48, borderRadius: 999, border: 'none', cursor: valid ? 'pointer' : 'not-allowed',
             background: valid ? 'linear-gradient(135deg,#0a7ea4,#EC4899)' : '#F3F4F6',
             color: valid ? 'white' : '#D1D5DB',
@@ -164,7 +147,7 @@ function AddProductModal({ onClose }: { onClose: () => void }) {
             boxShadow: valid ? '0 4px 16px rgba(10,126,164,0.25)' : 'none',
             transition: 'all 0.15s',
           }}>
-            List Product 🛍️
+            {loading ? 'Processing...' : 'List Product 🛍️'}
           </button>
         </div>
       </div>
@@ -173,8 +156,10 @@ function AddProductModal({ onClose }: { onClose: () => void }) {
 }
 
 /* ─── Product Card ────────────────────────────────────────────────────────── */
-function ProductCard({ p, setActiveImage }: { p: Product, setActiveImage: (img: string) => void }) {
+function ProductCard({ p, setActiveImage }: { p: any, setActiveImage: (img: string) => void }) {
   const [liked, setLiked] = useState(false);
+  const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=70';
+  
   return (
     <div
       style={{
@@ -188,10 +173,10 @@ function ProductCard({ p, setActiveImage }: { p: Product, setActiveImage: (img: 
       {/* Image area */}
       <div
         style={{ position: 'relative', height: 200, cursor: 'zoom-in' }}
-        onClick={(e) => { e.stopPropagation(); setActiveImage(p.img); }}
+        onClick={(e) => { e.stopPropagation(); setActiveImage(imgUrl); }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={p.img} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={imgUrl} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         {/* Save button */}
         <button onClick={e => { e.stopPropagation(); setLiked(s => !s); }}
           style={{ position: 'absolute', top: 10, right: 10, width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.12)' }}>
@@ -206,43 +191,41 @@ function ProductCard({ p, setActiveImage }: { p: Product, setActiveImage: (img: 
         {/* Price */}
         <p style={{ margin: 0, fontFamily: FONT, fontSize: 16, fontWeight: 800, color: '#EC4899' }}>{rwf(p.price)}</p>
 
-        {/* Rating + location */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Star style={{ width: 12, height: 12, color: '#F59E0B', fill: '#F59E0B' }} />
-            <span style={{ fontFamily: FONT, fontSize: 11, color: '#6B7280', fontWeight: 600 }}>{p.rating}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <MapPin style={{ width: 11, height: 11, color: '#9CA3AF' }} />
-            <span style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF' }}>{p.location}</span>
-          </div>
+        {/* Location */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <MapPin style={{ width: 11, height: 11, color: '#9CA3AF' }} />
+          <span style={{ fontFamily: FONT, fontSize: 11, color: '#9CA3AF' }}>{p.location || 'Kigali, RW'}</span>
         </div>
 
         {/* Seller info */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0 0', borderTop: '1px solid #F3F4F6' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`https://i.pravatar.cc/28?u=${p.id}`} alt={p.seller} style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontFamily: FONT, fontSize: 12, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.seller}</p>
-            <p style={{ margin: 0, fontFamily: FONT, fontSize: 10, color: '#0a7ea4', fontWeight: 600 }}>{p.username}</p>
+        {p.seller && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0 0', borderTop: '1px solid #F3F4F6' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={p.seller.avatar_url || `https://i.pravatar.cc/28?u=${p.id}`} alt={p.seller.full_name} style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontFamily: FONT, fontSize: 12, fontWeight: 700, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.seller.full_name}</p>
+              <p style={{ margin: 0, fontFamily: FONT, fontSize: 10, color: '#0a7ea4', fontWeight: 600 }}>@{p.seller.username}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Call button */}
-        <a href={`tel:${p.phone}`} onClick={e => e.stopPropagation()} style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-          height: 38, borderRadius: 999,
-          background: 'linear-gradient(135deg,#0a7ea4,#EC4899)',
-          color: 'white', textDecoration: 'none',
-          fontFamily: FONT, fontSize: 13, fontWeight: 700,
-          boxShadow: '0 2px 8px rgba(10,126,164,0.22)',
-          transition: 'opacity 0.15s',
-        }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-        >
-          <Phone style={{ width: 13, height: 13 }} /> Call Seller
-        </a>
+        {p.phone && (
+          <a href={`tel:${p.phone}`} onClick={e => e.stopPropagation()} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+            height: 38, borderRadius: 999,
+            background: 'linear-gradient(135deg,#0a7ea4,#EC4899)',
+            color: 'white', textDecoration: 'none',
+            fontFamily: FONT, fontSize: 13, fontWeight: 700,
+            boxShadow: '0 2px 8px rgba(10,126,164,0.22)',
+            transition: 'opacity 0.15s',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+          >
+            <Phone style={{ width: 13, height: 13 }} /> Call Seller
+          </a>
+        )}
       </div>
     </div>
   );
@@ -252,18 +235,29 @@ function ProductCard({ p, setActiveImage }: { p: Product, setActiveImage: (img: 
 export default function MarketplacePage() {
   const [category,   setCategory]   = useState<Category>('All');
   const [search,     setSearch]     = useState('');
+  const [products,   setProducts]   = useState<any[]>([]);
+  const [loading,    setLoading]    = useState(true);
   const [showAdd,    setShowAdd]    = useState(false);
-  
-  // Image gallery state
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
-  const filtered = PRODUCTS.filter(p => {
-    const matchCat  = category === 'All' || p.category === category;
-    const matchSrch = p.title.toLowerCase().includes(search.toLowerCase()) ||
-                      p.seller.toLowerCase().includes(search.toLowerCase()) ||
-                      p.username.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSrch;
-  });
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/marketplace?q=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
+      if (!res.ok) throw new Error('Failed to fetch products');
+      const data = await res.json();
+      setProducts(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(fetchProducts, 300); // Debounce search
+    return () => clearTimeout(timer);
+  }, [category, search]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT }}>
@@ -333,27 +327,32 @@ export default function MarketplacePage() {
 
       {/* ── Products grid ───────────────────────────────────────────────── */}
       <div style={{ padding: '16px 20px' }}>
-
-        {/* Results count */}
-        <p style={{ fontFamily: FONT, fontSize: 13, color: '#9CA3AF', margin: '0 0 14px' }}>
-          {filtered.length} product{filtered.length !== 1 ? 's' : ''} {category !== 'All' ? `in ${category}` : 'available'}
-        </p>
-
-        {filtered.length === 0 ? (
+        {loading && products.length === 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16 }}>
+            {[1,2,3,4,5,6,7,8].map(n => (
+              <div key={n} className="skeleton" style={{ height: 320, borderRadius: 16 }} />
+            ))}
+          </div>
+        ) : products.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 32px', textAlign: 'center' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
             <p style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#1A1A1A', margin: '0 0 8px' }}>No products found</p>
             <p style={{ fontFamily: FONT, fontSize: 14, color: '#9CA3AF', margin: 0 }}>Try a different category or search term.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16 }}>
-            {filtered.map(p => <ProductCard key={p.id} p={p} setActiveImage={setActiveImage} />)}
-          </div>
+          <>
+            <p style={{ fontFamily: FONT, fontSize: 13, color: '#9CA3AF', margin: '0 0 14px' }}>
+              {products.length} product{products.length !== 1 ? 's' : ''} {category !== 'All' ? `in ${category}` : 'available'}
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16 }}>
+              {products.map(p => <ProductCard key={p.id} p={p} setActiveImage={setActiveImage} />)}
+            </div>
+          </>
         )}
       </div>
 
       {/* ── Add product modal ────────────────────────────────────────────── */}
-      {showAdd && <AddProductModal onClose={() => setShowAdd(false)} />}
+      {showAdd && <AddProductModal onClose={() => setShowAdd(false)} onRefresh={fetchProducts} />}
       
       {activeImage && (
         <ImageGallery
