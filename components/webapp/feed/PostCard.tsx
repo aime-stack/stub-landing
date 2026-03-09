@@ -473,7 +473,7 @@ export function PostCard({ post, currentUser }: PostCardProps) {
         {(post as any).coinReward && (
           <div className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-xl mb-2 w-fit" style={{ background: 'linear-gradient(135deg,#FFD700,#F59E0B)', color: 'white' }}>
             <span>🪙</span>
-            +{(post as any).coinReward} Snap Coins earned
+            +{(post as any).coinReward} Stub Coins earned
           </div>
         )}
 

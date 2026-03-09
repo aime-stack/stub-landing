@@ -1,3 +1,4 @@
+// @ts-ignore: Deno runtime doesn't have standard node resolution
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 serve(async (req: Request) => {
@@ -35,8 +36,9 @@ serve(async (req: Request) => {
     return new Response(JSON.stringify(metadata), {
       headers: { "Content-Type": "application/json", 'Access-Control-Allow-Origin': '*' }
     })
-  } catch (error: any) {
-    return new Response(JSON.stringify({ error: error?.message || String(error) }), { 
+  } catch (error: unknown) {
+    const err = error as Error;
+    return new Response(JSON.stringify({ error: err?.message || String(err) }), { 
       status: 500,
       headers: { "Content-Type": "application/json", 'Access-Control-Allow-Origin': '*' } 
     })

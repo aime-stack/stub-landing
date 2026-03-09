@@ -132,7 +132,7 @@ export default function WalletPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <span style={{ fontSize: 24 }}>🪙</span>
               <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                Snap Coins
+                Stub Coins
               </span>
             </div>
 

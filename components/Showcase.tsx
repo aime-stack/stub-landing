@@ -14,7 +14,7 @@ const screenshots = [
   },
   {
     src: '/wallet-screenshot.png',
-    title: 'Snap Coins Wallet',
+    title: 'Stub Coins Wallet',
     description: 'Track your earnings, spending history, and redeem rewards.',
   },
 ];

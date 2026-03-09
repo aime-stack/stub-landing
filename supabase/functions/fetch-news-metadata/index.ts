@@ -3,13 +3,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 
 // Use proper typing for Deno environment
-declare const Deno: any;
+declare const Deno: { env: { get(key: string): string | undefined } };
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const gnewsApiKey = Deno.env.get("GNEWS_API_KEY") ?? "";
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const _supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 interface NewsMetadata {
   url: string;
@@ -25,7 +25,7 @@ const headers = {
   "Content-Type": "application/json"
 };
 
-serve(async (req: any) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers });
   }
@@ -37,7 +37,7 @@ serve(async (req: any) => {
       return new Response(JSON.stringify({ error: "URL is required" }), { status: 400, headers });
     }
 
-    let metadata: NewsMetadata = {
+    const metadata: NewsMetadata = {
        url,
        title: null,
        description: null,
@@ -62,10 +62,30 @@ serve(async (req: any) => {
         const html = await res.text();
         const $ = cheerio.load(html);
 
-        metadata.title = $('meta[property="og:title"]').attr('content') || $('title').text() || null;
-        metadata.description = $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content') || null;
-        metadata.image_url = $('meta[property="og:image"]').attr('content') || null;
-        metadata.source = $('meta[property="og:site_name"]').attr('content') || null;
+        metadata.title = $('meta[property="og:title"]').attr('content') || 
+                         $('meta[name="twitter:title"]').attr('content') || 
+                         $('title').text() || null;
+        
+        metadata.description = $('meta[property="og:description"]').attr('content') || 
+                               $('meta[name="twitter:description"]').attr('content') || 
+                               $('meta[name="description"]').attr('content') || null;
+        
+        const ogImage = $('meta[property="og:image"]').attr('content') || 
+                        $('meta[name="twitter:image"]').attr('content');
+        
+        metadata.image_url = ogImage || null;
+        metadata.source = $('meta[property="og:site_name"]').attr('content') || 
+                          $('meta[name="twitter:site"]').attr('content') || null;
+
+        // Resolve relative image URL
+        if (metadata.image_url && !metadata.image_url.startsWith('http')) {
+          try {
+            const baseUrl = new URL(url);
+            metadata.image_url = new URL(metadata.image_url, baseUrl.origin).href;
+          } catch (e) {
+            console.error("Relative image resolution failed:", e);
+          }
+        }
       }
     } catch (e) {
       console.error("Error fetching HTML:", e);
@@ -97,7 +117,7 @@ serve(async (req: any) => {
        try {
          const parsedUrl = new URL(url);
          metadata.source = parsedUrl.hostname.replace('www.', '');
-       } catch (e) {
+       } catch (_e) {
           // ignore
        }
     }
@@ -107,8 +127,9 @@ serve(async (req: any) => {
     // Note: Saving to Supabase is handled by the Next.js API route as per the plan.
     return new Response(JSON.stringify(metadata), { headers });
 
-  } catch (error: any) {
-    console.error("Edge function error:", error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("Edge function error:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
   }
 });

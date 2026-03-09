@@ -7,6 +7,7 @@ DECLARE
   v_phone text;
   v_company_name text;
   v_registration_message text;
+  v_username text;
 BEGIN
   -- Extract metadata safely parsing from auth.users (inserted via our signupAction)
   v_account_type := new.raw_user_meta_data->>'account_type';
@@ -14,15 +15,21 @@ BEGIN
   v_phone := new.raw_user_meta_data->>'phone';
   v_company_name := new.raw_user_meta_data->>'company_name';
   v_registration_message := new.raw_user_meta_data->>'registration_message';
+  v_username := new.raw_user_meta_data->>'username';
 
   -- Default fallback
   IF v_account_type IS NULL THEN
     v_account_type := 'regular';
   END IF;
 
+  IF v_username IS NULL THEN
+    v_username := 'user_' || substr(new.id::text, 1, 8);
+  END IF;
+
   -- Insert the base profile for ALL users
   INSERT INTO public.profiles (
     id, 
+    username,
     full_name, 
     account_type,
     phone,
@@ -30,11 +37,12 @@ BEGIN
   )
   VALUES (
     new.id,
+    v_username,
     v_full_name,
     v_account_type,
     v_phone,
-    -- If it's a company or celebrity, they start unverified to require admin review
-    CASE WHEN v_account_type IN ('company', 'celebrity') THEN false ELSE false END
+    -- Everyone gets verified automatically
+    true
   );
 
   -- If the user signed up as a teacher, instantly seed a pending teacher application

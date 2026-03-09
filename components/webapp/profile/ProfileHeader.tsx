@@ -269,7 +269,7 @@ export function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderPr
           </p>
         )}
 
-        {/* Snap Coins balance */}
+        {/* Stub Coins balance */}
         {typeof profile.coins === 'number' && profile.coins > 0 && (
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
             <span
@@ -281,7 +281,7 @@ export function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderPr
                 boxShadow: '0 2px 8px rgba(245,158,11,0.3)',
               }}
             >
-              🪙 {profile.coins.toLocaleString()} Snap Coins
+              🪙 {profile.coins.toLocaleString()} Stub Coins
             </span>
           </div>
         )}

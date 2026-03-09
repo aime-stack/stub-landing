@@ -20,7 +20,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
             </h1>
             
             <p className={styles.subtitle}>
-              The first social platform that pays you for being social. Get rewarded with Snap Coins for every like, comment, and share. Turn your engagement into real money.
+              The first social platform that pays you for being social. Get rewarded with Stub Coins for every like, comment, and share. Turn your engagement into real money.
             </p>
             
             <div className={styles.ctaButtons}>

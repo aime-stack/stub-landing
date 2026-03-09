@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://stubgram.app'),
   title: "Stubgram - Earn While You Connect | Social Media That Pays",
-  description: "Join Stubgram and earn Snap Coins for every like, comment, and share. Access celebrity chat, learn from courses, and get paid for engaging. Download now!",
-  keywords: ["social media", "earn money", "content creator", "celebrity chat", "online courses", "mobile money", "snap coins", "rewards platform"],
+  description: "Join Stubgram and earn Stub Coins for every like, comment, and share. Access celebrity chat, learn from courses, and get paid for engaging. Download now!",
+  keywords: ["social media", "earn money", "content creator", "celebrity chat", "online courses", "mobile money", "stub coins", "rewards platform"],
   authors: [{ name: "Stubgram" }],
   openGraph: {
     title: "Stubgram - The Social Platform That Pays You",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Stubgram - Social Media That Pays",
-    description: "Earn Snap Coins for every interaction on the platform.",
+    description: "Earn Stub Coins for every interaction on the platform.",
     images: ["/og-image.png"],
     creator: "@stubgram",
   },

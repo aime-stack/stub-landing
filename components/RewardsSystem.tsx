@@ -13,12 +13,12 @@ export default function RewardsSystem() {
       <div className="container">
         <div className={styles.container}>
           <div className={styles.header}>
-            <div className={styles.sectionBadge}>Snap Coins Rewards</div>
+            <div className={styles.sectionBadge}>Stub Coins Rewards</div>
             <h2 className={styles.title}>
               Get Paid for Every Interaction
             </h2>
             <p className={styles.subtitle}>
-              Stubgram rewards you with Snap Coins for everything you do. The more you engage, the more you earn. It's that simple.
+              Stubgram rewards you with Stub Coins for everything you do. The more you engage, the more you earn. It's that simple.
             </p>
           </div>
           

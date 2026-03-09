@@ -3,7 +3,7 @@ import styles from './Features.module.css';
 const features = [
   {
     icon: '💰',
-    title: 'Snap Coins Rewards',
+    title: 'Stub Coins Rewards',
     description: 'Earn coins for every interaction. Create posts (+10), comment (+5), like (+1), and share (+3). Turn your social activity into real rewards.',
     highlight: true,
   },

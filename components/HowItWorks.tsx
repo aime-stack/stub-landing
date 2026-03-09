@@ -17,7 +17,7 @@ const steps = [
     number: 3,
     icon: '💰',
     title: 'Earn Coins',
-    description: 'Get rewarded with Snap Coins for every action you take on the platform.',
+    description: 'Get rewarded with Stub Coins for every action you take on the platform.',
   },
   {
     number: 4,

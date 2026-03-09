@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 
 // Pricing: $1 = 1,200 RWF (current exchange rate)
 // $1 plan → RWF 1,200 | $2 plan → RWF 2,400 | $3 plan → RWF 3,600
-// 1 Snap Coin ≈ 1 RWF  →  1,200 coins unlocks $1, 2,400 coins unlocks $2, 3,600 coins unlocks $3
+// 1 Stub Coin ≈ 1 RWF  →  1,200 coins unlocks $1, 2,400 coins unlocks $2, 3,600 coins unlocks $3
 
 const PLANS = [
   {
@@ -24,7 +24,7 @@ const PLANS = [
     features: [
       'Post text, images, and videos',
       'Follow and interact with creators',
-      '10 Snap Coins per post reward',
+      '10 Stub Coins per post reward',
       'Basic feed algorithm',
       'Public profile',
     ],
@@ -46,10 +46,10 @@ const PLANS = [
     headerTextColor: '#ffffff',
     features: [
       'Everything in Free',
-      'Boost posts (use Snap Coins)',
+      'Boost posts (use Stub Coins)',
       'Priority feed algorithm',
       'Custom profile badge',
-      '+25 bonus Snap Coins daily',
+      '+25 bonus Stub Coins daily',
     ],
     missing: ['Edit / delete posts', 'Celebrity chat access'],
     cta: 'Upgrade to Starter',
@@ -72,7 +72,7 @@ const PLANS = [
       'Edit & delete your own posts',
       'Advanced analytics dashboard',
       'Custom profile theme badge',
-      '+60 bonus Snap Coins daily',
+      '+60 bonus Stub Coins daily',
     ],
     missing: ['Celebrity chat access'],
     cta: 'Upgrade to Premium',
@@ -94,7 +94,7 @@ const PLANS = [
     features: [
       'Everything in Premium',
       'Celebrity chat access (VIP)',
-      '+100 bonus Snap Coins daily',
+      '+100 bonus Stub Coins daily',
       'Exclusive premium crown badge',
       'Priority customer support',
       'Early access to new features',
@@ -168,7 +168,7 @@ export default function PremiumPage() {
             }}>
               <span style={{ fontSize: 16 }}>🪙</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>
-                {userCoins.toLocaleString()} Snap Coins
+                {userCoins.toLocaleString()} Stub Coins
               </span>
             </div>
           )}
@@ -178,7 +178,7 @@ export default function PremiumPage() {
       {/* exchange rate note */}
       <div style={{ padding: '10px 16px 0', textAlign: 'center' }}>
         <p style={{ fontSize: 11, color: 'var(--text-secondary, #9CA3AF)', margin: 0 }}>
-          1 USD ≈ 1,200 RWF · 1 Snap Coin ≈ 1 RWF
+          1 USD ≈ 1,200 RWF · 1 Stub Coin ≈ 1 RWF
         </p>
       </div>
 
@@ -360,7 +360,7 @@ export default function PremiumPage() {
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
-              { icon: <Zap style={{ width: 15, height: 15, color: 'var(--primary, #F59E0B)' }} />, title: 'Boost Posts', desc: 'Pin your posts to the top of feeds using Snap Coins', bg: '#FEF3C7' },
+              { icon: <Zap style={{ width: 15, height: 15, color: 'var(--primary, #F59E0B)' }} />, title: 'Boost Posts', desc: 'Pin your posts to the top of feeds using Stub Coins', bg: '#FEF3C7' },
               { icon: <Edit3 style={{ width: 15, height: 15, color: '#7C3AED' }} />, title: 'Edit & Delete', desc: 'Full control over your content after posting', bg: '#EDE9FE' },
               { icon: <Star style={{ width: 15, height: 15, color: '#EC4899' }} />, title: 'Celebrity Chat', desc: 'Message celebrities directly with VIP access', bg: '#FCE7F3' },
               { icon: <Megaphone style={{ width: 15, height: 15, color: '#0a7ea4' }} />, title: 'Advanced Analytics', desc: 'Detailed insights on your posts and followers', bg: '#E0F2FE' },
@@ -395,7 +395,7 @@ export default function PremiumPage() {
           border: '1px solid #FCD34D',
         }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, color: '#92400E', margin: '0 0 8px' }}>
-            🪙 How to earn Snap Coins
+            🪙 How to earn Stub Coins
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {[
