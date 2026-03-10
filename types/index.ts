@@ -69,6 +69,7 @@ export interface Post {
   visibility?: 'public' | 'private' | 'followers';
   
   reshared_from?: string | null; // References posts.id
+  original_post?: Post | null; // The post being reshared
   news_links?: {
     id: string;
     url: string;

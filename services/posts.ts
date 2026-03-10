@@ -51,7 +51,14 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
       users:user_id (
         id, username, full_name, avatar_url, is_verified, is_celebrity
       ),
-      news_links (*)
+      news_links (*),
+      original_post:posts!reshared_from (
+        *,
+        users:user_id (
+          id, username, full_name, avatar_url, is_verified, is_celebrity
+        ),
+        news_links (*)
+      )
     `
     )
     .is('community_id', null)
@@ -91,7 +98,12 @@ export async function getReels(params: { cursor?: string | null; limit?: number 
     .select(`
       *,
       users:user_id (id, username, full_name, avatar_url, is_verified, is_celebrity),
-      news_links (*)
+      news_links (*),
+      original_post:posts!reshared_from (
+        *,
+        users:user_id (id, username, full_name, avatar_url, is_verified, is_celebrity),
+        news_links (*)
+      )
     `)
     .eq('type', 'reel')
     .is('community_id', null)
@@ -128,7 +140,14 @@ export async function getCommunityPosts(communityId: string, params: z.infer<typ
       users:user_id (
         id, username, full_name, avatar_url, is_verified, is_celebrity
       ),
-      news_links (*)
+      news_links (*),
+      original_post:posts!reshared_from (
+        *,
+        users:user_id (
+          id, username, full_name, avatar_url, is_verified, is_celebrity
+        ),
+        news_links (*)
+      )
     `
     )
     .eq('community_id', communityId)
@@ -301,6 +320,14 @@ export async function getBookmarkedPosts(params: { cursor?: string | null; limit
         *,
         users:user_id (
           id, username, full_name, avatar_url, is_verified, is_celebrity
+        ),
+        news_links (*),
+        original_post:posts!reshared_from (
+          *,
+          users:user_id (
+            id, username, full_name, avatar_url, is_verified, is_celebrity
+          ),
+          news_links (*)
         )
       )
     `)

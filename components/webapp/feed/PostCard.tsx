@@ -23,8 +23,9 @@ import { ImageGallery } from '@/components/webapp/ui/ImageGallery';
 import { likePost, unlikePost, bookmarkPost, unbookmarkPost, resharePost, sharePostExternally, viewPost, deletePost, reportPost } from '@/services/interactions';
 import { CommentsModal } from '@/components/webapp/feed/CommentsModal';
 import { LinkPreview } from '@/components/webapp/feed/LinkPreview';
+import { InlineFollowBadge } from '@/components/webapp/feed/InlineFollowBadge';
 
-interface PostCardProps { post: Post; currentUser?: any; }
+interface PostCardProps { post: Post; currentUser?: any; hideActions?: boolean; }
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -138,7 +139,7 @@ function MultiImageGrid({ urls, onImageClick }: { urls: string[], onImageClick: 
   );
 }
 
-export function PostCard({ post, currentUser }: PostCardProps) {
+export function PostCard({ post, currentUser, hideActions }: PostCardProps) {
   const [liked,      setLiked]      = useState(!!post.is_liked);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const [reposted,   setReposted]   = useState(false);
@@ -299,10 +300,10 @@ export function PostCard({ post, currentUser }: PostCardProps) {
   return (
     <article
       ref={postRef}
-      className="flex px-4 pt-4 pb-2 cursor-pointer transition-colors duration-150"
-      style={{ borderBottom: '1px solid var(--divider)' }}
-      onMouseEnter={e => e.currentTarget.style.background = 'rgba(249,250,251,0.7)'}
-      onMouseLeave={e => e.currentTarget.style.background = ''}
+      className={`flex px-4 pt-4 pb-2 cursor-pointer transition-colors duration-150 ${hideActions ? '' : ''}`}
+      style={{ borderBottom: hideActions ? 'none' : '1px solid var(--divider)' }}
+      onMouseEnter={e => { if (!hideActions) e.currentTarget.style.background = 'rgba(249,250,251,0.7)'; }}
+      onMouseLeave={e => { if (!hideActions) e.currentTarget.style.background = ''; }}
     >
       <svg width="0" height="0" className="absolute">
         <defs>
@@ -314,7 +315,7 @@ export function PostCard({ post, currentUser }: PostCardProps) {
       </svg>
 
       <Link href={`/profile/${username}`} className="shrink-0 mr-4">
-        <div className="w-10 h-10 rounded-full overflow-hidden relative" style={{ background: 'var(--gradient-primary)' }}>
+        <div className="w-10 h-10 rounded-full overflow-hidden relative" style={{ background: 'var(--gradient-primary)', width: hideActions ? 32 : 40, height: hideActions ? 32 : 40 }}>
           {avatarSrc ? (
             <Image src={avatarSrc} alt={username} fill className="object-cover" />
           ) : (
@@ -343,6 +344,7 @@ export function PostCard({ post, currentUser }: PostCardProps) {
               )}
             </Link>
             <span className="text-[14px] truncate hidden sm:block mr-2" style={{ color: 'var(--text-secondary)' }}>@{username}</span>
+            <InlineFollowBadge targetUsername={username} targetUserId={post.user_id} currentUserId={currentUser?.id} />
             <span style={{ color: 'var(--border)' }} className="mr-2">·</span>
             <span className="text-[13px] whitespace-nowrap hover:underline cursor-pointer" style={{ color: 'var(--text-secondary)' }}>{dateText}</span>
           </div>
@@ -477,35 +479,43 @@ export function PostCard({ post, currentUser }: PostCardProps) {
           </div>
         )}
 
-        <div className="flex items-center justify-between max-w-[380px] -ml-2 mt-1">
-          <ActionButton icon={<MessageCircle size={18} />} label={formatCount(post.comments_count || 0)} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" onClick={() => setShowComments(true)} />
-          <ActionButton icon={<Repeat2 size={18} />} label={formatCount(repostCnt)} active={reposted} activeColor="var(--repost-green, #00BA7C)" activeBg="rgba(0,186,124,0.10)" hoverColor="var(--repost-green, #00BA7C)" hoverBg="rgba(0,186,124,0.10)" onClick={handleRepost} />
-          <ActionButton icon={<Heart size={18} className={`${liked ? 'fill-current' : ''} ${heartAnim ? 'animate-heart' : ''}`} />} label={formatCount(likesCount)} active={liked} activeColor="#FF3B30" activeBg="rgba(255,59,48,0.10)" hoverColor="#FF3B30" hoverBg="rgba(255,59,48,0.10)" onClick={handleLike} />
-          <ActionButton icon={<BarChart2 size={18} />} label={formatCount((post as any).views_count || Math.floor(likesCount * 8.3))} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
-          <ActionButton
-            icon={<Bookmark size={18} className={saved ? 'fill-current' : ''} />}
-            active={saved}
-            activeColor="var(--primary)"
-            activeBg="rgba(10,126,164,0.10)"
-            hoverColor="var(--primary)"
-            hoverBg="rgba(10,126,164,0.10)"
-            onClick={async () => {
-              const next = !saved;
-              setSaved(next);
-              try {
-                if (next) {
-                  await bookmarkPost(post.id);
-                } else {
-                  await unbookmarkPost(post.id);
+        {post.type === 'reshare' && post.original_post && (
+          <div className="mt-2 mb-3 rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+            <PostCard post={post.original_post} currentUser={currentUser} hideActions={true} />
+          </div>
+        )}
+
+        {!hideActions && (
+          <div className="flex items-center justify-between max-w-[380px] -ml-2 mt-1">
+            <ActionButton icon={<MessageCircle size={18} />} label={formatCount(post.comments_count || 0)} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" onClick={() => setShowComments(true)} />
+            <ActionButton icon={<Repeat2 size={18} />} label={formatCount(repostCnt)} active={reposted} activeColor="var(--repost-green, #00BA7C)" activeBg="rgba(0,186,124,0.10)" hoverColor="var(--repost-green, #00BA7C)" hoverBg="rgba(0,186,124,0.10)" onClick={handleRepost} />
+            <ActionButton icon={<Heart size={18} className={`${liked ? 'fill-current' : ''} ${heartAnim ? 'animate-heart' : ''}`} />} label={formatCount(likesCount)} active={liked} activeColor="#FF3B30" activeBg="rgba(255,59,48,0.10)" hoverColor="#FF3B30" hoverBg="rgba(255,59,48,0.10)" onClick={handleLike} />
+            <ActionButton icon={<BarChart2 size={18} />} label={formatCount((post as any).views_count || Math.floor(likesCount * 8.3))} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" />
+            <ActionButton
+              icon={<Bookmark size={18} className={saved ? 'fill-current' : ''} />}
+              active={saved}
+              activeColor="var(--primary)"
+              activeBg="rgba(10,126,164,0.10)"
+              hoverColor="var(--primary)"
+              hoverBg="rgba(10,126,164,0.10)"
+              onClick={async () => {
+                const next = !saved;
+                setSaved(next);
+                try {
+                  if (next) {
+                    await bookmarkPost(post.id);
+                  } else {
+                    await unbookmarkPost(post.id);
+                  }
+                } catch (err) {
+                  setSaved(!next);
+                  console.error('Failed to toggle bookmark', err);
                 }
-              } catch (err) {
-                setSaved(!next);
-                console.error('Failed to toggle bookmark', err);
-              }
-            }}
-          />
-          <ActionButton icon={<Share2 size={18} />} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" onClick={handleShare} />
-        </div>
+              }}
+            />
+            <ActionButton icon={<Share2 size={18} />} hoverColor="var(--primary)" hoverBg="rgba(10,126,164,0.10)" onClick={handleShare} />
+          </div>
+        )}
       </div>
 
       {showComments && <CommentsModal postId={post.id} onClose={() => setShowComments(false)} />}

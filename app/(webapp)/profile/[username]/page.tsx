@@ -23,6 +23,34 @@ export default async function PublicProfilePage({ params }: Props) {
 
   if (profileError || !profile) notFound();
 
+  // Dynamically fetch accurate counts & follow state
+  const [
+    { count: postsCount },
+    { count: followersCount },
+    { count: followingCount },
+  ] = await Promise.all([
+    supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', profile.id),
+    supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', profile.id),
+    supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', profile.id),
+  ]);
+
+  let is_following = false;
+  if (currentUser && currentUser.id !== profile.id) {
+    const { data: followRel } = await supabase
+      .from('follows')
+      .select('id')
+      .eq('follower_id', currentUser.id)
+      .eq('following_id', profile.id)
+      .single();
+    if (followRel) is_following = true;
+  }
+
+  // Mutate profile object with accurate data for the ProfileHeader to use
+  profile.posts_count = postsCount || 0;
+  profile.followers_count = followersCount || 0;
+  profile.following_count = followingCount || 0;
+  profile.is_following = is_following;
+
   const { data: posts = [] } = await supabase
     .from('posts')
     .select(`
