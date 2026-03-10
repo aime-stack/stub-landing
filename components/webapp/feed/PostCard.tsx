@@ -287,12 +287,12 @@ export function PostCard({ post, currentUser, hideActions }: PostCardProps) {
   try { dateText = formatDistanceToNowStrict(new Date(post.created_at)) + ' ago'; }
   catch { dateText = 'Just now'; }
 
-  const user        = post.users;
+  const user        = Array.isArray(post.users) ? post.users[0] : post.users;
   const username    = user?.username || 'unknown';
-  const displayName = user?.full_name || user?.username || 'Unknown';
-  const avatarSrc   = user?.avatar_url;    // FIX: avatar → avatar_url
-  const isVerified  = user?.is_verified;   // FIX: isVerified → is_verified
-  const isCelebrity = user?.is_celebrity;  // FIX: isCelebrity → is_celebrity
+  const displayName = user?.full_name || user?.username || (user?.id ? 'Unnamed User' : 'Unknown');
+  const avatarSrc   = user?.avatar_url; 
+  const isVerified  = user?.is_verified; 
+  const isCelebrity = user?.is_celebrity;
   const textBg      = isTextBg && post.background_gradient ? TEXT_BG_STYLES[post.background_gradient[0]] : undefined;
 
   if (deleted) return null;
@@ -314,17 +314,22 @@ export function PostCard({ post, currentUser, hideActions }: PostCardProps) {
         </defs>
       </svg>
 
-      <Link href={`/profile/${username}`} className="shrink-0 mr-4">
-        <div className="w-10 h-10 rounded-full overflow-hidden relative" style={{ background: 'var(--gradient-primary)', width: hideActions ? 32 : 40, height: hideActions ? 32 : 40 }}>
-          {avatarSrc ? (
-            <Image src={avatarSrc} alt={username} fill className="object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center font-bold text-white text-sm">
-              {username[0]?.toUpperCase() || 'U'}
-            </div>
-          )}
-        </div>
-      </Link>
+      <div className="shrink-0 mr-4 flex flex-col items-center">
+        <Link href={`/profile/${username}`}>
+          <div className="rounded-full overflow-hidden relative" style={{ background: 'var(--gradient-primary)', width: hideActions ? 34 : 44, height: hideActions ? 34 : 44 }}>
+            {avatarSrc ? (
+              <Image src={avatarSrc} alt={username} fill className="object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center font-bold text-white text-sm">
+                {username[0]?.toUpperCase() || 'U'}
+              </div>
+            )}
+          </div>
+        </Link>
+        {post.type === 'reshare' && post.original_post && !hideActions && (
+          <div className="w-[2px] flex-1 bg-gray-200 mt-2 mb-1 rounded-full" />
+        )}
+      </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-1 mb-0.5">
@@ -480,8 +485,12 @@ export function PostCard({ post, currentUser, hideActions }: PostCardProps) {
         )}
 
         {post.type === 'reshare' && post.original_post && (
-          <div className="mt-2 mb-3 rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-            <PostCard post={post.original_post} currentUser={currentUser} hideActions={true} />
+          <div className={`mt-2 mb-1 ${hideActions ? '' : ''}`}>
+            {/* If it's a reshare WITHOUT comment, we might want to style it differently, 
+                but for now let's just make it look more integrated. */}
+            <div className={`${hideActions ? 'p-0' : 'pl-0 border-l-0'}`} style={{ borderLeft: hideActions ? 'none' : 'none' }}>
+              <PostCard post={post.original_post} currentUser={currentUser} hideActions={true} />
+            </div>
           </div>
         )}
 

@@ -11,6 +11,22 @@ const FeedQuerySchema = z.object({
 });
 
 /**
+ * Normalizes post data from Supabase joins.
+ * Supabase joins can sometimes return arrays when objects are expected,
+ * especially in complex nested joins.
+ */
+function normalizePost(post: any): Post {
+  if (!post) return post;
+  return {
+    ...post,
+    users: Array.isArray(post.users) ? post.users[0] : post.users,
+    original_post: post.original_post 
+      ? normalizePost(Array.isArray(post.original_post) ? post.original_post[0] : post.original_post) 
+      : null,
+  };
+}
+
+/**
  * Core post creation input.
  *
  * Supports:
@@ -77,7 +93,7 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
     throw new Error('Failed to fetch feed data');
   }
 
-  const posts = data as Post[];
+  const posts = (data as any[] || []).map(normalizePost);
   const hasMore = posts.length === limit;
   const nextCursor = posts.length > 0 ? posts[posts.length - 1].created_at : null;
 
@@ -118,7 +134,7 @@ export async function getReels(params: { cursor?: string | null; limit?: number 
     throw new Error('Failed to fetch reels data');
   }
 
-  const posts = data as Post[];
+  const posts = (data as any[] || []).map(normalizePost);
   return {
     data: posts,
     hasMore: posts.length === limit,
@@ -166,7 +182,7 @@ export async function getCommunityPosts(communityId: string, params: z.infer<typ
     throw new Error('Failed to fetch community feed data');
   }
 
-  const posts = data as Post[];
+  const posts = (data as any[] || []).map(normalizePost);
   const hasMore = posts.length === limit;
   const nextCursor = posts.length > 0 ? posts[posts.length - 1].created_at : null;
 
@@ -348,11 +364,8 @@ export async function getBookmarkedPosts(params: { cursor?: string | null; limit
   }
 
   const posts = (data as any[])
-    .map(b => ({
-      ...b.posts,
-      // Pass the bookmark's created_at for cursor pagination if needed, or sort works ok
-    }))
-    .filter(p => p.id) as Post[];
+    .map(b => normalizePost(b.posts))
+    .filter(p => p && p.id) as Post[];
 
   const hasMore = data.length === limit;
   const nextCursor = data.length > 0 ? data[data.length - 1].created_at : null;
