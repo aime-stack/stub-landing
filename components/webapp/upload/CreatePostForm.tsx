@@ -184,7 +184,7 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
       if (onPostCreated) {
         onPostCreated();
       } else {
-        router.refresh(); // Fallback for Server Component pages
+        window.location.reload(); // Full page reload as requested
       }
     } catch (err: any) {
       setError(err.message ?? 'Failed to post');
@@ -261,14 +261,21 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
           </div>
 
           {/* Link Preview within composer */}
-          {linkMeta && (
+          {(linkMeta || fetchingMeta) && (
             <div style={{ position: 'relative', marginBottom: 12 }}>
               <div style={{ opacity: fetchingMeta ? 0.6 : 1 }}>
+                
+                {fetchingMeta && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                    <Loader2 style={{ width: 24, height: 24, color: '#0a7ea4', animation: 'spin 1s linear infinite' }} />
+                  </div>
+                )}
+                
                 <div style={{
                   borderRadius: 12, border: '1px solid #E5E7EB', overflow: 'hidden',
                   background: '#F9FAFB', display: 'flex', gap: 12, padding: 8
                 }}>
-                  {linkMeta.image && (
+                  {linkMeta?.image && (
                     <img 
                       src={linkMeta.image} 
                       alt="" 
@@ -279,9 +286,9 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
                       }}
                     />
                   )}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{linkMeta.title}</div>
-                    <div style={{ fontSize: 12, color: '#6B7280', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{linkMeta.description}</div>
+                  <div style={{ flex: 1, minWidth: 0, opacity: fetchingMeta && !linkMeta ? 0 : 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{linkMeta?.title || 'Fetching...'}</div>
+                    <div style={{ fontSize: 12, color: '#6B7280', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{linkMeta?.description || 'Extracting article details...'}</div>
                   </div>
                 </div>
               </div>

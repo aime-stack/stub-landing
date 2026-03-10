@@ -53,14 +53,23 @@ serve(async (req: Request) => {
       const res = await fetch(url, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Connection': 'keep-alive',
+          'Upgrade-Insecure-Requests': '1'
         },
-        signal: controller.signal
+        signal: controller.signal,
+        redirect: 'follow'
       });
       clearTimeout(timeoutId);
 
-      if (res.ok) {
-        const html = await res.text();
-        const $ = cheerio.load(html);
+      // Prefer the final URL (post-redirect) for better fallback keyword extraction
+      const finalUrl = res.url || url;
+      metadata.url = finalUrl;
+
+      // Even if not ok (like 401/403), some sites still return HTML with OG tags for previews
+      const html = await res.text();
+      const $ = cheerio.load(html);
 
         metadata.title = $('meta[property="og:title"]').attr('content') || 
                          $('meta[name="twitter:title"]').attr('content') || 
@@ -86,15 +95,28 @@ serve(async (req: Request) => {
             console.error("Relative image resolution failed:", e);
           }
         }
-      }
     } catch (e) {
       console.error("Error fetching HTML:", e);
     }
 
-    // 2. Fallback/Enrich with GNews if missing core fields (title/image)
-    if ((!metadata.title || !metadata.image_url) && gnewsApiKey) {
+    // 2. Fallback/Enrich with GNews if missing core fields (title/image) or title is just the domain
+    const isGenericTitle = metadata.title && (
+      metadata.title.toLowerCase().includes('.com') || 
+      metadata.title.toLowerCase() === new URL(url).hostname.replace('www.', '')
+    );
+
+    if ((!metadata.title || !metadata.image_url || isGenericTitle) && gnewsApiKey) {
       try {
-        const searchQuery = metadata.title ? encodeURIComponent(metadata.title) : encodeURIComponent(url);
+        let keywords = '';
+        if (metadata.title && !isGenericTitle) {
+          keywords = metadata.title;
+        } else {
+          // Extract keywords from URL path (e.g. /news/article-name-here)
+          const parsedPath = new URL(url).pathname;
+          keywords = parsedPath.replace(/[-/_]/g, ' ').trim() || new URL(url).hostname;
+        }
+
+        const searchQuery = encodeURIComponent(keywords);
         const gnewsRes = await fetch(`https://gnews.io/api/v4/search?q=${searchQuery}&token=${gnewsApiKey}&lang=en&max=1`);
         
         if (gnewsRes.ok) {
