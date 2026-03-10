@@ -16,7 +16,7 @@ async function fetchUsers() {
 
   // Example: fetch all users (in production, you'd add real pagination here via range())
   const { data: users, count, error } = await supabaseAdmin
-    .from('users')
+    .from('profiles')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .limit(100);

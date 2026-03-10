@@ -59,7 +59,25 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchApplications();
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/admin/stats');
+      if (res.ok) {
+        const data = await res.json();
+        setStats({
+          totalUsers: data.totalUsers || 0,
+          totalEnrollments: data.totalEnrollments || 0,
+          totalRevenue: data.totalRevenue?.toLocaleString() || '0',
+          pendingApps: data.pendingApps || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const fetchApplications = async () => {
     setLoading(true);

@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
       // We update the 'profiles' or 'users' equivalent. Usually, it's public.users mapped to auth.users in your schema
       const { error: profileError } = await supabaseAdmin
-        .from('users')
+        .from('profiles')
         .update(profileUpdates)
         .eq('id', userId);
 
