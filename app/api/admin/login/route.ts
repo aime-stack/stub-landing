@@ -5,9 +5,16 @@ export async function POST(req: Request) {
   try {
     const { username, password } = await req.json();
 
-    // In a real app, these would be in environment variables
-    const ADMIN_USER = 'stubgram_admin';
-    const ADMIN_PASS = 'Admin@stubgram2026';
+    const ADMIN_USER = process.env.ADMIN_USER;
+    const ADMIN_PASS = process.env.ADMIN_PASS;
+
+    if (!ADMIN_USER || !ADMIN_PASS) {
+      console.error('Admin credentials not configured in environment variables');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
 
     if (username === ADMIN_USER && password === ADMIN_PASS) {
       // Set an admin cookie
