@@ -55,6 +55,7 @@ export async function getFeed(params: z.infer<typeof FeedQuerySchema>): Promise<
     `
     )
     .is('community_id', null)
+    .neq('type', 'reel')
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -131,6 +132,7 @@ export async function getCommunityPosts(communityId: string, params: z.infer<typ
     `
     )
     .eq('community_id', communityId)
+    .neq('type', 'reel')
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -302,6 +304,7 @@ export async function getBookmarkedPosts(params: { cursor?: string | null; limit
         )
       )
     `)
+    // We won't filter out reels from Bookmarks here since the user explicitly saved them.
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(limit);
