@@ -2,12 +2,6 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 
-// Setup admin service role client to bypass RLS and update user profiles
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
@@ -22,6 +16,12 @@ export async function POST(req: Request) {
     if (!id || !type || !status || !userId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    // Setup admin service role client to bypass RLS and update user profiles
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+    );
 
     // 1. Determine which application table to update
     let appTable = '';

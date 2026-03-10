@@ -10,8 +10,8 @@ const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
 
 async function fetchUsers() {
   const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
   );
 
   // Example: fetch all users (in production, you'd add real pagination here via range())
