@@ -4,7 +4,7 @@ const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live;
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data:
+    img-src 'self' blob: data: https:
       https://*.supabase.co
       https://images.unsplash.com
       https://plus.unsplash.com
@@ -53,49 +53,10 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      // Supabase storage
+      // Allow all HTTPS image sources (useful for arbitrary news link previews)
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
-      // Unsplash
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'plus.unsplash.com',
-      },
-      // Picsum Photos (placeholder images)
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-      },
-      {
-        protocol: 'https',
-        hostname: 'fastly.picsum.photos',
-      },
-      // Pravatar (avatar photos)
-      {
-        protocol: 'https',
-        hostname: 'i.pravatar.cc',
-      },
-      // Random user avatars
-      {
-        protocol: 'https',
-        hostname: 'randomuser.me',
-      },
-      // GitHub avatars
-      {
-        protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
-      },
-      // Pexels
-      {
-        protocol: 'https',
-        hostname: 'images.pexels.com',
+        hostname: '**',
       },
     ],
   },

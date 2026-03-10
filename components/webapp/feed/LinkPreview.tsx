@@ -47,15 +47,15 @@ export function LinkPreview({ metadata, hideImage }: LinkPreviewProps) {
       }}
     >
       {image && !hideImage && (
-        <div style={{ width: '100%', height: 200, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ width: '100%', height: 200, position: 'relative', overflow: 'hidden', backgroundColor: '#F3F4F6' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             src={image} 
             alt={title || 'Preview'} 
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
             onError={(e) => {
-              const parent = e.currentTarget.parentElement;
-              if (parent) parent.style.display = 'none';
+              console.error('LinkPreview image failed to load:', image);
+              e.currentTarget.style.display = 'none'; // Only hide the broken img tag itself
             }}
           />
         </div>
