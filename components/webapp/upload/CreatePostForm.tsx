@@ -97,7 +97,7 @@ export function CreatePostForm({ user, communityId, onPostCreated }: { user?: { 
   };
 
   const charsLeft = 280 - content.length;
-  const isEmpty   = !content.trim() && files.length === 0;
+  const isEmpty   = !content.trim() && files.length === 0 && !linkMeta;
   const activeBg  = TEXT_BG_OPTIONS.find(o => o.id === textBg);
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
