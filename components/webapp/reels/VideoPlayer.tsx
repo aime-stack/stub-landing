@@ -70,17 +70,18 @@ export function VideoPlayer({ src, thumbnailUrl, isActive, onClick }: VideoPlaye
     }
   };
 
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Load necessary for source changes
-    video.load();
-
     if (isActive) {
-      video.play().catch((err) => {
-        console.warn('[VideoPlayer] Play interrupted or blocked:', err);
-      });
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('[VideoPlayer] Play interrupted or blocked:', err);
+        });
+      }
     } else {
       video.pause();
     }
