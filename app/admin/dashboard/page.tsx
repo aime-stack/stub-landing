@@ -97,18 +97,29 @@ export default function AdminDashboard() {
 
   const updateStatus = async (id: string, type: AppType, status: 'approved' | 'rejected') => {
     try {
-      let table = '';
-      if (type === 'teacher') table = 'teacher_applications';
-      else if (type === 'celebrity') table = 'celebrity_applications';
-      else if (type === 'company') table = 'company_applications';
+      const app = applications.find(a => a.id === id);
+      if (!app) return;
 
-      const { error } = await supabase.from(table).update({ status }).eq('id', id);
-      if (error) throw error;
+      const res = await fetch('/api/admin/applications/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          type,
+          status,
+          userId: app.user_id,
+        })
+      });
+
+      if (!res.ok) {
+         const { error } = await res.json();
+         throw new Error(error || 'Failed to update status');
+      }
 
       // Update locally
       setApplications(prev => prev.map(a => a.id === id ? { ...a, status } as AnyApplication : a));
-    } catch (error) {
-      alert('Failed to update status');
+    } catch (error: any) {
+      alert(error.message || 'Failed to update status');
     }
   };
 
@@ -149,19 +160,32 @@ export default function AdminDashboard() {
             { id: 'teacher', icon: GraduationCap, label: 'Teacher Apps' },
             { id: 'celebrity', icon: Star, label: 'Celebrity Apps' },
             { id: 'company', icon: Briefcase, label: 'Company Apps' },
+            { id: 'users', icon: Users, label: 'Users', href: '/admin/users' },
           ].map(item => {
             const Icon = item.icon;
             const active = activeTab === item.id;
+            
+            const buttonStyle = {
+              width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12,
+              background: active ? 'rgba(255,255,255,0.08)' : 'transparent', color: active ? 'white' : '#94A3B8',
+              border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 14, fontWeight: active ? 700 : 500,
+              transition: 'all 0.2s', marginBottom: 4, textAlign: 'left' as const, textDecoration: 'none'
+            };
+
+            if (item.href) {
+              return (
+                <a key={item.id} href={item.href} style={buttonStyle}>
+                  <Icon size={18} color={active ? '#0ea5e9' : '#64748B'} />
+                  {item.label}
+                </a>
+              );
+            }
+
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as any)}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12,
-                  background: active ? 'rgba(255,255,255,0.08)' : 'transparent', color: active ? 'white' : '#94A3B8',
-                  border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 14, fontWeight: active ? 700 : 500,
-                  transition: 'all 0.2s', marginBottom: 4, textAlign: 'left'
-                }}
+                style={buttonStyle}
               >
                 <Icon size={18} color={active ? '#0ea5e9' : '#64748B'} />
                 {item.label}
