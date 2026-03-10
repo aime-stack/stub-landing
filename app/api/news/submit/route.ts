@@ -116,37 +116,45 @@ export async function POST(req: Request) {
         const res = await fetch(url, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
           },
-          signal: controller.signal
+          signal: controller.signal,
+          redirect: 'follow'
         });
         clearTimeout(timeoutId);
         
-        if (res.ok) {
-          const html = await res.text();
-          const $ = cheerio.load(html);
-          
-          metadata.title = $('meta[property="og:title"]').attr('content') || 
-                           $('meta[name="twitter:title"]').attr('content') || 
-                           $('title').text() || null;
-                           
-          metadata.description = $('meta[property="og:description"]').attr('content') || 
-                                 $('meta[name="twitter:description"]').attr('content') || 
-                                 $('meta[name="description"]').attr('content') || null;
-                                 
-          metadata.image_url = $('meta[property="og:image"]').attr('content') || 
-                               $('meta[name="twitter:image"]').attr('content') || null;
-                               
-          metadata.source = $('meta[property="og:site_name"]').attr('content') || 
-                            $('meta[name="twitter:site"]').attr('content') || null;
+        const finalUrl = res.url || url;
+        targetUrl = new URL(finalUrl);
+        metadata.url = finalUrl; // Ensure we save the redirected URL
 
-          // Normalize relative URLs
-          if (metadata.image_url && !metadata.image_url.startsWith('http')) {
-            try {
+        // Even on 401/403, proceed to parse HTML since OpenGraph tags are often still sent
+        const html = await res.text();
+        const $ = cheerio.load(html);
+        
+        metadata.title = $('meta[property="og:title"]').attr('content') || 
+                         $('meta[name="twitter:title"]').attr('content') || 
+                         $('title').text() || null;
+                         
+        metadata.description = $('meta[property="og:description"]').attr('content') || 
+                               $('meta[name="twitter:description"]').attr('content') || 
+                               $('meta[name="description"]').attr('content') || null;
+                               
+        metadata.image_url = $('meta[property="og:image"]').attr('content') || 
+                             $('meta[name="twitter:image"]').attr('content') || null;
+                             
+        metadata.source = $('meta[property="og:site_name"]').attr('content') || 
+                          $('meta[name="twitter:site"]').attr('content') || null;
+
+        // Normalize relative URLs
+        if (metadata.image_url && !metadata.image_url.startsWith('http')) {
+          try {
               metadata.image_url = new URL(metadata.image_url, targetUrl.origin).href;
             } catch (e) {
               // ignore
             }
-          }
         }
       } catch (e) {
          console.warn("Direct HTML scraper failed for URL:", url);
@@ -160,9 +168,23 @@ export async function POST(req: Request) {
 
     // Strategy 2: Specialized News API Fallback
     const gnewsApiKey = process.env.GNEWS_API_KEY || '';
-    if ((!metadata.title || !metadata.image_url) && gnewsApiKey) {
+    
+    const isGenericTitle = metadata.title && (
+      metadata.title.toLowerCase().includes('.com') || 
+      metadata.title.toLowerCase() === targetUrl.hostname.replace('www.', '')
+    );
+
+    if ((!metadata.title || !metadata.image_url || isGenericTitle) && gnewsApiKey) {
       try {
-        const searchQuery = metadata.title ? encodeURIComponent(metadata.title) : encodeURIComponent(url);
+        let keywords = '';
+        if (metadata.title && !isGenericTitle) {
+          keywords = metadata.title;
+        } else {
+          const parsedPath = targetUrl.pathname;
+          keywords = parsedPath.replace(/[-/_]/g, ' ').trim() || targetUrl.hostname;
+        }
+
+        const searchQuery = encodeURIComponent(keywords);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
         
