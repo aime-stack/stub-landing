@@ -49,9 +49,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [stats, setStats] = useState({
-    totalUsers: 12840,
-    totalEnrollments: 4520,
-    totalRevenue: '12.4M',
+    totalUsers: 0,
+    totalEnrollments: 0,
+    totalRevenue: '0',
     pendingApps: 0
   });
 
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
               <Bell size={20} color="#64748B" />
               <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, background: '#EF4444', borderRadius: '50%', border: '2px solid white' }} />
             </button>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, color: '#475569' }}>SA</div>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, color: '#475569' }}>AD</div>
           </div>
         </header>
 
@@ -257,10 +257,10 @@ export default function AdminDashboard() {
               {/* Stats Cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, marginBottom: 32 }}>
                 {[
-                  { label: 'Total Users', val: stats.totalUsers, icon: Users, color: '#0EA5E9', trend: '+12%' },
-                  { label: 'Enrollments', val: stats.totalEnrollments, icon: GraduationCap, color: '#8B5CF6', trend: '+18%' },
-                  { label: 'Revenue (Stubcoins)', val: stats.totalRevenue, icon: BarChart3, color: '#F59E0B', trend: '+5%' },
-                  { label: 'Pending Apps', val: stats.pendingApps, icon: Clock, color: '#EC4899', trend: '-2' },
+                  { label: 'Total Users', val: stats.totalUsers, icon: Users, color: '#0EA5E9', trend: '' },
+                  { label: 'Enrollments', val: stats.totalEnrollments, icon: GraduationCap, color: '#8B5CF6', trend: '' },
+                  { label: 'Revenue (Stubcoins)', val: stats.totalRevenue, icon: BarChart3, color: '#F59E0B', trend: '' },
+                  { label: 'Pending Apps', val: stats.pendingApps, icon: Clock, color: '#EC4899', trend: '' },
                 ].map((s, i) => {
                   const Icon = s.icon;
                   return (
@@ -290,10 +290,11 @@ export default function AdminDashboard() {
                     <button style={{ height: 32, padding: '0 12px', borderRadius: 8, background: '#0F172A', color: 'white', fontSize: 12, fontWeight: 600 }}>30D</button>
                   </div>
                 </div>
-                <div style={{ height: 200, display: 'flex', alignItems: 'flex-end', gap: 12, paddingBottom: 10 }}>
-                  {[40, 65, 45, 85, 55, 75, 95, 60, 40, 80, 70, 90].map((h, i) => (
-                    <div key={i} style={{ flex: 1, height: `${h}%`, background: 'linear-gradient(to top, #0ea5e9, #8b5cf6)', borderRadius: '4px 4px 0 0', opacity: 0.8 }} />
-                  ))}
+                <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', borderRadius: 16, border: '1px dashed #E2E8F0' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <BarChart3 size={32} color="#94A3B8" style={{ margin: '0 auto 12px' }} />
+                    <p style={{ margin: 0, color: '#94A3B8', fontSize: 13 }}>Activity trends will appear here as the platform grows</p>
+                  </div>
                 </div>
               </div>
             </>
