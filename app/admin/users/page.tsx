@@ -9,24 +9,33 @@ import { cookies } from 'next/headers';
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 
 async function fetchUsers() {
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  // Example: fetch all users (in production, you'd add real pagination here via range())
-  const { data: users, count, error } = await supabaseAdmin
-    .from('profiles')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error) {
-    console.error('[AdminUsers] Error fetching users:', error);
-    return { users: [], count: 0 };
+  if (!url || !key) {
+    console.error('[AdminUsers] Missing Supabase environment variables');
+    return { users: [], count: 0, error: 'Configuration Error: Missing Service Role Key' };
   }
 
-  return { users, count };
+  try {
+    const supabaseAdmin = createClient(url, key);
+
+    const { data: users, count, error } = await supabaseAdmin
+      .from('profiles')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) {
+      console.error('[AdminUsers] Supabase Error:', error);
+      return { users: [], count: 0, error: error.message };
+    }
+
+    return { users: users || [], count: count || 0 };
+  } catch (err: any) {
+    console.error('[AdminUsers] Unexpected Exception:', err);
+    return { users: [], count: 0, error: 'Internal Server Error' };
+  }
 }
 
 export default async function AdminUsersPage() {
@@ -37,7 +46,7 @@ export default async function AdminUsersPage() {
     redirect('/admin/login');
   }
 
-  const { users, count } = await fetchUsers();
+  const { users, count, error } = await fetchUsers();
 
   const totalVerified = users?.filter(u => u.is_verified).length || 0;
   const totalCelebs = users?.filter(u => u.is_celebrity).length || 0;
@@ -171,7 +180,14 @@ export default async function AdminUsersPage() {
           </tbody>
         </table>
         
-        {(!users || users.length === 0) && (
+        {error && (
+          <div style={{ padding: 40, textAlign: 'center', color: '#EF4444', background: '#FEF2F2', borderTop: '1px solid #FEE2E2' }}>
+            <p style={{ margin: 0, fontWeight: 700 }}>{error}</p>
+            <p style={{ margin: '4px 0 0', fontSize: 13 }}>Please ensure <code>SUPABASE_SERVICE_ROLE_KEY</code> is set in your environment variables.</p>
+          </div>
+        )}
+
+        {(!users || users.length === 0) && !error && (
           <div style={{ padding: 40, textAlign: 'center', color: '#64748B' }}>
             No users found.
           </div>
